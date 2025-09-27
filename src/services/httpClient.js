@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-const mode = window.localStorage.getItem('factura_mode') || 'sandbox';
-
 const sandboxConfig = {
-  baseURL: '/',
+  baseURL: 'https://sandbox.factura.com/api',
   headers: {
     'Content-Type': 'application/json',
     'F-PLUGIN': import.meta.env.VITE_FACTURA_PLUGIN,
@@ -13,17 +11,6 @@ const sandboxConfig = {
   },
 };
 
-const productionConfig = {
-  baseURL: '/', // Cambia aquí si tienes una URL diferente para producción
-  headers: {
-    'Content-Type': 'application/json',
-    'F-PLUGIN': import.meta.env.VITE_FACTURA_PLUGIN,
-    'F-Api-Key': import.meta.env.VITE_FACTURA_API_KEY,
-    'F-Secret-Key': import.meta.env.VITE_FACTURA_SECRET_KEY,
-    'F-Api-Env': 'production',
-  },
-};
-
-const httpClient = axios.create(mode === 'sandbox' ? sandboxConfig : productionConfig);
+const httpClient = axios.create(sandboxConfig);
 
 export default httpClient;
