@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-const sandboxConfig = {
-  baseURL: 'https://sandbox.factura.com/api',
+const isProd = import.meta.env.MODE === 'production';
+
+const config = {
+  baseURL: isProd ? '/' : 'https://sandbox.factura.com/api',
   headers: {
     'Content-Type': 'application/json',
     'F-PLUGIN': import.meta.env.VITE_FACTURA_PLUGIN,
@@ -11,6 +13,6 @@ const sandboxConfig = {
   },
 };
 
-const httpClient = axios.create(sandboxConfig);
+const httpClient = axios.create(config);
 
 export default httpClient;
