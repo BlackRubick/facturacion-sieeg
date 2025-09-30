@@ -71,7 +71,9 @@ const Layout = ({ children }) => {
             <>
               <span className="mr-4">{user.email} ({user.type})</span>
               <button onClick={logout} className="bg-red-500 px-3 py-1 rounded">Salir</button>
-              <button onClick={() => setShowUserModal(true)} className="bg-blue-500 px-3 py-1 rounded ml-4">Agregar usuario</button>
+              {user && user.type === 'admin' && (
+                <button onClick={() => setShowUserModal(true)} className="bg-blue-500 px-3 py-1 rounded ml-4">Agregar usuario</button>
+              )}
             </>
           ) : (
             <>
