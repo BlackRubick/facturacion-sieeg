@@ -211,22 +211,25 @@ const CFDIForm = () => {
 
   useEffect(() => {
     let fechaCFDI = '';
-    const hoy = new Date();
+    const hoy = new Date(); // Siempre nueva instancia
     switch (watch('fechaCFDI')) {
       case 'hoy':
-        fechaCFDI = new Date().toISOString().split('T')[0];
+        fechaCFDI = hoy.toISOString().split('T')[0];
         break;
       case 'ayer':
-        hoy.setDate(hoy.getDate() - 1);
-        fechaCFDI = hoy.toISOString().split('T')[0];
+        const ayer = new Date();
+        ayer.setDate(hoy.getDate() - 1);
+        fechaCFDI = ayer.toISOString().split('T')[0];
         break;
       case 'dosdias':
-        hoy.setDate(hoy.getDate() - 2);
-        fechaCFDI = hoy.toISOString().split('T')[0];
+        const dosdias = new Date();
+        dosdias.setDate(hoy.getDate() - 2);
+        fechaCFDI = dosdias.toISOString().split('T')[0];
         break;
       case 'tresdias':
-        hoy.setDate(hoy.getDate() - 3);
-        fechaCFDI = hoy.toISOString().split('T')[0];
+        const tresdias = new Date();
+        tresdias.setDate(hoy.getDate() - 3);
+        fechaCFDI = tresdias.toISOString().split('T')[0];
         break;
       default:
         fechaCFDI = '';
@@ -237,22 +240,25 @@ const CFDIForm = () => {
   const onSubmit = async (dataRaw) => {
     // Calcular la fecha real según la opción seleccionada
     let fechaCFDI = '';
-    const hoy = new Date();
+    const hoy = new Date(); // Siempre nueva instancia
     switch (dataRaw.fechaCFDI) {
       case 'hoy':
-        fechaCFDI = new Date().toISOString().split('T')[0];
+        fechaCFDI = hoy.toISOString().split('T')[0];
         break;
       case 'ayer':
-        hoy.setDate(hoy.getDate() - 1);
-        fechaCFDI = hoy.toISOString().split('T')[0];
+        const ayer = new Date();
+        ayer.setDate(hoy.getDate() - 1);
+        fechaCFDI = ayer.toISOString().split('T')[0];
         break;
       case 'dosdias':
-        hoy.setDate(hoy.getDate() - 2);
-        fechaCFDI = hoy.toISOString().split('T')[0];
+        const dosdias = new Date();
+        dosdias.setDate(hoy.getDate() - 2);
+        fechaCFDI = dosdias.toISOString().split('T')[0];
         break;
       case 'tresdias':
-        hoy.setDate(hoy.getDate() - 3);
-        fechaCFDI = hoy.toISOString().split('T')[0];
+        const tresdias = new Date();
+        tresdias.setDate(hoy.getDate() - 3);
+        fechaCFDI = tresdias.toISOString().split('T')[0];
         break;
       default:
         fechaCFDI = '';
