@@ -22,6 +22,12 @@ const Layout = ({ children }) => {
     window.location.reload(); // Recarga para aplicar el modo
   };
 
+  const hideLayout = location.pathname === '/login' || location.pathname === '/register';
+
+  if (hideLayout) {
+    return <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">{children}</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <header className="bg-blue-600 text-white p-4 font-bold text-lg flex flex-col sm:flex-row items-center justify-between">
