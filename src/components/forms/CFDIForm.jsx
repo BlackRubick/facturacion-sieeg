@@ -200,12 +200,9 @@ const CFDIForm = () => {
         setValue('MetodoPago', metodoPPD.key);
       }
     }
-    // Forma de Pago: seleccionar 99
-    if (catalogs.FormaPago.length > 0) {
-      const forma99 = catalogs.FormaPago.find(f => f.key === '99');
-      if (forma99 && watch('FormaPago') !== forma99.key) {
-        setValue('FormaPago', forma99.key);
-      }
+    // Forma de Pago: seleccionar el primer valor válido si está vacío
+    if (catalogs.FormaPago.length > 0 && !watch('FormaPago')) {
+      setValue('FormaPago', catalogs.FormaPago[0].key);
     }
   }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
 
@@ -243,7 +240,7 @@ const CFDIForm = () => {
     // Usar el valor seleccionado por el usuario para UsoCFDI
     let usoCFDI = data.UsoCFDI || '';
     if (!usoCFDI && Array.isArray(catalogs.UsoCFDI) && catalogs.UsoCFDI.length > 0) {
-      usoCFDI = catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
+      usoCFDI = catalogs.UusoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
       setValue('UsoCFDI', usoCFDI);
     }
     // Mostrar en consola los valores antes de enviar
