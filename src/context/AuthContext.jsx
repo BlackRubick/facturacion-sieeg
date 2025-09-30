@@ -7,25 +7,30 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
   const initialUsers = [
     { email: 'admin@mail.com', password: 'admin123', type: 'admin', name: 'Administrador' },
     { email: 'vendedor@mail.com', password: 'vendedor123', type: 'vendedor', name: 'Vendedor' },
   ];
 
+  const API_URL = 'http://3.150.146.141/api';
+
   useEffect(() => {
-    // Verifica si hay usuario en localStorage al iniciar
+    // Verifica si hay usuario y token en localStorage al iniciar
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const storedToken = localStorage.getItem('token');
+    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedToken) setToken(storedToken);
     setLoading(false);
   }, []);
+
+  const getAuthHeaders = () => token ? { 'Authorization': `Bearer ${token}` } : {};
 
   // Login usando API
   const login = async (email, password) => {
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -33,7 +38,9 @@ export const AuthProvider = ({ children }) => {
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
+        setToken(data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('token', data.token);
         return true;
       }
     } catch (err) {
@@ -52,16 +59,18 @@ export const AuthProvider = ({ children }) => {
   // Logout usando API si lo necesitas
   const logout = async () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     // Si tu API requiere logout, descomenta:
-    // await fetch('/api/logout', { method: 'POST' });
+    // await fetch(`${API_URL}/logout`, { method: 'POST', headers: { ...getAuthHeaders() } });
   };
 
   const register = async (email, password, type, name) => {
     try {
-      const res = await fetch('/api/register', {
+      const res = await fetch(`${API_URL}/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify({ email, password, type, name })
       });
       if (!res.ok) return false;
@@ -76,7 +85,9 @@ export const AuthProvider = ({ children }) => {
 
   const getUsers = async () => {
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch(`${API_URL}/users`, {
+        headers: { ...getAuthHeaders() }
+      });
       if (res.ok) {
         return await res.json();
       }
@@ -86,7 +97,10 @@ export const AuthProvider = ({ children }) => {
 
   const deleteUser = async (idOrEmail) => {
     try {
-      const res = await fetch(`/api/users/${idOrEmail}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/users/${idOrEmail}`, {
+        method: 'DELETE',
+        headers: { ...getAuthHeaders() }
+      });
       if (res.ok) return true;
     } catch (err) {}
     localUsers = localUsers.filter(u => (u.id ? u.id !== idOrEmail : u.email !== idOrEmail));
@@ -95,9 +109,9 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = async (idOrEmail, data) => {
     try {
-      const res = await fetch(`/api/users/${idOrEmail}`, {
+      const res = await fetch(`${API_URL}/users/${idOrEmail}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify(data)
       });
       if (res.ok) return true;
