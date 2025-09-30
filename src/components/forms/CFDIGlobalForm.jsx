@@ -277,10 +277,16 @@ const CFDIGlobalForm = () => {
           </div>
         )}
         {clienteData && clienteData.FormaPago !== '' && (
-          <CorreoValidador clienteCorreo={clienteData.Contacto?.Email} clienteData={clienteData} fields={fields} setEmittedUID={setEmittedUID} setCfdiMessage={setCfdiMessage} />
+          <CorreoValidador
+            clienteCorreo={clienteData.Contacto?.Email}
+            clienteData={clienteData}
+            fields={fields}
+            setEmittedUID={setEmittedUID}
+            setCfdiMessage={setCfdiMessage}
+            setValidadoCorreo={setValidadoCorreo}
+          />
         )}
-        {/* Solo mostrar input de pedido si el correo está validado */}
-        {clienteData && clienteData.FormaPago !== '' && validadoCorreo && productosImportados.length === 0 && (
+        {clienteData && clienteData.FormaPago !== '' && validadoCorreo && (
           <div className="mb-8 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
             <input
               type="text"
@@ -401,7 +407,7 @@ const CFDIGlobalForm = () => {
 };
 
 // Validador de correo
-function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage }) {
+function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage, setValidadoCorreo }) {
   const [correoInput, setCorreoInput] = useState('');
   const [validado, setValidado] = useState(false);
   const [error, setError] = useState('');
@@ -416,9 +422,11 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
     if (correoInput.trim().toLowerCase() === (clienteCorreo || '').trim().toLowerCase()) {
       setValidado(true);
       setError('');
+      setValidadoCorreo(true);
     } else {
       setValidado(false);
       setError('El correo no coincide con el registrado para este RFC.');
+      setValidadoCorreo(false);
     }
   };
 
