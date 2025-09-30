@@ -47,6 +47,7 @@ const Layout = ({ children }) => {
   const hideLayout = location.pathname === '/login' || location.pathname === '/register';
   const isFacturaClientesPublic = location.pathname === '/factura-clientes' && !user;
   const isFacturaClientesVendedor = location.pathname === '/factura-clientes' && user && user.type === 'vendedor';
+  const isFacturaNormalVendedor = location.pathname === '/factura-normal' && user && user.type === 'vendedor';
 
   if (hideLayout) {
     return <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">{children}</div>;
@@ -59,7 +60,7 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {!(isFacturaClientesPublic || isFacturaClientesVendedor) && (
+      {!(isFacturaClientesPublic || isFacturaClientesVendedor || isFacturaNormalVendedor) && (
         <header className="bg-blue-600 text-white px-6 py-4 shadow-md">
           <div className="flex items-center justify-between w-full">
             {/* Logo y título */}
