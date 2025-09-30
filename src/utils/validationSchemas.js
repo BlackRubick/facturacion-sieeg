@@ -14,7 +14,7 @@ export const invoiceSchema = z.object({
     ObjetoImp: z.string().optional(),
     Impuestos: z.any().optional(),
   })).min(1, 'Al menos un item requerido'),
-  dueDate: z.date(),
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida'),
   // ... más validaciones
 });
 
