@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import FacturaAPIService from '../../services/facturaApi';
 import Button from '../common/Button/Button';
 import Input from '../common/Input/Input';
-import CustomersManager from '../../pages/Customers/CustomersManager';
+import CustomerModalForm from './CustomerModalForm';
 
 const defaultConcepto = {
   ClaveProdServ: '',
@@ -412,9 +412,7 @@ const CFDIGlobalForm = () => {
           </div>
         )}
       </form>
-      {showCustomerModal && (
-        <CustomersManager />
-      )}
+      <CustomerModalForm open={showCustomerModal} onClose={() => setShowCustomerModal(false)} />
     </>
   );
 };
