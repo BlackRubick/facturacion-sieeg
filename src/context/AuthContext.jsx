@@ -71,8 +71,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Funciones locales para pruebas sin API
+  let localUsers = [...initialUsers];
+
+  const getUsers = async () => {
+    try {
+      const res = await fetch('/api/users');
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {}
+    return localUsers;
+  };
+
+  const deleteUser = async (idOrEmail) => {
+    try {
+      const res = await fetch(`/api/users/${idOrEmail}`, { method: 'DELETE' });
+      if (res.ok) return true;
+    } catch (err) {}
+    localUsers = localUsers.filter(u => (u.id ? u.id !== idOrEmail : u.email !== idOrEmail));
+    return true;
+  };
+
+  const updateUser = async (idOrEmail, data) => {
+    try {
+      const res = await fetch(`/api/users/${idOrEmail}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return true;
+    } catch (err) {}
+    localUsers = localUsers.map(u => (u.id ? u.id === idOrEmail : u.email === idOrEmail) ? { ...u, ...data } : u);
+    return true;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, register, loading, getUsers, deleteUser, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

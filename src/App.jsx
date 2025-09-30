@@ -12,6 +12,7 @@ import FacturaClientes from './pages/FacturaClientes';
 import Login from './pages/Login';
 import UserRegister from './pages/UserRegister';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import UsersManager from './pages/UsersManager';
 
 function App() {
   return (
@@ -58,6 +59,11 @@ function App() {
             <Route path="/cfdi-list" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <CFDIListPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/users-manager" element={
+              <ProtectedRoute allowedTypes={["admin"]}>
+                <UsersManager />
               </ProtectedRoute>
             } />
             <Route path="*" element={<Login />} />
