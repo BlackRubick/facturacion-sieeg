@@ -6,6 +6,7 @@ import FacturaAPIService from '../../services/facturaApi';
 import Button from '../common/Button/Button';
 import Input from '../common/Input/Input';
 import Select from '../common/Select/Select';
+import CustomerModalForm from './CustomerModalForm';
 
 const defaultConcepto = {
   ClaveProdServ: '',
@@ -53,6 +54,7 @@ const CFDIForm = () => {
   const [loadingPedido, setLoadingPedido] = useState(false);
   const [productosImportados, setProductosImportados] = useState([]);
   const [emittedUID, setEmittedUID] = useState(null);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
 
   const periodicidadOptions = [
     { value: '01', label: 'Diario' },
@@ -359,8 +361,8 @@ const CFDIForm = () => {
       )}
       <div className="mb-8 p-6 bg-gray-50 rounded-xl shadow">
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Datos del Cliente</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <div className="flex items-center gap-2">
             <label className="block mb-1 text-sm font-medium text-gray-700">UID Cliente</label>
             <Select
               label="Selecciona un cliente"
@@ -373,13 +375,16 @@ const CFDIForm = () => {
               placeholder="Buscar cliente..."
               isLoading={false}
             />
+            <Button type="button" onClick={() => setShowCustomerModal(true)} className="ml-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-full shadow text-lg" title="Agregar cliente">
+              +
+            </Button>
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Serie</label>
             <Select
               label="Selecciona una serie"
               options={series.map(s => ({
-                value: s.id || s.ID || s.SerieID || '', // Usar el ID numérico
+                value: s.id || s.ID || s.SerieID || '',
                 label: `${s.SerieName} - ${s.SerieDescription || ''}`,
               }))}
               value={watch('Serie')}
@@ -641,6 +646,7 @@ const CFDIForm = () => {
       {errors && Object.keys(errors).length > 0 && (
         <pre className="text-red-500 mt-6">{JSON.stringify(cleanForJson(errors), null, 2)}</pre>
       )}
+      <CustomerModalForm open={showCustomerModal} onClose={() => setShowCustomerModal(false)} />
     </form>
   );
 };
