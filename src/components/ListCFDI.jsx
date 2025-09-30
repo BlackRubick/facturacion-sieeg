@@ -88,6 +88,7 @@ const ListCFDI = () => {
           <tr className="bg-blue-50 text-blue-700">
             <th className="p-2 font-semibold">Folio</th>
             <th className="p-2 font-semibold">RFC</th>
+            <th className="p-2 font-semibold">Nombre</th>
             <th className="p-2 font-semibold">Fecha</th>
             <th className="p-2 font-semibold">Total</th>
             <th className="p-2 font-semibold">Estatus</th>
@@ -98,8 +99,9 @@ const ListCFDI = () => {
           {cfdiList.map(c => (
             <tr key={c.UID} className="border-b border-blue-50 hover:bg-blue-50">
               <td className="p-2">{c.Folio}</td>
-              <td className="p-2">{c.RFC}</td>
-              <td className="p-2">{c.Fecha}</td>
+              <td className="p-2">{c.RFC || c.ReceptorRFC || '-'}</td>
+              <td className="p-2">{c.Nombre || c.ReceptorNombre || '-'}</td>
+              <td className="p-2">{c.Fecha || c.FechaEmision || '-'}</td>
               <td className="p-2">${c.Total}</td>
               <td className="p-2">{c.Status}</td>
               <td className="p-2">
