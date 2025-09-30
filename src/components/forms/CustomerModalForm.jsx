@@ -49,9 +49,8 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
     try {
       const res = await FacturaAPIService.createClient(dataToSend);
       if (res.data?.status === 'success') {
-        alert('Cliente creado');
-        onCreated && onCreated(res.data.data);
-        onClose();
+        alert('Cliente creado. Por favor vuelve a ingresar tu RFC para continuar.');
+        window.location.reload();
       } else {
         throw new Error(JSON.stringify(res.data?.message || 'Error al crear'));
       }
