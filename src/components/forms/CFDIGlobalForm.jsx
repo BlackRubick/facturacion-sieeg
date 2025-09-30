@@ -42,6 +42,7 @@ const CFDIGlobalForm = () => {
   const [clienteError, setClienteError] = useState("");
   const [emittedUID, setEmittedUID] = useState(null);
   const [cfdiMessage, setCfdiMessage] = useState("");
+  const [validadoCorreo, setValidadoCorreo] = useState(false);
 
   const {
     register,
@@ -260,33 +261,45 @@ const CFDIGlobalForm = () => {
             <span className="font-semibold text-green-700 text-base">Cliente encontrado</span>
           </div>
         )}
-        <div className="mb-8 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
-          <input
-            type="text"
-            placeholder="Número de pedido"
-            value={pedidoInput}
-            onChange={e => setPedidoInput(e.target.value)}
-            className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
-          />
-          <Button type="button" onClick={handleImportPedido} disabled={loadingPedido} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
-            {loadingPedido ? 'Cargando...' : 'Importar pedido'}
-          </Button>
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1 text-sm font-semibold text-gray-700">Forma de Pago</label>
-          <select
-            value={clienteData?.FormaPago || ''}
-            onChange={e => setClienteData({ ...clienteData, FormaPago: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
-          >
-            <option value="">Selecciona</option>
-            {catalogs.FormaPago && catalogs.FormaPago.map((opt, idx) => (
-              <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-            ))}
-          </select>
-        </div>
-        {clienteData && productosImportados.length > 0 && (
+        {clienteData && (
+          <div className="mb-4">
+            <label className="block mb-1 text-sm font-semibold text-gray-700">Forma de Pago</label>
+            <select
+              value={clienteData?.FormaPago || ''}
+              onChange={e => setClienteData({ ...clienteData, FormaPago: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
+            >
+              <option value="">Selecciona</option>
+              {catalogs.FormaPago && catalogs.FormaPago.map((opt, idx) => (
+                <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {clienteData && (
           <CorreoValidador clienteCorreo={clienteData.Contacto?.Email} clienteData={clienteData} fields={fields} setEmittedUID={setEmittedUID} setCfdiMessage={setCfdiMessage} />
+        )}
+        {/* Solo mostrar importar pedido si el correo está validado */}
+        {clienteData && productosImportados.length === 0 && (
+          <>
+            {clienteData.Contacto?.Email && (
+              <CorreoValidador clienteCorreo={clienteData.Contacto.Email} clienteData={clienteData} fields={fields} setEmittedUID={setEmittedUID} setCfdiMessage={setCfdiMessage} />
+            )}
+            {validadoCorreo && (
+              <div className="mb-8 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
+                <input
+                  type="text"
+                  placeholder="Número de pedido"
+                  value={pedidoInput}
+                  onChange={e => setPedidoInput(e.target.value)}
+                  className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
+                />
+                <Button type="button" onClick={handleImportPedido} disabled={loadingPedido} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
+                  {loadingPedido ? 'Cargando...' : 'Importar pedido'}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
       {productosImportados.length > 0 && (
