@@ -238,12 +238,12 @@ const CFDIForm = () => {
     const tipoDocumento = data.TipoDocumento || 'factura';
     const moneda = data.Moneda || 'MXN';
     const formaPago = data.FormaPago || (catalogs.FormaPago.find(f => f.key === '99')?.key || catalogs.FormaPago[0]?.key || '');
-    const metodoPago = data.MetodoPago || '';
+    const metodoPago = data.MetodoPago || (catalogs.MetodoPago.find(m => m.key === 'PPD')?.key || catalogs.MetodoPago[0]?.key || '');
     const serieId = Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
     // Usar el valor seleccionado por el usuario para UsoCFDI
     let usoCFDI = data.UsoCFDI || '';
     if (!usoCFDI && Array.isArray(catalogs.UsoCFDI) && catalogs.UsoCFDI.length > 0) {
-      usoCFDI = catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
+      usoCFDI = catalogs.UusoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
       setValue('UsoCFDI', usoCFDI);
     }
     // Mostrar en consola los valores antes de enviar
