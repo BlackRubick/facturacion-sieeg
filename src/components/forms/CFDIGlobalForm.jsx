@@ -445,46 +445,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
       />
       <Button type="button" onClick={handleValidar} className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-6 rounded-lg shadow mt-1">Validar correo</Button>
       {error && <div className="text-red-600 mt-2 font-medium">{error}</div>}
-      {validado && clienteData && (
-        <Button type="button" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow text-lg mt-4" onClick={async () => {
-          // Construir el objeto CFDI con los datos del cliente y productos importados
-          const cfdiData = {
-            Receptor: {
-              UID: clienteData.UID,
-              ResidenciaFiscal: clienteData.ResidenciaFiscal || '',
-              RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
-            },
-            TipoDocumento: 'factura',
-            Serie: 5483035, // Serie C, asignada automáticamente
-            FormaPago: clienteData.FormaPago || '03', // Seleccionada por el usuario
-            MetodoPago: 'PUE', // Asignada automáticamente
-            Moneda: 'MXN',
-            UsoCFDI: clienteData.UsoCFDI || 'G03',
-            Conceptos: fields.map(item => ({
-              ClaveProdServ: item.ClaveProdServ,
-              NoIdentificacion: item.NoIdentificacion,
-              Cantidad: item.Cantidad,
-              ClaveUnidad: item.ClaveUnidad,
-              Unidad: item.Unidad,
-              ValorUnitario: item.ValorUnitario,
-              Descripcion: item.Descripcion,
-              Descuento: item.Descuento,
-              ObjetoImp: item.ObjetoImp,
-              Impuestos: item.Impuestos,
-            })),
-          };
-          try {
-            const response = await FacturaAPIService.createCFDI40(cfdiData);
-            const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
-            setEmittedUID(uid);
-            setCfdiMessage('CFDI creado correctamente.');
-          } catch (err) {
-            setCfdiMessage('Error al crear CFDI: ' + (err.response?.data?.message || err.message));
-          }
-        }}>
-          Facturar automáticamente
-        </Button>
-      )}
+      {/* Eliminar el botón de facturar aquí, solo debe aparecer después de importar pedido */}
     </div>
   );
 }
