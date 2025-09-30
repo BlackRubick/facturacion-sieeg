@@ -5,7 +5,7 @@ const FacturaNormal = () => (
   <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <h1 className="text-3xl font-extrabold mb-8 text-blue-700 text-center">Factura Normal</h1>
     <div className="bg-white rounded-xl shadow p-6">
-      <h2 className="text-xl font-bold mb-4 text-blue-600">CFDI 4.0</h2>
+      <h2 className="text-xl font-bold mb-4 text-blue-600">CFDI </h2>
       <CFDIForm />
     </div>
   </div>
