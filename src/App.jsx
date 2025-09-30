@@ -21,7 +21,11 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<UserRegister />} />
-            <Route path="/factura-clientes" element={<FacturaClientes />} />
+            <Route path="/factura-clientes" element={
+              <ProtectedRoute>
+                <FacturaClientes />
+              </ProtectedRoute>
+            } />
             <Route path="/" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <FacturaNormal />
