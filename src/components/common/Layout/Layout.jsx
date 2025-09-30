@@ -57,53 +57,57 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      <header className="bg-blue-600 text-white px-6 py-4 font-bold text-lg flex flex-col sm:flex-row items-center justify-between shadow-md">
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          <span className="text-xl font-extrabold tracking-wide">Sistema de Facturación</span>
-          <nav className="flex-1">
-            <ul className="flex flex-col sm:flex-row gap-2 sm:gap-8 w-full sm:w-auto items-center">
-              {/* Opciones para admin */}
-              {!isVendedor && navItems.map(item => (
-                (!item.admin || (user && user.type === 'admin')) && (
-                  <li key={item.path} className="w-full sm:w-auto">
-                    <Link
-                      to={item.path}
-                      className={`block text-center px-4 py-2 rounded-lg font-semibold transition-colors duration-150 hover:bg-blue-700 hover:scale-105 shadow-sm ${location.pathname === item.path ? 'bg-blue-800' : 'bg-blue-600'}`}
-                    >
-                      {item.label}
-                    </Link>
+      <header className="bg-blue-600 text-white px-6 py-4 shadow-md">
+        <div className="flex items-center justify-between w-full">
+          {/* Logo y título */}
+          <div className="flex items-center gap-6">
+            <span className="text-xl font-extrabold tracking-wide">Sistema de Facturación</span>
+            <nav>
+              <ul className="flex gap-6 items-center">
+                {/* Opciones para admin */}
+                {!isVendedor && navItems.map(item => (
+                  (!item.admin || (user && user.type === 'admin')) && (
+                    <li key={item.path}>
+                      <Link
+                        to={item.path}
+                        className={`block px-4 py-2 rounded-lg font-semibold transition-colors duration-150 hover:bg-blue-700 hover:scale-105 shadow-sm ${location.pathname === item.path ? 'bg-blue-800' : 'bg-blue-600'}`}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  )
+                ))}
+                {/* Opción para vendedor */}
+                {isVendedor && location.pathname === '/factura-normal' && (
+                  <li>
+                    <span className="block px-4 py-2 rounded-lg font-semibold bg-blue-800 shadow-sm">Factura Normal</span>
                   </li>
-                )
-              ))}
-              {/* Opción para vendedor */}
-              {isVendedor && location.pathname === '/factura-normal' && (
-                <li className="w-full sm:w-auto">
-                  <span className="block text-center px-4 py-2 rounded-lg font-semibold bg-blue-800 shadow-sm">Factura Normal</span>
-                </li>
-              )}
-            </ul>
-          </nav>
-        </div>
-        <div className="flex items-center gap-4 mt-4 sm:mt-0">
-          {user && (
-            <button onClick={logout} className="bg-red-500 px-4 py-2 rounded-lg font-bold shadow hover:bg-red-600 transition-colors">Salir</button>
-          )}
-          {!isVendedor && user ? (
-            <>
-              <span className="mr-2 text-base font-medium bg-blue-700 px-3 py-1 rounded-lg shadow">{user.email} <span className="text-xs">({user.type})</span></span>
-              {user && user.type === 'admin' && (
-                <button onClick={() => setShowUserModal(true)} className="bg-blue-500 px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition-colors">Agregar usuario</button>
-              )}
-            </>
-          ) : null}
-          {!isVendedor && (
-            <button
-              onClick={handleToggleSandbox}
-              className={`px-4 py-2 rounded-lg font-bold shadow transition-colors ${sandbox ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 text-blue-700 hover:bg-gray-400'}`}
-            >
-              {sandbox ? 'Modo Sandbox' : 'Modo Producción'}
-            </button>
-          )}
+                )}
+              </ul>
+            </nav>
+          </div>
+          {/* Info usuario y acciones */}
+          <div className="flex items-center gap-4">
+            {!isVendedor && user ? (
+              <>
+                <span className="text-base font-medium bg-blue-700 px-3 py-1 rounded-lg shadow">{user.email} <span className="text-xs">({user.type})</span></span>
+                {user && user.type === 'admin' && (
+                  <button onClick={() => setShowUserModal(true)} className="bg-blue-500 px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition-colors">Agregar usuario</button>
+                )}
+              </>
+            ) : null}
+            {!isVendedor && (
+              <button
+                onClick={handleToggleSandbox}
+                className={`px-4 py-2 rounded-lg font-bold shadow transition-colors ${sandbox ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 text-blue-700 hover:bg-gray-400'}`}
+              >
+                {sandbox ? 'Modo Sandbox' : 'Modo Producción'}
+              </button>
+            )}
+            {user && (
+              <button onClick={logout} className="bg-red-500 px-4 py-2 rounded-lg font-bold shadow hover:bg-red-600 transition-colors ml-2">Salir</button>
+            )}
+          </div>
         </div>
       </header>
       <main className="flex-1 p-4 sm:p-6">{children}</main>
