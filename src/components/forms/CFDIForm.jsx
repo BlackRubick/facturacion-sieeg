@@ -200,9 +200,12 @@ const CFDIForm = () => {
         setValue('MetodoPago', metodoPPD.key);
       }
     }
-    // Forma de Pago: seleccionar el primer valor válido si está vacío
+    // Forma de Pago: seleccionar '99' si existe, si no, no asignar nada
     if (catalogs.FormaPago.length > 0 && !watch('FormaPago')) {
-      setValue('FormaPago', catalogs.FormaPago[0].key);
+      const forma99 = catalogs.FormaPago.find(f => f.key === '99');
+      if (forma99) {
+        setValue('FormaPago', forma99.key);
+      }
     }
   }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
 
