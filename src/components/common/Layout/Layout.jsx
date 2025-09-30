@@ -7,7 +7,8 @@ const navItems = [
   { path: '/customers', label: 'Clientes' },
   { path: '/factura-normal', label: 'Factura Normal' },
   { path: '/factura-clientes', label: 'Factura Clientes' },
-  { path: '/cfdi-list', label: 'Listar CFDI' }, 
+  { path: '/cfdi-list', label: 'Listar CFDI' },
+  { path: '/users-manager', label: 'Gestionar Usuarios', admin: true },
 ];
 
 const Layout = ({ children }) => {
@@ -55,14 +56,16 @@ const Layout = ({ children }) => {
         <nav className="w-full sm:w-auto">
           <ul className="flex flex-col sm:flex-row gap-2 sm:gap-6 w-full sm:w-auto">
             {navItems.map(item => (
-              <li key={item.path} className="w-full sm:w-auto">
-                <Link
-                  to={item.path}
-                  className={`block text-center hover:underline px-2 py-1 rounded ${location.pathname === item.path ? 'bg-blue-800' : ''}`}
-                >
-                  {item.label}
-                </Link>
-              </li>
+              (!item.admin || (user && user.type === 'admin')) && (
+                <li key={item.path} className="w-full sm:w-auto">
+                  <Link
+                    to={item.path}
+                    className={`block text-center hover:underline px-2 py-1 rounded ${location.pathname === item.path ? 'bg-blue-800' : ''}`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              )
             ))}
           </ul>
         </nav>
