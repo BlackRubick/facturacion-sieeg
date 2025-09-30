@@ -387,6 +387,7 @@ const CFDIForm = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-lg">
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h2 className="text-2xl font-bold text-gray-800">Generar CFDI </h2>
         <Button type="button" onClick={() => setShowImportPedido(v => !v)} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow">
           importar pedido
         </Button>
