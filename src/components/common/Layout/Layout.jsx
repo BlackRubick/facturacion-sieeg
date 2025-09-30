@@ -59,22 +59,22 @@ const Layout = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col w-full">
       {!(isFacturaClientesPublic || isFacturaClientesVendedor || isFacturaNormalVendedor) && (
-        <header className="bg-blue-700 text-white px-4 py-2 shadow-sm">
-          <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
+        <header className="bg-blue-700 text-white px-2 sm:px-4 py-2 shadow-sm w-full">
+          <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-7xl mx-auto gap-2">
             {/* Logo y título */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
               <span className="text-lg font-bold tracking-wide">SIEEG Facturación</span>
-              <nav>
-                <ul className="flex gap-2 items-center">
+              <nav className="w-full sm:w-auto">
+                <ul className="flex flex-col sm:flex-row gap-2 items-center w-full sm:w-auto">
                   {/* Opciones para admin */}
                   {!isVendedor && navItems.map(item => (
                     (!item.admin || (user && user.type === 'admin')) && (
-                      <li key={item.path}>
+                      <li key={item.path} className="w-full sm:w-auto">
                         <Link
                           to={item.path}
-                          className={`block px-3 py-1 rounded-md font-medium transition-colors duration-150 hover:bg-blue-800 hover:scale-105 shadow-sm text-sm ${location.pathname === item.path ? 'bg-blue-900' : 'bg-blue-700'}`}
+                          className={`block px-3 py-1 rounded-md font-medium transition-colors duration-150 hover:bg-blue-800 hover:scale-105 shadow-sm text-sm w-full sm:w-auto text-center ${location.pathname === item.path ? 'bg-blue-900' : 'bg-blue-700'}`}
                         >
                           {item.label}
                         </Link>
@@ -83,40 +83,40 @@ const Layout = ({ children }) => {
                   ))}
                   {/* Opción para vendedor */}
                   {isVendedor && location.pathname === '/factura-normal' && (
-                    <li>
-                      <span className="block px-3 py-1 rounded-md font-medium bg-blue-900 shadow-sm text-sm">Factura Normal</span>
+                    <li className="w-full sm:w-auto">
+                      <span className="block px-3 py-1 rounded-md font-medium bg-blue-900 shadow-sm text-sm w-full sm:w-auto text-center">Factura Normal</span>
                     </li>
                   )}
                 </ul>
               </nav>
             </div>
             {/* Info usuario y acciones */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
               {!isVendedor && user ? (
                 <>
-                  <span className="text-sm font-medium bg-blue-800 px-2 py-1 rounded shadow">{user.email} <span className="text-xs">({user.type})</span></span>
+                  <span className="text-sm font-medium bg-blue-800 px-2 py-1 rounded shadow w-full sm:w-auto text-center">{user.email} <span className="text-xs">({user.type})</span></span>
                   {user && user.type === 'admin' && (
-                    <button onClick={() => setShowUserModal(true)} className="bg-blue-600 px-3 py-1 rounded font-semibold shadow hover:bg-blue-800 transition-colors text-sm">Agregar usuario</button>
+                    <button onClick={() => setShowUserModal(true)} className="bg-blue-600 px-3 py-1 rounded font-semibold shadow hover:bg-blue-800 transition-colors text-sm w-full sm:w-auto text-center">Agregar usuario</button>
                   )}
                 </>
               ) : null}
               {!isVendedor && (
                 <button
                   onClick={handleToggleSandbox}
-                  className={`px-3 py-1 rounded font-semibold shadow transition-colors text-sm ${sandbox ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-200 text-blue-700 hover:bg-gray-300'}`}
+                  className={`px-3 py-1 rounded font-semibold shadow transition-colors text-sm w-full sm:w-auto text-center ${sandbox ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-200 text-blue-700 hover:bg-gray-300'}`}
                 >
                   {sandbox ? 'Sandbox' : 'Producción'}
                 </button>
               )}
               {user && (
-                <button onClick={logout} className="bg-red-500 px-3 py-1 rounded font-semibold shadow hover:bg-red-600 transition-colors text-sm ml-1">Salir</button>
+                <button onClick={logout} className="bg-red-500 px-3 py-1 rounded font-semibold shadow hover:bg-red-600 transition-colors text-sm w-full sm:w-auto text-center ml-0 sm:ml-1">Salir</button>
               )}
             </div>
           </div>
         </header>
       )}
       <main className="flex-1 p-2 sm:p-4 md:p-6 max-w-7xl mx-auto w-full">{children}</main>
-      <footer className="bg-gray-100 text-center p-2 text-xs text-gray-500 border-t">© 2025 Facturación SIEEG</footer>
+      <footer className="bg-gray-100 text-center p-2 text-xs text-gray-500 border-t w-full">© 2025 Facturación SIEEG</footer>
       {showUserModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <form onSubmit={handleUserSubmit} className="bg-white p-6 rounded shadow-md w-full max-w-xs relative">
