@@ -342,7 +342,7 @@ const CFDIForm = () => {
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-800">Generar CFDI 4.0</h2>
         <Button type="button" onClick={() => setShowImportPedido(v => !v)} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow">
-          ¿Deseas importar un pedido?
+          importar pedido
         </Button>
       </div>
       {showImportPedido && (
@@ -375,7 +375,12 @@ const CFDIForm = () => {
               placeholder="Buscar cliente..."
               isLoading={false}
             />
-            <Button type="button" onClick={() => setShowCustomerModal(true)} className="ml-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-full shadow text-lg" title="Agregar cliente">
+            <Button
+              type="button"
+              onClick={() => setShowCustomerModal(true)}
+              className="ml-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow flex items-center justify-center text-xl w-10 h-10"
+              title="Agregar cliente"
+            >
               +
             </Button>
           </div>
