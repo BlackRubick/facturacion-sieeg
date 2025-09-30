@@ -209,11 +209,11 @@ const CFDIForm = () => {
     }
   }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (dataRaw) => {
     // Calcular la fecha real según la opción seleccionada
     let fechaCFDI = '';
     const hoy = new Date();
-    switch (data.fechaCFDI) {
+    switch (dataRaw.fechaCFDI) {
       case 'hoy':
         fechaCFDI = new Date().toISOString().split('T')[0];
         break;
@@ -232,17 +232,18 @@ const CFDIForm = () => {
       default:
         fechaCFDI = '';
     }
-    setValue('dueDate', fechaCFDI); // Actualiza el campo antes de validar
+    // Construir los datos corregidos para validar y enviar
+    const data = { ...dataRaw, dueDate: fechaCFDI };
     // Forzar sincronización de campos obligatorios usando watch
-    const tipoDocumento = watch('TipoDocumento') || 'factura';
-    const moneda = watch('Moneda') || 'MXN';
-    const formaPago = watch('FormaPago') || '';
-    const metodoPago = watch('MetodoPago') || '';
-    const serieId = Number(watch('Serie')) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
+    const tipoDocumento = data.TipoDocumento || 'factura';
+    const moneda = data.Moneda || 'MXN';
+    const formaPago = data.FormaPago || '';
+    const metodoPago = data.MetodoPago || '';
+    const serieId = Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
     // Usar el valor seleccionado por el usuario para UsoCFDI
-    let usoCFDI = watch('UsoCFDI') || '';
+    let usoCFDI = data.UsoCFDI || '';
     if (!usoCFDI && Array.isArray(catalogs.UsoCFDI) && catalogs.UsoCFDI.length > 0) {
-      usoCFDI = catalogs.UusoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
+      usoCFDI = catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
       setValue('UsoCFDI', usoCFDI);
     }
     // Mostrar en consola los valores antes de enviar
@@ -251,7 +252,7 @@ const CFDIForm = () => {
     const items = data.items.map(item => ({
       ClaveProdServ: String(item.ClaveProdServ || '').trim(),
       NoIdentificacion: String(item.NoIdentificacion || '').trim(),
-      Cantidad: item.Cantidad ? Number(item.Cantidad) : 1, // <-- Usar Cantidad
+      Cantidad: item.Cantidad ? Number(item.Cantidad) : 1,
       ClaveUnidad: String(item.ClaveUnidad || '').trim(),
       Unidad: String(item.Unidad || 'Pieza').trim(),
       ValorUnitario: item.ValorUnitario ? Number(item.ValorUnitario) : 0,
