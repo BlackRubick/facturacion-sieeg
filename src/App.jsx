@@ -42,7 +42,7 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/factura-normal" element={
-              <ProtectedRoute allowedTypes={["admin"]}>
+              <ProtectedRoute allowedTypes={["admin", "vendedor"]}>
                 <FacturaNormal />
               </ProtectedRoute>
             } />
