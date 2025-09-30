@@ -209,6 +209,31 @@ const CFDIForm = () => {
     }
   }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
 
+  useEffect(() => {
+    let fechaCFDI = '';
+    const hoy = new Date();
+    switch (watch('fechaCFDI')) {
+      case 'hoy':
+        fechaCFDI = new Date().toISOString().split('T')[0];
+        break;
+      case 'ayer':
+        hoy.setDate(hoy.getDate() - 1);
+        fechaCFDI = hoy.toISOString().split('T')[0];
+        break;
+      case 'dosdias':
+        hoy.setDate(hoy.getDate() - 2);
+        fechaCFDI = hoy.toISOString().split('T')[0];
+        break;
+      case 'tresdias':
+        hoy.setDate(hoy.getDate() - 3);
+        fechaCFDI = hoy.toISOString().split('T')[0];
+        break;
+      default:
+        fechaCFDI = '';
+    }
+    setValue('dueDate', fechaCFDI);
+  }, [watch('fechaCFDI')]);
+
   const onSubmit = async (dataRaw) => {
     // Calcular la fecha real según la opción seleccionada
     let fechaCFDI = '';
