@@ -83,28 +83,28 @@ const ListCFDI = () => {
         <input name="per_page" type="number" min={1} max={100} placeholder="Por página" value={filters.per_page} onChange={handleChange} className="border rounded p-2 w-24" />
         <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">Buscar</Button>
       </form>
-      <table className="w-full border border-blue-100 rounded-xl overflow-hidden mb-6 text-sm">
+      <table className="w-full border border-blue-100 rounded-xl overflow-hidden mb-6 text-sm text-center">
         <thead>
           <tr className="bg-blue-50 text-blue-700">
-            <th className="p-2 font-semibold">Folio</th>
-            <th className="p-2 font-semibold">RFC</th>
-            <th className="p-2 font-semibold">Nombre</th>
-            <th className="p-2 font-semibold">Fecha</th>
-            <th className="p-2 font-semibold">Total</th>
-            <th className="p-2 font-semibold">Estatus</th>
-            <th className="p-2 font-semibold">Acciones</th>
+            <th className="p-2 font-semibold text-center">Folio</th>
+            <th className="p-2 font-semibold text-center">RFC</th>
+            <th className="p-2 font-semibold text-center">Nombre</th>
+            <th className="p-2 font-semibold text-center">Fecha</th>
+            <th className="p-2 font-semibold text-center">Total</th>
+            <th className="p-2 font-semibold text-center">Estatus</th>
+            <th className="p-2 font-semibold text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {cfdiList.map(c => (
-            <tr key={c.UID} className="border-b border-blue-50 hover:bg-blue-50">
-              <td className="p-2">{c.Folio}</td>
-              <td className="p-2">{c.Receptor || '-'}</td>
-              <td className="p-2">{c.RazonSocialReceptor || '-'}</td>
-              <td className="p-2">{c.FechaTimbrado || '-'}</td>
-              <td className="p-2">${c.Total}</td>
-              <td className="p-2">{c.Status}</td>
-              <td className="p-2">
+            <tr key={c.UID} className="border-b border-blue-50 hover:bg-blue-50 text-center">
+              <td className="p-2 text-center">{c.Folio}</td>
+              <td className="p-2 text-center">{c.Receptor || '-'}</td>
+              <td className="p-2 text-center">{c.RazonSocialReceptor || '-'}</td>
+              <td className="p-2 text-center">{c.FechaTimbrado || '-'}</td>
+              <td className="p-2 text-center">${c.Total}</td>
+              <td className="p-2 text-center">{c.Status}</td>
+              <td className="p-2 text-center">
                 <button onClick={() => downloadCFDI(c.UID, 'pdf')} className="bg-blue-600 text-white px-2 py-1 rounded text-xs mr-2 hover:bg-blue-800">PDF</button>
                 <button onClick={() => downloadCFDI(c.UID, 'xml')} className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-800">XML</button>
               </td>
