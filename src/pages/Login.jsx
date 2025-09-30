@@ -7,11 +7,15 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    const success = login(email, password);
+    setError('');
+    setLoading(true);
+    const success = await login(email, password);
+    setLoading(false);
     if (success) {
       navigate('/');
     } else {
@@ -39,8 +43,11 @@ const Login = () => {
           className="w-full mb-2 p-2 border rounded"
           required
         />
+        {loading && <div className="text-blue-500 mb-2">Verificando...</div>}
         {error && <div className="text-red-500 mb-2">{error}</div>}
-        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">Entrar</button>
+        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">
+          {loading ? 'Entrando...' : 'Entrar'}
+        </button>
       </form>
     </div>
   );

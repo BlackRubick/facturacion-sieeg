@@ -44,12 +44,12 @@ export const AuthProvider = ({ children }) => {
     // await fetch('/api/logout', { method: 'POST' });
   };
 
-  const register = async (email, password, type) => {
+  const register = async (email, password, type, name) => {
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, type })
+        body: JSON.stringify({ email, password, type, name })
       });
       if (!res.ok) return false;
       return true;
