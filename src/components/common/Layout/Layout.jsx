@@ -50,6 +50,11 @@ const Layout = ({ children }) => {
     return <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">{children}</div>;
   }
 
+  if (isVendedor && location.pathname !== '/factura-normal') {
+    window.location.replace('/factura-normal');
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <header className="bg-blue-600 text-white p-4 font-bold text-lg flex flex-col sm:flex-row items-center justify-between">
@@ -68,14 +73,9 @@ const Layout = ({ children }) => {
                 </li>
               )
             ))}
-            {isVendedor && location.pathname !== '/factura-normal' && (
+            {isVendedor && location.pathname === '/factura-normal' && (
               <li className="w-full sm:w-auto">
-                <Link
-                  to="/factura-normal"
-                  className={`block text-center hover:underline px-2 py-1 rounded`}
-                >
-                  Factura Normal
-                </Link>
+                <span className="block text-center px-2 py-1 rounded bg-blue-800">Factura Normal</span>
               </li>
             )}
           </ul>
