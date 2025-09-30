@@ -154,7 +154,11 @@ const CustomersManager = () => {
               <tr key={c.UID} className="border-b border-blue-50 hover:bg-blue-50">
                 <td className="p-2">{c.RFC}</td>
                 <td className="p-2">{c.RazonSocial}</td>
-                <td className="p-2">{c.Email}</td>
+                <td className="p-2">
+                  {[c.Email, c.Contacto?.Email, c.Contacto?.Email2, c.Contacto?.Email3]
+                    .filter(Boolean)
+                    .join(', ')}
+                </td>
                 <td className="p-2">
                   <button onClick={() => handleOpenModal(c)} className="bg-blue-600 text-white px-2 py-1 rounded text-xs mr-2 hover:bg-blue-800">Editar</button>
                 </td>
