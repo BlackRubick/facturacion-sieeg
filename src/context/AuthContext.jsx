@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
 
@@ -6,6 +6,16 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Verifica si hay usuario en localStorage al iniciar
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, []);
 
   // Login usando API
   const login = async (email, password) => {
@@ -18,7 +28,8 @@ export const AuthProvider = ({ children }) => {
       });
       if (!res.ok) return false;
       const data = await res.json();
-      setUser(data.user); 
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
       return true;
     } catch (err) {
       return false;
@@ -28,7 +39,9 @@ export const AuthProvider = ({ children }) => {
   // Logout usando API si lo necesitas
   const logout = async () => {
     setUser(null);
-
+    localStorage.removeItem('user');
+    // Si tu API requiere logout, descomenta:
+    // await fetch('/api/logout', { method: 'POST' });
   };
 
   const register = async (email, password, type) => {
@@ -46,7 +59,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
       {children}
     </AuthContext.Provider>
   );
