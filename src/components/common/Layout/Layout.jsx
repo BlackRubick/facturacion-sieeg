@@ -46,19 +46,20 @@ const Layout = ({ children }) => {
   const isVendedor = user && user.type === 'vendedor';
   const hideLayout = location.pathname === '/login' || location.pathname === '/register';
   const isFacturaClientesPublic = location.pathname === '/factura-clientes' && !user;
+  const isFacturaClientesVendedor = location.pathname === '/factura-clientes' && user && user.type === 'vendedor';
 
   if (hideLayout) {
     return <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">{children}</div>;
   }
 
-  if (isVendedor && location.pathname !== '/factura-normal') {
+  if (isVendedor && location.pathname !== '/factura-normal' && location.pathname !== '/factura-clientes') {
     window.location.replace('/factura-normal');
     return null;
   }
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {!isFacturaClientesPublic && (
+      {!(isFacturaClientesPublic || isFacturaClientesVendedor) && (
         <header className="bg-blue-600 text-white px-6 py-4 shadow-md">
           <div className="flex items-center justify-between w-full">
             {/* Logo y título */}
