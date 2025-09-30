@@ -540,13 +540,25 @@ const CFDIForm = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Fecha de CFDI *</label>
-            <select {...register('fechaCFDI', { required: true })} className="w-full border rounded-lg p-2">
-              <option value="hoy">Timbrar con fecha actual</option>
-              <option value="ayer">Timbrar con fecha de ayer</option>
-              <option value="dosdias">Timbrar con fecha de hace dos días</option>
-              <option value="tresdias">Timbrar con fecha de hace tres días</option>
-            </select>
-            {!watch('fechaCFDI') && <span className="text-red-500 text-xs">Debes seleccionar una fecha para el CFDI.</span>}
+            {(() => {
+              const hoy = new Date();
+              const maxDate = hoy.toISOString().split('T')[0];
+              const minDateObj = new Date();
+              minDateObj.setDate(hoy.getDate() - 3);
+              const minDate = minDateObj.toISOString().split('T')[0];
+              return (
+                <input
+                  type="date"
+                  {...register('dueDate', { required: true })}
+                  min={minDate}
+                  max={maxDate}
+                  value={watch('dueDate') || maxDate}
+                  onChange={e => setValue('dueDate', e.target.value)}
+                  className="w-full border rounded-lg p-2"
+                />
+              );
+            })()}
+            {!watch('dueDate') && <span className="text-red-500 text-xs">Debes seleccionar una fecha para el CFDI.</span>}
           </div>
           <input type="hidden" {...register('dueDate')} value={watch('dueDate') || ''} />
         </div>
