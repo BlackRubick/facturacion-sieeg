@@ -210,24 +210,12 @@ const CFDIForm = () => {
   }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
 
   const onSubmit = async (data) => {
-    // Forzar sincronización de campos obligatorios usando watch
-    const tipoDocumento = watch('TipoDocumento') || 'factura';
-    const moneda = watch('Moneda') || 'MXN';
-    const formaPago = watch('FormaPago') || '';
-    const metodoPago = watch('MetodoPago') || '';
-    const serieId = Number(watch('Serie')) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
-    // Usar el valor seleccionado por el usuario para UsoCFDI
-    let usoCFDI = watch('UsoCFDI') || '';
-    if (!usoCFDI && Array.isArray(catalogs.UsoCFDI) && catalogs.UsoCFDI.length > 0) {
-      usoCFDI = catalogs.UusoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
-      setValue('UsoCFDI', usoCFDI);
-    }
     // Calcular la fecha real según la opción seleccionada
     let fechaCFDI = '';
     const hoy = new Date();
-    switch (data.dueDate) {
+    switch (data.fechaCFDI) {
       case 'hoy':
-        fechaCFDI = hoy.toISOString().split('T')[0];
+        fechaCFDI = new Date().toISOString().split('T')[0];
         break;
       case 'ayer':
         hoy.setDate(hoy.getDate() - 1);
@@ -243,6 +231,19 @@ const CFDIForm = () => {
         break;
       default:
         fechaCFDI = '';
+    }
+    setValue('dueDate', fechaCFDI); // Actualiza el campo antes de validar
+    // Forzar sincronización de campos obligatorios usando watch
+    const tipoDocumento = watch('TipoDocumento') || 'factura';
+    const moneda = watch('Moneda') || 'MXN';
+    const formaPago = watch('FormaPago') || '';
+    const metodoPago = watch('MetodoPago') || '';
+    const serieId = Number(watch('Serie')) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
+    // Usar el valor seleccionado por el usuario para UsoCFDI
+    let usoCFDI = watch('UsoCFDI') || '';
+    if (!usoCFDI && Array.isArray(catalogs.UsoCFDI) && catalogs.UsoCFDI.length > 0) {
+      usoCFDI = catalogs.UusoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
+      setValue('UsoCFDI', usoCFDI);
     }
     // Mostrar en consola los valores antes de enviar
     console.log('Valores del formulario (forzados):', data);
@@ -538,14 +539,15 @@ const CFDIForm = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Fecha de CFDI *</label>
-            <select {...register('dueDate', { required: true })} className="w-full border rounded-lg p-2">
+            <select {...register('fechaCFDI', { required: true })} className="w-full border rounded-lg p-2">
               <option value="hoy">Timbrar con fecha actual</option>
               <option value="ayer">Timbrar con fecha de ayer</option>
               <option value="dosdias">Timbrar con fecha de hace dos días</option>
               <option value="tresdias">Timbrar con fecha de hace tres días</option>
             </select>
-            {!watch('dueDate') && <span className="text-red-500 text-xs">Debes seleccionar una fecha para el CFDI.</span>}
+            {!watch('fechaCFDI') && <span className="text-red-500 text-xs">Debes seleccionar una fecha para el CFDI.</span>}
           </div>
+          <input type="hidden" {...register('dueDate')} value={watch('dueDate') || ''} />
         </div>
         {isGlobal && (
           <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
