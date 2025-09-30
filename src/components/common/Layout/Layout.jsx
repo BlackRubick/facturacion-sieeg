@@ -68,11 +68,11 @@ const Layout = ({ children }) => {
                 </li>
               )
             ))}
-            {isVendedor && (
+            {isVendedor && location.pathname !== '/factura-normal' && (
               <li className="w-full sm:w-auto">
                 <Link
                   to="/factura-normal"
-                  className={`block text-center hover:underline px-2 py-1 rounded ${location.pathname === '/factura-normal' ? 'bg-blue-800' : ''}`}
+                  className={`block text-center hover:underline px-2 py-1 rounded`}
                 >
                   Factura Normal
                 </Link>
@@ -81,10 +81,12 @@ const Layout = ({ children }) => {
           </ul>
         </nav>
         <div className="flex items-center">
+          {user && (
+            <button onClick={logout} className="bg-red-500 px-3 py-1 rounded">Salir</button>
+          )}
           {!isVendedor && user ? (
             <>
               <span className="mr-4">{user.email} ({user.type})</span>
-              <button onClick={logout} className="bg-red-500 px-3 py-1 rounded">Salir</button>
               {user && user.type === 'admin' && (
                 <button onClick={() => setShowUserModal(true)} className="bg-blue-500 px-3 py-1 rounded ml-4">Agregar usuario</button>
               )}
