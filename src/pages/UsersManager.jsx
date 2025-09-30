@@ -10,7 +10,13 @@ const UsersManager = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       const data = await getUsers();
-      setUsers(data);
+      if (Array.isArray(data)) {
+        setUsers(data);
+      } else if (data && Array.isArray(data.users)) {
+        setUsers(data.users);
+      } else {
+        setUsers([]);
+      }
     };
     fetchUsers();
   }, [getUsers]);
