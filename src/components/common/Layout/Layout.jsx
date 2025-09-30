@@ -59,22 +59,22 @@ const Layout = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {!(isFacturaClientesPublic || isFacturaClientesVendedor || isFacturaNormalVendedor) && (
-        <header className="bg-blue-600 text-white px-6 py-4 shadow-md">
-          <div className="flex items-center justify-between w-full">
+        <header className="bg-blue-700 text-white px-4 py-2 shadow-sm">
+          <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
             {/* Logo y título */}
-            <div className="flex items-center gap-6">
-              <span className="text-xl font-extrabold tracking-wide">Sistema de Facturación</span>
+            <div className="flex items-center gap-4">
+              <span className="text-lg font-bold tracking-wide">SIEEG Facturación</span>
               <nav>
-                <ul className="flex gap-6 items-center">
+                <ul className="flex gap-2 items-center">
                   {/* Opciones para admin */}
                   {!isVendedor && navItems.map(item => (
                     (!item.admin || (user && user.type === 'admin')) && (
                       <li key={item.path}>
                         <Link
                           to={item.path}
-                          className={`block px-4 py-2 rounded-lg font-semibold transition-colors duration-150 hover:bg-blue-700 hover:scale-105 shadow-sm ${location.pathname === item.path ? 'bg-blue-800' : 'bg-blue-600'}`}
+                          className={`block px-3 py-1 rounded-md font-medium transition-colors duration-150 hover:bg-blue-800 hover:scale-105 shadow-sm text-sm ${location.pathname === item.path ? 'bg-blue-900' : 'bg-blue-700'}`}
                         >
                           {item.label}
                         </Link>
@@ -84,51 +84,51 @@ const Layout = ({ children }) => {
                   {/* Opción para vendedor */}
                   {isVendedor && location.pathname === '/factura-normal' && (
                     <li>
-                      <span className="block px-4 py-2 rounded-lg font-semibold bg-blue-800 shadow-sm">Factura Normal</span>
+                      <span className="block px-3 py-1 rounded-md font-medium bg-blue-900 shadow-sm text-sm">Factura Normal</span>
                     </li>
                   )}
                 </ul>
               </nav>
             </div>
             {/* Info usuario y acciones */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               {!isVendedor && user ? (
                 <>
-                  <span className="text-base font-medium bg-blue-700 px-3 py-1 rounded-lg shadow">{user.email} <span className="text-xs">({user.type})</span></span>
+                  <span className="text-sm font-medium bg-blue-800 px-2 py-1 rounded shadow">{user.email} <span className="text-xs">({user.type})</span></span>
                   {user && user.type === 'admin' && (
-                    <button onClick={() => setShowUserModal(true)} className="bg-blue-500 px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition-colors">Agregar usuario</button>
+                    <button onClick={() => setShowUserModal(true)} className="bg-blue-600 px-3 py-1 rounded font-semibold shadow hover:bg-blue-800 transition-colors text-sm">Agregar usuario</button>
                   )}
                 </>
               ) : null}
               {!isVendedor && (
                 <button
                   onClick={handleToggleSandbox}
-                  className={`px-4 py-2 rounded-lg font-bold shadow transition-colors ${sandbox ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 text-blue-700 hover:bg-gray-400'}`}
+                  className={`px-3 py-1 rounded font-semibold shadow transition-colors text-sm ${sandbox ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-200 text-blue-700 hover:bg-gray-300'}`}
                 >
-                  {sandbox ? 'Modo Sandbox' : 'Modo Producción'}
+                  {sandbox ? 'Sandbox' : 'Producción'}
                 </button>
               )}
               {user && (
-                <button onClick={logout} className="bg-red-500 px-4 py-2 rounded-lg font-bold shadow hover:bg-red-600 transition-colors ml-2">Salir</button>
+                <button onClick={logout} className="bg-red-500 px-3 py-1 rounded font-semibold shadow hover:bg-red-600 transition-colors text-sm ml-1">Salir</button>
               )}
             </div>
           </div>
         </header>
       )}
-      <main className="flex-1 p-4 sm:p-6">{children}</main>
-      <footer className="bg-gray-200 text-center p-2 text-xs text-gray-600">© 2025 Facturación SIEEG</footer>
+      <main className="flex-1 p-2 sm:p-4 md:p-6 max-w-7xl mx-auto w-full">{children}</main>
+      <footer className="bg-gray-100 text-center p-2 text-xs text-gray-500 border-t">© 2025 Facturación SIEEG</footer>
       {showUserModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <form onSubmit={handleUserSubmit} className="bg-white p-6 rounded shadow-md w-80 relative">
+          <form onSubmit={handleUserSubmit} className="bg-white p-6 rounded shadow-md w-full max-w-xs relative">
             <button type="button" onClick={() => setShowUserModal(false)} className="absolute top-2 right-2 text-gray-500">✕</button>
-            <h2 className="text-xl mb-4">Agregar usuario</h2>
+            <h2 className="text-lg mb-4 font-semibold text-blue-700">Agregar usuario</h2>
             <input
               type="text"
               name="name"
               placeholder="Nombre"
               value={newUser.name}
               onChange={handleUserInput}
-              className="w-full mb-2 p-2 border rounded"
+              className="w-full mb-2 p-2 border rounded text-sm"
               required
             />
             <input
@@ -137,7 +137,7 @@ const Layout = ({ children }) => {
               placeholder="Correo"
               value={newUser.email}
               onChange={handleUserInput}
-              className="w-full mb-2 p-2 border rounded"
+              className="w-full mb-2 p-2 border rounded text-sm"
               required
             />
             <input
@@ -146,20 +146,20 @@ const Layout = ({ children }) => {
               placeholder="Contraseña"
               value={newUser.password}
               onChange={handleUserInput}
-              className="w-full mb-2 p-2 border rounded"
+              className="w-full mb-2 p-2 border rounded text-sm"
               required
             />
             <select
               name="type"
               value={newUser.type}
               onChange={handleUserInput}
-              className="w-full mb-2 p-2 border rounded"
+              className="w-full mb-2 p-2 border rounded text-sm"
             >
               <option value="admin">Administrador</option>
               <option value="vendedor">Vendedor</option>
             </select>
-            {userMsg && <div className="mb-2 text-green-600">{userMsg}</div>}
-            <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">Agregar</button>
+            {userMsg && <div className="mb-2 text-green-600 text-sm">{userMsg}</div>}
+            <button type="submit" className="w-full bg-blue-700 text-white p-2 rounded font-semibold text-sm">Agregar</button>
           </form>
         </div>
       )}

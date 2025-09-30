@@ -27,15 +27,15 @@ const UserRegister = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-80">
-        <h2 className="text-xl mb-4">Crear usuario</h2>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-2">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg border border-blue-100 p-6 sm:p-8 w-full max-w-sm">
+        <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">Crear usuario</h2>
         <input
           type="text"
           placeholder="Nombre"
           value={name}
           onChange={e => setName(e.target.value)}
-          className="w-full mb-2 p-2 border rounded"
+          className="w-full mb-3 p-2 border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
         <input
@@ -43,7 +43,7 @@ const UserRegister = () => {
           placeholder="Correo"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="w-full mb-2 p-2 border rounded"
+          className="w-full mb-3 p-2 border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
         <input
@@ -51,20 +51,20 @@ const UserRegister = () => {
           placeholder="Contraseña"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="w-full mb-2 p-2 border rounded"
+          className="w-full mb-3 p-2 border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
         <select
           value={type}
           onChange={e => setType(e.target.value)}
-          className="w-full mb-2 p-2 border rounded"
+          className="w-full mb-3 p-2 border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="admin">Administrador</option>
           <option value="vendedor">Vendedor</option>
         </select>
-        {error && <div className="text-red-500 mb-2">{error}</div>}
-        {success && <div className="text-green-500 mb-2">{success}</div>}
-        <button type="submit" className="w-full bg-green-600 text-white p-2 rounded">Crear</button>
+        {error && <div className="text-red-500 mb-2 text-sm">{error}</div>}
+        {success && <div className="text-green-600 mb-2 text-sm">{success}</div>}
+        <button type="submit" className="w-full bg-blue-700 text-white p-2 rounded font-semibold text-sm shadow hover:bg-blue-800 transition-colors">Registrar</button>
       </form>
     </div>
   );

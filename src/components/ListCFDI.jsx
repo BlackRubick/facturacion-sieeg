@@ -73,9 +73,9 @@ const ListCFDI = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 bg-white rounded-2xl shadow-lg mt-10">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Listar CFDI's</h2>
-      <form className="flex flex-wrap gap-4 mb-6" onSubmit={handleSearch}>
+    <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-6 sm:p-8">
+      <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">CFDI emitidos</h2>
+      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 mb-4 items-center justify-center">
         <input name="month" type="text" maxLength={2} placeholder="Mes (01-12)" value={filters.month} onChange={handleChange} className="border rounded p-2 w-24" />
         <input name="year" type="text" maxLength={4} placeholder="Año" value={filters.year} onChange={handleChange} className="border rounded p-2 w-24" />
         <input name="rfc" type="text" placeholder="RFC" value={filters.rfc} onChange={handleChange} className="border rounded p-2 w-40" />
@@ -83,42 +83,35 @@ const ListCFDI = () => {
         <input name="per_page" type="number" min={1} max={100} placeholder="Por página" value={filters.per_page} onChange={handleChange} className="border rounded p-2 w-24" />
         <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">Buscar</Button>
       </form>
-      {loading && <div className="text-gray-500">Cargando CFDI's...</div>}
-      {error && <div className="text-red-500 mb-4">Error: {error}</div>}
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border rounded-lg">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-3 py-2 border">Fecha Timbrado</th>
-              <th className="px-3 py-2 border">Receptor</th>
-              <th className="px-3 py-2 border">Razón Social</th>
-              <th className="px-3 py-2 border">Total</th>
-              <th className="px-3 py-2 border">Estatus</th>
-              <th className="px-3 py-2 border">Acciones</th>
+      <table className="w-full border border-blue-100 rounded-xl overflow-hidden mb-6 text-sm">
+        <thead>
+          <tr className="bg-blue-50 text-blue-700">
+            <th className="p-2 font-semibold">Folio</th>
+            <th className="p-2 font-semibold">RFC</th>
+            <th className="p-2 font-semibold">Fecha</th>
+            <th className="p-2 font-semibold">Total</th>
+            <th className="p-2 font-semibold">Estatus</th>
+            <th className="p-2 font-semibold">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cfdiList.map(c => (
+            <tr key={c.UID} className="border-b border-blue-50 hover:bg-blue-50">
+              <td className="p-2">{c.Folio}</td>
+              <td className="p-2">{c.RFC}</td>
+              <td className="p-2">{c.Fecha}</td>
+              <td className="p-2">${c.Total}</td>
+              <td className="p-2">{c.Status}</td>
+              <td className="p-2">
+                <button onClick={() => downloadCFDI(c.UID, 'pdf')} className="bg-blue-600 text-white px-2 py-1 rounded text-xs mr-2 hover:bg-blue-800">PDF</button>
+                <button onClick={() => downloadCFDI(c.UID, 'xml')} className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-800">XML</button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {cfdiList.length === 0 && !loading ? (
-              <tr><td colSpan={6} className="text-center py-4 text-gray-500">No hay CFDI's para los filtros seleccionados.</td></tr>
-            ) : (
-              cfdiList.map((cfdi, idx) => (
-                <tr key={cfdi.UUID + '-' + idx} className="border-b">
-                  <td className="px-3 py-2 border">{cfdi.FechaTimbrado}</td>
-                  <td className="px-3 py-2 border font-mono text-xs">{cfdi.Receptor}</td>
-                  <td className="px-3 py-2 border">{cfdi.RazonSocialReceptor}</td>
-                  <td className="px-3 py-2 border">${cfdi.Total}</td>
-                  <td className="px-3 py-2 border">{cfdi.Status}</td>
-                  <td className="px-3 py-2 border">
-                    {/*<Button type="button" onClick={() => window.open(`/cfdi/${cfdi.UID}`, '_blank')} className="bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded text-xs mr-2">Ver</Button>*/}
-                    <Button type="button" onClick={() => downloadCFDI(cfdi.UID, 'pdf')} className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs mr-2">PDF</Button>
-                    <Button type="button" onClick={() => downloadCFDI(cfdi.UID, 'xml')} className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">XML</Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
+      {loading && <div className="text-blue-500 text-center">Cargando...</div>}
+      {error && <div className="text-red-500 text-center">{error}</div>}
     </div>
   );
 };

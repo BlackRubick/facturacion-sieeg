@@ -136,51 +136,40 @@ const CustomersManager = () => {
   };
 
   return (
-    <div className="bg-white p-4 sm:p-8 rounded-xl shadow-lg max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-2xl font-extrabold text-blue-700 text-center sm:text-left">Gestión de Clientes</h2>
-        <Button onClick={() => handleOpenModal()} className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded shadow hover:scale-105 transition-transform w-full sm:w-auto">+ Agregar Cliente</Button>
-      </div>
-      {loading ? (
-        <div className="flex justify-center items-center h-40">
-          <span className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></span>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border rounded-xl shadow-sm bg-gray-50 text-xs sm:text-sm">
-            <thead>
-              <tr className="bg-blue-100 text-blue-800">
-                <th className="py-2 px-4">Razón Social</th>
-                <th className="py-2 px-4">RFC</th>
-                <th className="py-2 px-4">Email</th>
-                <th className="py-2 px-4">Teléfono</th>
-                <th className="py-2 px-4">Acciones</th>
+    <div className="max-w-5xl mx-auto px-2 sm:px-4 lg:px-8 py-8">
+      <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-6 sm:p-8">
+        <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">Gestión de clientes</h2>
+        {/* Tabla de clientes */}
+        <table className="w-full border border-blue-100 rounded-xl overflow-hidden mb-6 text-sm">
+          <thead>
+            <tr className="bg-blue-50 text-blue-700">
+              <th className="p-2 font-semibold">RFC</th>
+              <th className="p-2 font-semibold">Razón Social</th>
+              <th className="p-2 font-semibold">Correo</th>
+              <th className="p-2 font-semibold">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {customers.map(c => (
+              <tr key={c.UID} className="border-b border-blue-50 hover:bg-blue-50">
+                <td className="p-2">{c.RFC}</td>
+                <td className="p-2">{c.RazonSocial}</td>
+                <td className="p-2">{c.Email}</td>
+                <td className="p-2">
+                  <button onClick={() => handleOpenModal(c)} className="bg-blue-600 text-white px-2 py-1 rounded text-xs mr-2 hover:bg-blue-800">Editar</button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {customers.map(c => (
-                <tr key={c.UID} className="border-b hover:bg-blue-50 transition-colors">
-                  <td className="py-2 px-4 font-semibold">{c.RazonSocial}</td>
-                  <td className="py-2 px-4">{c.RFC}</td>
-                  <td className="py-2 px-4">{c.Contacto?.Email}</td>
-                  <td className="py-2 px-4">{c.Contacto?.Telefono}</td>
-                  <td className="py-2 px-4 flex gap-2">
-                    <Button onClick={() => handleOpenModal(c)} className="bg-yellow-400 text-white px-3 py-1 rounded shadow hover:bg-yellow-500">Editar</Button>
-                    <Button onClick={() => handleDelete(c.UID)} className="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600">Eliminar</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-xl w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl relative overflow-y-auto max-h-[90vh]">
-            <button onClick={handleCloseModal} className="sticky top-4 right-4 float-right text-gray-500 hover:text-red-500 text-xl">×</button>
-            <h3 className="text-xl font-bold mb-6 text-blue-700 text-center">{editMode ? 'Editar Cliente' : 'Agregar Cliente'}</h3>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            ))}
+          </tbody>
+        </table>
+        <button onClick={() => handleOpenModal()} className="bg-blue-700 text-white px-4 py-2 rounded font-semibold text-sm shadow hover:bg-blue-800 transition-colors mb-4">Agregar cliente</button>
+        {/* Modal de edición/agregado */}
+        {modalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <form className="bg-white rounded-xl shadow-lg border border-blue-100 p-6 w-full max-w-lg relative">
+              <button type="button" onClick={() => setModalOpen(false)} className="absolute top-2 right-2 text-gray-500">✕</button>
+              <h3 className="text-xl font-bold mb-4 text-blue-700 text-center">{editMode ? 'Editar cliente' : 'Agregar cliente'}</h3>
+              <div className="grid grid-cols-1 gap-4">
                 <Input label="RFC" name="rfc" value={form.rfc} onChange={handleChange} required />
                 <Input label="Razón Social" name="razons" value={form.razons} onChange={handleChange} required />
                 <Input label="Código Postal" name="codpos" value={form.codpos} onChange={handleChange} required type="number" />
@@ -209,8 +198,8 @@ const CustomersManager = () => {
               </div>
             </form>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
