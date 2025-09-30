@@ -276,7 +276,7 @@ const CFDIGlobalForm = () => {
             </select>
           </div>
         )}
-        {clienteData && clienteData.FormaPago && (
+        {clienteData && clienteData.FormaPago !== '' && (
           <CorreoValidador clienteCorreo={clienteData.Contacto?.Email} clienteData={clienteData} fields={fields} setEmittedUID={setEmittedUID} setCfdiMessage={setCfdiMessage} />
         )}
         {/* Solo mostrar importar pedido si el correo está validado */}
