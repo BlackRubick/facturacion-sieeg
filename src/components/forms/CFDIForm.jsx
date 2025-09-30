@@ -546,13 +546,16 @@ const CFDIForm = () => {
               const minDateObj = new Date();
               minDateObj.setDate(hoy.getDate() - 3);
               const minDate = minDateObj.toISOString().split('T')[0];
+              // Si no hay valor, poner el día actual
+              const value = watch('dueDate') || maxDate;
+              if (!watch('dueDate')) setValue('dueDate', maxDate);
               return (
                 <input
                   type="date"
                   {...register('dueDate', { required: true })}
                   min={minDate}
                   max={maxDate}
-                  value={watch('dueDate') || maxDate}
+                  value={value}
                   onChange={e => setValue('dueDate', e.target.value)}
                   className="w-full border rounded-lg p-2"
                 />
@@ -560,7 +563,6 @@ const CFDIForm = () => {
             })()}
             {!watch('dueDate') && <span className="text-red-500 text-xs">Debes seleccionar una fecha para el CFDI.</span>}
           </div>
-          <input type="hidden" {...register('dueDate')} value={watch('dueDate') || ''} />
         </div>
         {isGlobal && (
           <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
