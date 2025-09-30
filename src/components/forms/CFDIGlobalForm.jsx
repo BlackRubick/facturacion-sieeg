@@ -3,6 +3,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import FacturaAPIService from '../../services/facturaApi';
 import Button from '../common/Button/Button';
 import Input from '../common/Input/Input';
+import CustomersManager from '../../pages/Customers/CustomersManager';
 
 const defaultConcepto = {
   ClaveProdServ: '',
@@ -43,6 +44,7 @@ const CFDIGlobalForm = () => {
   const [emittedUID, setEmittedUID] = useState(null);
   const [cfdiMessage, setCfdiMessage] = useState("");
   const [validadoCorreo, setValidadoCorreo] = useState(false);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
 
   const {
     register,
@@ -236,6 +238,8 @@ const CFDIGlobalForm = () => {
         setValue('customerId', data.Data.UID || '');
       } else {
         setClienteError('No se encontró el cliente para ese RFC');
+        alert('El RFC no está dado de alta. Por favor registre el cliente.');
+        setShowCustomerModal(true);
       }
     } catch (err) {
       setClienteError('Error consultando cliente: ' + (err.response?.data?.message || err.message));
@@ -243,170 +247,175 @@ const CFDIGlobalForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto p-6 bg-white rounded shadow">
-      <h2 className="text-xl font-bold mb-4">DATOS DE FACTURA</h2>
-      <div className="grid grid-cols-1 gap-6">
-        <div>
-          <Input label="RFC*" {...register('RFC', { required: true })}
-            onBlur={e => handleBuscarCliente(e.target.value)}
-          />
-        </div>
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto p-6 bg-white rounded shadow">
+        <h2 className="text-xl font-bold mb-4">DATOS DE FACTURA</h2>
+        <div className="grid grid-cols-1 gap-6">
+          <div>
+            <Input label="RFC*" {...register('RFC', { required: true })}
+              onBlur={e => handleBuscarCliente(e.target.value)}
+            />
+          </div>
 
-        {clienteError && (
-          <div className="p-2 bg-red-100 text-red-700 rounded mt-2">{clienteError}</div>
-        )}
-        {clienteData && (
-          <div className="p-4 bg-green-100 border border-green-300 rounded-lg mt-2 flex items-center gap-3 shadow-sm">
-            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-            <span className="font-semibold text-green-700 text-base">Cliente encontrado</span>
-          </div>
-        )}
-        {clienteData && (
-          <div className="mb-4">
-            <label className="block mb-1 text-sm font-semibold text-gray-700">Forma de Pago</label>
-            <select
-              value={clienteData?.FormaPago || ''}
-              onChange={e => setClienteData({ ...clienteData, FormaPago: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
-            >
-              <option value="">Selecciona</option>
-              {catalogs.FormaPago && catalogs.FormaPago.map((opt, idx) => (
-                <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-        {clienteData && clienteData.FormaPago !== '' && (
-          <CorreoValidador
-            clienteCorreo={clienteData.Contacto?.Email}
-            clienteData={clienteData}
-            fields={fields}
-            setEmittedUID={setEmittedUID}
-            setCfdiMessage={setCfdiMessage}
-            setValidadoCorreo={setValidadoCorreo}
-          />
-        )}
-        {clienteData && clienteData.FormaPago !== '' && validadoCorreo && (
-          <div className="mb-8">
-            {/* Mostrar productos importados primero */}
-            {productosImportados.length > 0 && (
-              <div className="space-y-4 mb-4">
-                {productosImportados.map((prod, idx) => (
-                  <div key={idx} className="border border-blue-200 bg-blue-50 p-4 rounded-lg shadow flex flex-col md:flex-row md:items-center md:gap-6">
-                    <div className="font-bold text-blue-700 text-lg">{prod.name || 'Sin nombre'}</div>
-                    <div className="text-sm text-gray-700">SKU: <span className="font-mono">{prod.sku}</span></div>
-                    <div className="text-sm text-gray-700">Cantidad: <span className="font-mono">{prod.quantity}</span></div>
-                    <div className="text-sm text-gray-700">Precio: <span className="font-mono">${prod.price || prod.total}</span></div>
-                    <div className="text-sm text-gray-700">Descripción: <span className="font-mono">{prod.name}</span></div>
-                  </div>
+          {clienteError && (
+            <div className="p-2 bg-red-100 text-red-700 rounded mt-2">{clienteError}</div>
+          )}
+          {clienteData && (
+            <div className="p-4 bg-green-100 border border-green-300 rounded-lg mt-2 flex items-center gap-3 shadow-sm">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+              <span className="font-semibold text-green-700 text-base">Cliente encontrado</span>
+            </div>
+          )}
+          {clienteData && (
+            <div className="mb-4">
+              <label className="block mb-1 text-sm font-semibold text-gray-700">Forma de Pago</label>
+              <select
+                value={clienteData?.FormaPago || ''}
+                onChange={e => setClienteData({ ...clienteData, FormaPago: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
+              >
+                <option value="">Selecciona</option>
+                {catalogs.FormaPago && catalogs.FormaPago.map((opt, idx) => (
+                  <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
                 ))}
-                <div className="text-xs text-gray-500 mt-2">Estos productos fueron importados del pedido #{pedidoInput}.</div>
+              </select>
+            </div>
+          )}
+          {clienteData && clienteData.FormaPago !== '' && (
+            <CorreoValidador
+              clienteCorreo={clienteData.Contacto?.Email}
+              clienteData={clienteData}
+              fields={fields}
+              setEmittedUID={setEmittedUID}
+              setCfdiMessage={setCfdiMessage}
+              setValidadoCorreo={setValidadoCorreo}
+            />
+          )}
+          {clienteData && clienteData.FormaPago !== '' && validadoCorreo && (
+            <div className="mb-8">
+              {/* Mostrar productos importados primero */}
+              {productosImportados.length > 0 && (
+                <div className="space-y-4 mb-4">
+                  {productosImportados.map((prod, idx) => (
+                    <div key={idx} className="border border-blue-200 bg-blue-50 p-4 rounded-lg shadow flex flex-col md:flex-row md:items-center md:gap-6">
+                      <div className="font-bold text-blue-700 text-lg">{prod.name || 'Sin nombre'}</div>
+                      <div className="text-sm text-gray-700">SKU: <span className="font-mono">{prod.sku}</span></div>
+                      <div className="text-sm text-gray-700">Cantidad: <span className="font-mono">{prod.quantity}</span></div>
+                      <div className="text-sm text-gray-700">Precio: <span className="font-mono">${prod.price || prod.total}</span></div>
+                      <div className="text-sm text-gray-700">Descripción: <span className="font-mono">{prod.name}</span></div>
+                    </div>
+                  ))}
+                  <div className="text-xs text-gray-500 mt-2">Estos productos fueron importados del pedido #{pedidoInput}.</div>
+                </div>
+              )}
+              {/* Input para importar pedido */}
+              <div className="p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
+                <input
+                  type="text"
+                  placeholder="Número de pedido"
+                  value={pedidoInput}
+                  onChange={e => setPedidoInput(e.target.value)}
+                  className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
+                />
+                <Button type="button" onClick={handleImportPedido} disabled={loadingPedido || !pedidoInput} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
+                  {loadingPedido ? 'Cargando...' : 'Importar pedido'}
+                </Button>
               </div>
+              {/* Botón de facturar solo si hay productos importados */}
+              {productosImportados.length > 0 && (
+                <Button type="button" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow text-lg mt-4" onClick={async () => {
+                  // Construir el objeto CFDI con los datos del cliente y productos importados
+                  const cfdiData = {
+                    Receptor: {
+                      UID: clienteData.UID,
+                      ResidenciaFiscal: clienteData.ResidenciaFiscal || '',
+                      RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
+                    },
+                    TipoDocumento: 'factura',
+                    Serie: 5483035, // Serie C, asignada automáticamente
+                    FormaPago: clienteData.FormaPago || '03', // Seleccionada por el usuario
+                    MetodoPago: 'PUE', // Asignada automáticamente
+                    Moneda: 'MXN',
+                    UsoCFDI: clienteData.UsoCFDI || 'G03',
+                    Conceptos: fields.map(item => ({
+                      ClaveProdServ: item.ClaveProdServ,
+                      NoIdentificacion: item.NoIdentificacion,
+                      Cantidad: item.Cantidad,
+                      ClaveUnidad: item.ClaveUnidad,
+                      Unidad: item.Unidad,
+                      ValorUnitario: item.ValorUnitario,
+                      Descripcion: item.Descripcion,
+                      Descuento: item.Descuento,
+                      ObjetoImp: item.ObjetoImp,
+                      Impuestos: item.Impuestos,
+                    })),
+                  };
+                  try {
+                    const response = await FacturaAPIService.createCFDI40(cfdiData);
+                    const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
+                    setEmittedUID(uid);
+                    setCfdiMessage('CFDI creado correctamente.');
+                  } catch (err) {
+                    setCfdiMessage('Error al crear CFDI: ' + (err.response?.data?.message || err.message));
+                  }
+                }}>
+                  Facturar automáticamente
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+        {Object.keys(errors).length > 0 && (
+          <pre className="text-red-500 mt-2">{JSON.stringify(errors, null, 2)}</pre>
+        )}
+        {emittedUID && (
+          <div className="mt-10 p-8 bg-green-50 rounded-2xl shadow-lg">
+            <h3 className="text-lg font-bold mb-2 text-green-700">CFDI emitido</h3>
+            {cfdiMessage && (
+              <div className="mb-4 text-green-800 font-semibold">{cfdiMessage}</div>
             )}
-            {/* Input para importar pedido */}
-            <div className="p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
-              <input
-                type="text"
-                placeholder="Número de pedido"
-                value={pedidoInput}
-                onChange={e => setPedidoInput(e.target.value)}
-                className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
-              />
-              <Button type="button" onClick={handleImportPedido} disabled={loadingPedido || !pedidoInput} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
-                {loadingPedido ? 'Cargando...' : 'Importar pedido'}
+            <div className="flex gap-4 mb-4">
+              <Button type="button" onClick={async () => {
+                try {
+                  const res = await FacturaAPIService.getCFDIPDF(emittedUID);
+                  const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `CFDI_${emittedUID}.pdf`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                } catch (err) {
+                  setCfdiMessage('Error al descargar PDF: ' + (err.response?.data?.message || err.message));
+                }
+              }} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
+                <span>📄</span> Descargar PDF
+              </Button>
+              <Button type="button" onClick={async () => {
+                try {
+                  const res = await FacturaAPIService.getCFDIXML(emittedUID);
+                  const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/xml' }));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `CFDI_${emittedUID}.xml`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                } catch (err) {
+                  setCfdiMessage('Error al descargar XML: ' + (err.response?.data?.message || err.message));
+                }
+              }} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
+                <span>🗎</span> Descargar XML
               </Button>
             </div>
-            {/* Botón de facturar solo si hay productos importados */}
-            {productosImportados.length > 0 && (
-              <Button type="button" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow text-lg mt-4" onClick={async () => {
-                // Construir el objeto CFDI con los datos del cliente y productos importados
-                const cfdiData = {
-                  Receptor: {
-                    UID: clienteData.UID,
-                    ResidenciaFiscal: clienteData.ResidenciaFiscal || '',
-                    RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
-                  },
-                  TipoDocumento: 'factura',
-                  Serie: 5483035, // Serie C, asignada automáticamente
-                  FormaPago: clienteData.FormaPago || '03', // Seleccionada por el usuario
-                  MetodoPago: 'PUE', // Asignada automáticamente
-                  Moneda: 'MXN',
-                  UsoCFDI: clienteData.UsoCFDI || 'G03',
-                  Conceptos: fields.map(item => ({
-                    ClaveProdServ: item.ClaveProdServ,
-                    NoIdentificacion: item.NoIdentificacion,
-                    Cantidad: item.Cantidad,
-                    ClaveUnidad: item.ClaveUnidad,
-                    Unidad: item.Unidad,
-                    ValorUnitario: item.ValorUnitario,
-                    Descripcion: item.Descripcion,
-                    Descuento: item.Descuento,
-                    ObjetoImp: item.ObjetoImp,
-                    Impuestos: item.Impuestos,
-                  })),
-                };
-                try {
-                  const response = await FacturaAPIService.createCFDI40(cfdiData);
-                  const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
-                  setEmittedUID(uid);
-                  setCfdiMessage('CFDI creado correctamente.');
-                } catch (err) {
-                  setCfdiMessage('Error al crear CFDI: ' + (err.response?.data?.message || err.message));
-                }
-              }}>
-                Facturar automáticamente
-              </Button>
-            )}
+            <div className="text-xs text-green-700">UID: {emittedUID}</div>
           </div>
         )}
-      </div>
-      {Object.keys(errors).length > 0 && (
-        <pre className="text-red-500 mt-2">{JSON.stringify(errors, null, 2)}</pre>
+      </form>
+      {showCustomerModal && (
+        <CustomersManager />
       )}
-      {emittedUID && (
-        <div className="mt-10 p-8 bg-green-50 rounded-2xl shadow-lg">
-          <h3 className="text-lg font-bold mb-2 text-green-700">CFDI emitido</h3>
-          {cfdiMessage && (
-            <div className="mb-4 text-green-800 font-semibold">{cfdiMessage}</div>
-          )}
-          <div className="flex gap-4 mb-4">
-            <Button type="button" onClick={async () => {
-              try {
-                const res = await FacturaAPIService.getCFDIPDF(emittedUID);
-                const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', `CFDI_${emittedUID}.pdf`);
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-              } catch (err) {
-                setCfdiMessage('Error al descargar PDF: ' + (err.response?.data?.message || err.message));
-              }
-            }} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
-              <span>📄</span> Descargar PDF
-            </Button>
-            <Button type="button" onClick={async () => {
-              try {
-                const res = await FacturaAPIService.getCFDIXML(emittedUID);
-                const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/xml' }));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', `CFDI_${emittedUID}.xml`);
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-              } catch (err) {
-                setCfdiMessage('Error al descargar XML: ' + (err.response?.data?.message || err.message));
-              }
-            }} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
-              <span>🗎</span> Descargar XML
-            </Button>
-          </div>
-          <div className="text-xs text-green-700">UID: {emittedUID}</div>
-        </div>
-      )}
-    </form>
+    </>
   );
 };
 
