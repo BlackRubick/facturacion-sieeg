@@ -209,72 +209,40 @@ const CFDIForm = () => {
     }
   }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
 
-  useEffect(() => {
-    let fechaCFDI = '';
-    const hoy = new Date(); // Siempre nueva instancia
-    switch (watch('fechaCFDI')) {
-      case 'hoy':
-        fechaCFDI = hoy.toISOString().split('T')[0];
-        break;
-      case 'ayer':
-        const ayer = new Date();
-        ayer.setDate(hoy.getDate() - 1);
-        fechaCFDI = ayer.toISOString().split('T')[0];
-        break;
-      case 'dosdias':
-        const dosdias = new Date();
-        dosdias.setDate(hoy.getDate() - 2);
-        fechaCFDI = dosdias.toISOString().split('T')[0];
-        break;
-      case 'tresdias':
-        const tresdias = new Date();
-        tresdias.setDate(hoy.getDate() - 3);
-        fechaCFDI = tresdias.toISOString().split('T')[0];
-        break;
-      default:
-        fechaCFDI = '';
-    }
-    setValue('dueDate', fechaCFDI);
-  }, [watch('fechaCFDI')]);
-
-  const onSubmit = async (dataRaw) => {
+  const onSubmit = async (data) => {
     // Calcular la fecha real según la opción seleccionada
     let fechaCFDI = '';
-    const hoy = new Date(); // Siempre nueva instancia
-    switch (dataRaw.fechaCFDI) {
+    const hoy = new Date();
+    switch (data.fechaCFDI) {
       case 'hoy':
-        fechaCFDI = hoy.toISOString().split('T')[0];
+        fechaCFDI = new Date().toISOString().split('T')[0];
         break;
       case 'ayer':
-        const ayer = new Date();
-        ayer.setDate(hoy.getDate() - 1);
-        fechaCFDI = ayer.toISOString().split('T')[0];
+        hoy.setDate(hoy.getDate() - 1);
+        fechaCFDI = hoy.toISOString().split('T')[0];
         break;
       case 'dosdias':
-        const dosdias = new Date();
-        dosdias.setDate(hoy.getDate() - 2);
-        fechaCFDI = dosdias.toISOString().split('T')[0];
+        hoy.setDate(hoy.getDate() - 2);
+        fechaCFDI = hoy.toISOString().split('T')[0];
         break;
       case 'tresdias':
-        const tresdias = new Date();
-        tresdias.setDate(hoy.getDate() - 3);
-        fechaCFDI = tresdias.toISOString().split('T')[0];
+        hoy.setDate(hoy.getDate() - 3);
+        fechaCFDI = hoy.toISOString().split('T')[0];
         break;
       default:
         fechaCFDI = '';
     }
-    // Construir los datos corregidos para validar y enviar
-    const data = { ...dataRaw, dueDate: fechaCFDI };
+    setValue('dueDate', fechaCFDI); // Actualiza el campo antes de validar
     // Forzar sincronización de campos obligatorios usando watch
-    const tipoDocumento = data.TipoDocumento || 'factura';
-    const moneda = data.Moneda || 'MXN';
-    const formaPago = data.FormaPago || '';
-    const metodoPago = data.MetodoPago || '';
-    const serieId = Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
+    const tipoDocumento = watch('TipoDocumento') || 'factura';
+    const moneda = watch('Moneda') || 'MXN';
+    const formaPago = watch('FormaPago') || '';
+    const metodoPago = watch('MetodoPago') || '';
+    const serieId = Number(watch('Serie')) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
     // Usar el valor seleccionado por el usuario para UsoCFDI
-    let usoCFDI = data.UsoCFDI || '';
+    let usoCFDI = watch('UsoCFDI') || '';
     if (!usoCFDI && Array.isArray(catalogs.UsoCFDI) && catalogs.UsoCFDI.length > 0) {
-      usoCFDI = catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
+      usoCFDI = catalogs.UusoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
       setValue('UsoCFDI', usoCFDI);
     }
     // Mostrar en consola los valores antes de enviar
@@ -283,7 +251,7 @@ const CFDIForm = () => {
     const items = data.items.map(item => ({
       ClaveProdServ: String(item.ClaveProdServ || '').trim(),
       NoIdentificacion: String(item.NoIdentificacion || '').trim(),
-      Cantidad: item.Cantidad ? Number(item.Cantidad) : 1,
+      Cantidad: item.Cantidad ? Number(item.Cantidad) : 1, // <-- Usar Cantidad
       ClaveUnidad: String(item.ClaveUnidad || '').trim(),
       Unidad: String(item.Unidad || 'Pieza').trim(),
       ValorUnitario: item.ValorUnitario ? Number(item.ValorUnitario) : 0,
