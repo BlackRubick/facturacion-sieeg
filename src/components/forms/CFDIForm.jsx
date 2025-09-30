@@ -222,6 +222,28 @@ const CFDIForm = () => {
       usoCFDI = catalogs.UusoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
       setValue('UsoCFDI', usoCFDI);
     }
+    // Calcular la fecha real según la opción seleccionada
+    let fechaCFDI = '';
+    const hoy = new Date();
+    switch (data.dueDate) {
+      case 'hoy':
+        fechaCFDI = hoy.toISOString().split('T')[0];
+        break;
+      case 'ayer':
+        hoy.setDate(hoy.getDate() - 1);
+        fechaCFDI = hoy.toISOString().split('T')[0];
+        break;
+      case 'dosdias':
+        hoy.setDate(hoy.getDate() - 2);
+        fechaCFDI = hoy.toISOString().split('T')[0];
+        break;
+      case 'tresdias':
+        hoy.setDate(hoy.getDate() - 3);
+        fechaCFDI = hoy.toISOString().split('T')[0];
+        break;
+      default:
+        fechaCFDI = '';
+    }
     // Mostrar en consola los valores antes de enviar
     console.log('Valores del formulario (forzados):', data);
     // Mapear los campos del formulario a los nombres esperados por la API
@@ -237,7 +259,6 @@ const CFDIForm = () => {
       ObjetoImp: String(item.ObjetoImp || '02').trim(),
       Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
     }));
-    const formattedDueDate = data.dueDate ? new Date(data.dueDate).toISOString().split('T')[0] : undefined;
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
@@ -251,7 +272,7 @@ const CFDIForm = () => {
       Conceptos: items,
       BorradorSiFalla: String(data.BorradorSiFalla || '0'),
       Draft: String(data.Draft || '0'),
-      dueDate: formattedDueDate,
+      dueDate: fechaCFDI,
     };
     console.log('Objeto enviado a la API:', cfdiData);
     if (isGlobal) {
@@ -516,7 +537,14 @@ const CFDIForm = () => {
             </select>
           </div>
           <div>
-            <Input label="Fecha de Vencimiento" type="date" {...register('dueDate', { valueAsDate: true })} className="w-full" />
+            <label className="block mb-1 text-sm font-medium text-gray-700">Fecha de CFDI *</label>
+            <select {...register('dueDate', { required: true })} className="w-full border rounded-lg p-2">
+              <option value="hoy">Timbrar con fecha actual</option>
+              <option value="ayer">Timbrar con fecha de ayer</option>
+              <option value="dosdias">Timbrar con fecha de hace dos días</option>
+              <option value="tresdias">Timbrar con fecha de hace tres días</option>
+            </select>
+            {!watch('dueDate') && <span className="text-red-500 text-xs">Debes seleccionar una fecha para el CFDI.</span>}
           </div>
         </div>
         {isGlobal && (
