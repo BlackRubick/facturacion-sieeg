@@ -410,7 +410,6 @@ const CFDIForm = () => {
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Datos del Cliente</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
           <div className="flex items-center gap-2">
-            <label className="block mb-1 text-sm font-medium text-gray-700">UID Cliente</label>
             <Select
               label="Selecciona un cliente"
               options={clients.map(client => ({
