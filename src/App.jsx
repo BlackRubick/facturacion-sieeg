@@ -56,6 +56,7 @@ function App() {
                 <CFDIListPage />
               </ProtectedRoute>
             } />
+            <Route path="*" element={<Login />} />
           </Routes>
         </Layout>
       </Router>
