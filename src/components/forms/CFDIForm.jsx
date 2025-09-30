@@ -174,16 +174,40 @@ const CFDIForm = () => {
 
   // Refuerzo: sincronizar valores iniciales y cambios para Serie, Moneda y UsoCFDI
   useEffect(() => {
+    // Serie
     if (series.length > 0 && !watch('Serie')) {
       setValue('Serie', series[0].SerieName || '');
     }
+    // Moneda
     if (catalogs.Moneda.length > 0 && !watch('Moneda')) {
       setValue('Moneda', catalogs.Moneda[0].key || '');
     }
+    // UsoCFDI
     if (catalogs.UsoCFDI.length > 0 && !watch('UsoCFDI')) {
       setValue('UsoCFDI', catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '');
     }
-  }, [series, catalogs.Moneda, catalogs.UsoCFDI]);
+    // País: seleccionar MEX
+    if (catalogs.Pais.length > 0) {
+      const paisMexico = catalogs.Pais.find(p => p.key === 'MEX' || p.name?.toLowerCase().includes('mexico'));
+      if (paisMexico && watch('Pais') !== paisMexico.key) {
+        setValue('Pais', paisMexico.key);
+      }
+    }
+    // Método de Pago: seleccionar PPD
+    if (catalogs.MetodoPago.length > 0) {
+      const metodoPPD = catalogs.MetodoPago.find(m => m.key === 'PPD' || m.name?.toUpperCase().includes('PPD'));
+      if (metodoPPD && watch('MetodoPago') !== metodoPPD.key) {
+        setValue('MetodoPago', metodoPPD.key);
+      }
+    }
+    // Forma de Pago: seleccionar 99
+    if (catalogs.FormaPago.length > 0) {
+      const forma99 = catalogs.FormaPago.find(f => f.key === '99');
+      if (forma99 && watch('FormaPago') !== forma99.key) {
+        setValue('FormaPago', forma99.key);
+      }
+    }
+  }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
 
   const onSubmit = async (data) => {
     // Forzar sincronización de campos obligatorios usando watch
