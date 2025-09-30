@@ -30,31 +30,29 @@ const Login = () => {
         alt="Logo"
         className="w-32 h-32 object-cover rounded-full mt-8 mb-4 shadow-lg border-4 border-blue-200"
       />
-      <form onSubmit={handleSubmit} className="w-full flex flex-col items-center justify-center px-4 sm:px-0">
+      <form onSubmit={handleSubmit} className="w-full flex flex-col items-center justify-center px-4">
         <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">Iniciar sesión</h2>
-        <div className="w-full max-w-sm flex flex-col items-center">
-          <input
-            type="email"
-            placeholder="Correo"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="w-full mb-3 p-2 border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="w-full mb-3 p-2 border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
-            required
-          />
-          {loading && <div className="text-blue-500 mb-2 text-sm text-center">Verificando...</div>}
-          {error && <div className="text-red-500 mb-2 text-sm text-center">{error}</div>}
-          <button type="submit" className="w-full bg-blue-700 text-white p-2 rounded font-semibold text-sm shadow hover:bg-blue-800 transition-colors mt-2">
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </div>
+        <input
+          type="email"
+          placeholder="Correo"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          className="w-full mb-3 p-2 border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center max-w-xl"
+          required
+        />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          className="w-full mb-3 p-2 border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center max-w-xl"
+          required
+        />
+        {loading && <div className="text-blue-500 mb-2 text-sm text-center">Verificando...</div>}
+        {error && <div className="text-red-500 mb-2 text-sm text-center">{error}</div>}
+        <button type="submit" className="w-full bg-blue-700 text-white p-2 rounded font-semibold text-sm shadow hover:bg-blue-800 transition-colors mt-2 max-w-xl">
+          {loading ? 'Entrando...' : 'Entrar'}
+        </button>
       </form>
     </div>
   );
