@@ -186,9 +186,9 @@ const CFDIForm = () => {
     if (catalogs.UsoCFDI.length > 0 && !watch('UsoCFDI')) {
       setValue('UsoCFDI', catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '');
     }
-    // País: seleccionar MEX
+    // País: seleccionar MEX - México
     if (catalogs.Pais.length > 0) {
-      const paisMexico = catalogs.Pais.find(p => p.key === 'MEX' || p.name?.toLowerCase().includes('mexico'));
+      const paisMexico = catalogs.Pais.find(p => p.key === 'MEX' && p.name && p.name.toLowerCase().includes('mexico'));
       if (paisMexico && watch('Pais') !== paisMexico.key) {
         setValue('Pais', paisMexico.key);
       }
