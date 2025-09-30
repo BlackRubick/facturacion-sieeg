@@ -495,8 +495,8 @@ const CFDIForm = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">País</label>
-            <select {...register('Pais')} className="w-full border rounded-lg p-2" defaultValue="MEX">
-              {catalogs.Pais && catalogs.Pais.map((opt, idx) => (
+            <select {...register('Pais')} className="w-full border rounded-lg p-2" value={watch('Pais') || 'MEX'} onChange={e => setValue('Pais', e.target.value)}>
+              {catalogs.Pais && catalogs.Pais.filter(opt => opt.key === 'MEX' && opt.name && opt.name.toLowerCase().includes('mexico')).map((opt, idx) => (
                 <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
               ))}
             </select>
