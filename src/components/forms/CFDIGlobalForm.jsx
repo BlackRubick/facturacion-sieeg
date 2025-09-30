@@ -280,26 +280,19 @@ const CFDIGlobalForm = () => {
           <CorreoValidador clienteCorreo={clienteData.Contacto?.Email} clienteData={clienteData} fields={fields} setEmittedUID={setEmittedUID} setCfdiMessage={setCfdiMessage} />
         )}
         {/* Solo mostrar importar pedido si el correo está validado */}
-        {clienteData && productosImportados.length === 0 && (
-          <>
-            {clienteData.Contacto?.Email && (
-              <CorreoValidador clienteCorreo={clienteData.Contacto.Email} clienteData={clienteData} fields={fields} setEmittedUID={setEmittedUID} setCfdiMessage={setCfdiMessage} />
-            )}
-            {validadoCorreo && (
-              <div className="mb-8 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
-                <input
-                  type="text"
-                  placeholder="Número de pedido"
-                  value={pedidoInput}
-                  onChange={e => setPedidoInput(e.target.value)}
-                  className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
-                />
-                <Button type="button" onClick={handleImportPedido} disabled={loadingPedido} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
-                  {loadingPedido ? 'Cargando...' : 'Importar pedido'}
-                </Button>
-              </div>
-            )}
-          </>
+        {clienteData && productosImportados.length === 0 && validadoCorreo && (
+          <div className="mb-8 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
+            <input
+              type="text"
+              placeholder="Número de pedido"
+              value={pedidoInput}
+              onChange={e => setPedidoInput(e.target.value)}
+              className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
+            />
+            <Button type="button" onClick={handleImportPedido} disabled={loadingPedido} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
+              {loadingPedido ? 'Cargando...' : 'Importar pedido'}
+            </Button>
+          </div>
         )}
       </div>
       {productosImportados.length > 0 && (
