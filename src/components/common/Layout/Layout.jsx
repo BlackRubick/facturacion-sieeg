@@ -43,6 +43,7 @@ const Layout = ({ children }) => {
     }
   };
 
+  const isVendedor = user && user.type === 'vendedor';
   const hideLayout = location.pathname === '/login' || location.pathname === '/register';
 
   if (hideLayout) {
@@ -55,7 +56,7 @@ const Layout = ({ children }) => {
         <span className="mb-2 sm:mb-0">Sistema de Facturación</span>
         <nav className="w-full sm:w-auto">
           <ul className="flex flex-col sm:flex-row gap-2 sm:gap-6 w-full sm:w-auto">
-            {navItems.map(item => (
+            {!isVendedor && navItems.map(item => (
               (!item.admin || (user && user.type === 'admin')) && (
                 <li key={item.path} className="w-full sm:w-auto">
                   <Link
@@ -67,10 +68,20 @@ const Layout = ({ children }) => {
                 </li>
               )
             ))}
+            {isVendedor && (
+              <li className="w-full sm:w-auto">
+                <Link
+                  to="/factura-normal"
+                  className={`block text-center hover:underline px-2 py-1 rounded ${location.pathname === '/factura-normal' ? 'bg-blue-800' : ''}`}
+                >
+                  Factura Normal
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
         <div className="flex items-center">
-          {user ? (
+          {!isVendedor && user ? (
             <>
               <span className="mr-4">{user.email} ({user.type})</span>
               <button onClick={logout} className="bg-red-500 px-3 py-1 rounded">Salir</button>
@@ -78,18 +89,15 @@ const Layout = ({ children }) => {
                 <button onClick={() => setShowUserModal(true)} className="bg-blue-500 px-3 py-1 rounded ml-4">Agregar usuario</button>
               )}
             </>
-          ) : (
-            <>
-              <Link to="/login" className="mr-4">Login</Link>
-              <Link to="/register">Crear usuario</Link>
-            </>
+          ) : null}
+          {!isVendedor && (
+            <button
+              onClick={handleToggleSandbox}
+              className={`ml-4 px-3 py-1 rounded font-bold shadow transition-colors ${sandbox ? 'bg-green-500' : 'bg-gray-300 text-blue-700'}`}
+            >
+              {sandbox ? 'Modo Sandbox' : 'Modo Producción'}
+            </button>
           )}
-          <button
-            onClick={handleToggleSandbox}
-            className={`ml-4 px-3 py-1 rounded font-bold shadow transition-colors ${sandbox ? 'bg-green-500' : 'bg-gray-300 text-blue-700'}`}
-          >
-            {sandbox ? 'Modo Sandbox' : 'Modo Producción'}
-          </button>
         </div>
       </header>
       <main className="flex-1 p-4 sm:p-6">{children}</main>
