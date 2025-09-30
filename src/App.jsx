@@ -20,7 +20,11 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<UserRegister />} />
+            <Route path="/register" element={
+              <ProtectedRoute allowedTypes={["admin"]}>
+                <UserRegister />
+              </ProtectedRoute>
+            } />
             <Route path="/factura-clientes" element={
               <ProtectedRoute>
                 <FacturaClientes />

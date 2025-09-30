@@ -9,18 +9,18 @@ const UserRegister = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    const ok = register(email, password, type);
+    setError('');
+    setSuccess('');
+    const ok = await register(email, password, type);
     if (ok) {
       setSuccess('Usuario creado correctamente');
-      setError('');
       setEmail('');
       setPassword('');
       setType('vendedor');
     } else {
-      setError('El correo ya existe');
-      setSuccess('');
+      setError('El correo ya existe o hubo un error');
     }
   };
 
