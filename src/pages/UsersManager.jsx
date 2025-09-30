@@ -23,7 +23,14 @@ const UsersManager = () => {
 
   const handleDelete = async (id) => {
     await deleteUser(id);
-    setUsers(await getUsers());
+    const data = await getUsers();
+    if (Array.isArray(data)) {
+      setUsers(data);
+    } else if (data && Array.isArray(data.users)) {
+      setUsers(data.users);
+    } else {
+      setUsers([]);
+    }
   };
 
   const handleEdit = (user) => {
