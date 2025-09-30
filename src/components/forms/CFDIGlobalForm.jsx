@@ -279,8 +279,8 @@ const CFDIGlobalForm = () => {
         {clienteData && clienteData.FormaPago !== '' && (
           <CorreoValidador clienteCorreo={clienteData.Contacto?.Email} clienteData={clienteData} fields={fields} setEmittedUID={setEmittedUID} setCfdiMessage={setCfdiMessage} />
         )}
-        {/* Solo mostrar importar pedido si el correo está validado */}
-        {clienteData && productosImportados.length === 0 && validadoCorreo && (
+        {/* Solo mostrar input de pedido si el correo está validado */}
+        {clienteData && clienteData.FormaPago !== '' && validadoCorreo && productosImportados.length === 0 && (
           <div className="mb-8 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
             <input
               type="text"
@@ -289,10 +289,51 @@ const CFDIGlobalForm = () => {
               onChange={e => setPedidoInput(e.target.value)}
               className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
             />
-            <Button type="button" onClick={handleImportPedido} disabled={loadingPedido} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
+            <Button type="button" onClick={handleImportPedido} disabled={loadingPedido || !pedidoInput} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
               {loadingPedido ? 'Cargando...' : 'Importar pedido'}
             </Button>
           </div>
+        )}
+        {/* Mostrar botón de facturar solo si hay productos importados */}
+        {productosImportados.length > 0 && (
+          <Button type="button" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow text-lg mt-4" onClick={async () => {
+            // Construir el objeto CFDI con los datos del cliente y productos importados
+            const cfdiData = {
+              Receptor: {
+                UID: clienteData.UID,
+                ResidenciaFiscal: clienteData.ResidenciaFiscal || '',
+                RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
+              },
+              TipoDocumento: 'factura',
+              Serie: 5483035, // Serie C, asignada automáticamente
+              FormaPago: clienteData.FormaPago || '03', // Seleccionada por el usuario
+              MetodoPago: 'PUE', // Asignada automáticamente
+              Moneda: 'MXN',
+              UsoCFDI: clienteData.UsoCFDI || 'G03',
+              Conceptos: fields.map(item => ({
+                ClaveProdServ: item.ClaveProdServ,
+                NoIdentificacion: item.NoIdentificacion,
+                Cantidad: item.Cantidad,
+                ClaveUnidad: item.ClaveUnidad,
+                Unidad: item.Unidad,
+                ValorUnitario: item.ValorUnitario,
+                Descripcion: item.Descripcion,
+                Descuento: item.Descuento,
+                ObjetoImp: item.ObjetoImp,
+                Impuestos: item.Impuestos,
+              })),
+            };
+            try {
+              const response = await FacturaAPIService.createCFDI40(cfdiData);
+              const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
+              setEmittedUID(uid);
+              setCfdiMessage('CFDI creado correctamente.');
+            } catch (err) {
+              setCfdiMessage('Error al crear CFDI: ' + (err.response?.data?.message || err.message));
+            }
+          }}>
+            Facturar automáticamente
+          </Button>
         )}
       </div>
       {productosImportados.length > 0 && (
