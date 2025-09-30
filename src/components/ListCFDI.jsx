@@ -100,7 +100,7 @@ const ListCFDI = () => {
             <tr key={c.UID} className="border-b border-blue-50 hover:bg-blue-50">
               <td className="p-2">{c.Folio}</td>
               <td className="p-2">{c.RFC || c.ReceptorRFC || c.EmisorRFC || '-'}</td>
-              <td className="p-2">{c.Nombre || c.ReceptorNombre || c.EmisorNombre || '-'}</td>
+              <td className="p-2">{c.Nombre || c.ReceptorNombre || c.EmisorNombre || c.RazonSocial || '-'}</td>
               <td className="p-2">{c.Fecha || c.FechaEmision || c.FechaTimbrado || '-'}</td>
               <td className="p-2">${c.Total}</td>
               <td className="p-2">{c.Status}</td>
