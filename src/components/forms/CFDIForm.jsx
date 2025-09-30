@@ -431,7 +431,6 @@ const CFDIForm = () => {
             </Button>
           </div>
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Serie</label>
             <Select
               label="Selecciona una serie"
               options={series.map(s => ({
