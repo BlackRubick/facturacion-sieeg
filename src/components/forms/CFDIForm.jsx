@@ -243,7 +243,7 @@ const CFDIForm = () => {
     // Usar el valor seleccionado por el usuario para UsoCFDI
     let usoCFDI = data.UsoCFDI || '';
     if (!usoCFDI && Array.isArray(catalogs.UsoCFDI) && catalogs.UsoCFDI.length > 0) {
-      usoCFDI = catalogs.UusoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
+      usoCFDI = catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
       setValue('UsoCFDI', usoCFDI);
     }
     // Mostrar en consola los valores antes de enviar
