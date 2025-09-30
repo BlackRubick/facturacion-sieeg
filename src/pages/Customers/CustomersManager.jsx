@@ -140,32 +140,34 @@ const CustomersManager = () => {
       <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-6 sm:p-8">
         <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">Gestión de clientes</h2>
         {/* Tabla de clientes */}
-        <table className="w-full border border-blue-100 rounded-xl overflow-hidden mb-6 text-sm">
-          <thead>
-            <tr className="bg-blue-50 text-blue-700">
-              <th className="p-2 font-semibold">RFC</th>
-              <th className="p-2 font-semibold">Razón Social</th>
-              <th className="p-2 font-semibold">Correo</th>
-              <th className="p-2 font-semibold">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {customers.map(c => (
-              <tr key={c.UID} className="border-b border-blue-50 hover:bg-blue-50">
-                <td className="p-2">{c.RFC}</td>
-                <td className="p-2">{c.RazonSocial}</td>
-                <td className="p-2">
-                  {[c.Email, c.Contacto?.Email, c.Contacto?.Email2, c.Contacto?.Email3]
-                    .filter(Boolean)
-                    .join(', ')}
-                </td>
-                <td className="p-2">
-                  <button onClick={() => handleOpenModal(c)} className="bg-blue-600 text-white px-2 py-1 rounded text-xs mr-2 hover:bg-blue-800">Editar</button>
-                </td>
+        <div className="w-full overflow-x-auto rounded-xl mb-6">
+          <table className="min-w-full border border-blue-100 rounded-xl text-sm">
+            <thead>
+              <tr className="bg-blue-50 text-blue-700">
+                <th className="p-2 font-semibold">RFC</th>
+                <th className="p-2 font-semibold">Razón Social</th>
+                <th className="p-2 font-semibold">Correo</th>
+                <th className="p-2 font-semibold">Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {customers.map(c => (
+                <tr key={c.UID} className="border-b border-blue-50 hover:bg-blue-50">
+                  <td className="p-2">{c.RFC}</td>
+                  <td className="p-2">{c.RazonSocial}</td>
+                  <td className="p-2">
+                    {[c.Email, c.Contacto?.Email, c.Contacto?.Email2, c.Contacto?.Email3]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </td>
+                  <td className="p-2">
+                    <button onClick={() => handleOpenModal(c)} className="bg-blue-600 text-white px-2 py-1 rounded text-xs mr-2 hover:bg-blue-800">Editar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <button onClick={() => handleOpenModal()} className="bg-blue-700 text-white px-4 py-2 rounded font-semibold text-sm shadow hover:bg-blue-800 transition-colors mb-4">Agregar cliente</button>
         {/* Modal de edición/agregado */}
         {modalOpen && (
