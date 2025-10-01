@@ -478,48 +478,34 @@ const CFDIForm = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Forma de Pago</label>
-            <Controller
-              name="FormaPago"
-              control={control}
-              defaultValue=""
-              render={({ field }) => (
-                <select
-                  className="w-full border rounded-lg p-2"
-                  onChange={e => {
-                    field.onChange(e.target.value);
-                    setValue('FormaPago', e.target.value);
-                  }}
-                  value={field.value || ""}
-                >
-                  <option value="">Selecciona</option>
-                  {catalogs.FormaPago.map((opt, idx) => (
-                    <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-                  ))}
-                </select>
-              )}
+            <Select
+              label="Forma de Pago"
+              options={catalogs.FormaPago.map((opt, idx) => ({
+                value: String(opt.key),
+                label: `${opt.key} - ${opt.name}`,
+              }))}
+              value={String(watch('FormaPago') || '')}
+              onChange={value => setValue('FormaPago', String(value || ''))}
+              placeholder="Selecciona una forma de pago"
+              isLoading={loadingCatalogs}
+              error={!watch('FormaPago')}
+              helperText={!watch('FormaPago') ? 'Debes seleccionar una forma de pago.' : ''}
             />
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Método de Pago</label>
-            <Controller
-              name="MetodoPago"
-              control={control}
-              defaultValue=""
-              render={({ field }) => (
-                <select
-                  className="w-full border rounded-lg p-2"
-                  onChange={e => {
-                    field.onChange(e.target.value);
-                    setValue('MetodoPago', e.target.value);
-                  }}
-                  value={field.value || ""}
-                >
-                  <option value="">Selecciona</option>
-                  {catalogs.MetodoPago.map((opt, idx) => (
-                    <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-                  ))}
-                </select>
-              )}
+            <Select
+              label="Método de Pago"
+              options={catalogs.MetodoPago.map((opt, idx) => ({
+                value: String(opt.key),
+                label: `${opt.key} - ${opt.name}`,
+              }))}
+              value={String(watch('MetodoPago') || '')}
+              onChange={value => setValue('MetodoPago', String(value || ''))}
+              placeholder="Selecciona un método de pago"
+              isLoading={loadingCatalogs}
+              error={!watch('MetodoPago')}
+              helperText={!watch('MetodoPago') ? 'Debes seleccionar un método de pago.' : ''}
             />
           </div>
           <div>
