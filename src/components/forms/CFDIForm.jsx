@@ -238,22 +238,22 @@ const CFDIForm = () => {
       ObjetoImp: String(item.ObjetoImp || '02').trim(),
       Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
     }));
-    // Enviar todos los nombres posibles para UsoCFDI
+    // Enviar todos los nombres posibles para UsoCFDI dentro de Receptor
     const usoCFDIValue = data.UsoCFDI || '';
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
+        UsoCFDI: usoCFDIValue,
+        UsoCfdi: usoCFDIValue,
+        usoCFDI: usoCFDIValue,
+        usoCfdi: usoCFDIValue,
+        uso_cfdi: usoCFDIValue,
       },
       TipoDocumento: data.TipoDocumento || 'factura',
       Serie: Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined),
       FormaPago: data.FormaPago,
       MetodoPago: data.MetodoPago,
       Moneda: data.Moneda || 'MXN',
-      UsoCFDI: usoCFDIValue,
-      UsoCfdi: usoCFDIValue,
-      usoCFDI: usoCFDIValue,
-      usoCfdi: usoCFDIValue,
-      uso_cfdi: usoCFDIValue,
       Conceptos: items,
       BorradorSiFalla: String(data.BorradorSiFalla || '0'),
       Draft: String(data.Draft || '0'),
