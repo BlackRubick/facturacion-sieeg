@@ -237,8 +237,16 @@ const CFDIForm = () => {
     // Forzar sincronización de campos obligatorios usando watch
     const tipoDocumento = data.TipoDocumento || 'factura';
     const moneda = data.Moneda || 'MXN';
-    const formaPago = data.FormaPago; // Solo lo que selecciona el usuario
-    const metodoPago = data.MetodoPago; // Solo lo que selecciona el usuario
+    const formaPago = data.FormaPago;
+    const metodoPago = data.MetodoPago;
+    if (!formaPago) {
+      alert('Debes seleccionar una Forma de Pago válida.');
+      return;
+    }
+    if (!metodoPago) {
+      alert('Debes seleccionar un Método de Pago válido.');
+      return;
+    }
     const serieId = Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
     // Usar el valor seleccionado por el usuario para UsoCFDI
     let usoCFDI = data.UsoCFDI || '';
@@ -483,7 +491,12 @@ const CFDIForm = () => {
               name="FormaPago"
               control={control}
               render={({ field }) => (
-                <select {...field} className="w-full border rounded-lg p-2">
+                <select
+                  {...field}
+                  className="w-full border rounded-lg p-2"
+                  onChange={e => field.onChange(e.target.value)}
+                  value={field.value || ""}
+                >
                   <option value="">Selecciona</option>
                   {catalogs.FormaPago.map((opt, idx) => (
                     <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
@@ -498,7 +511,12 @@ const CFDIForm = () => {
               name="MetodoPago"
               control={control}
               render={({ field }) => (
-                <select {...field} className="w-full border rounded-lg p-2">
+                <select
+                  {...field}
+                  className="w-full border rounded-lg p-2"
+                  onChange={e => field.onChange(e.target.value)}
+                  value={field.value || ""}
+                >
                   <option value="">Selecciona</option>
                   {catalogs.MetodoPago.map((opt, idx) => (
                     <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
