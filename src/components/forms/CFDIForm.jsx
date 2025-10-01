@@ -525,6 +525,11 @@ const CFDIForm = () => {
             />
           </div>
           <div>
+            {/* Debug visual para UsoCFDI */}
+            <div className="mb-2 text-xs text-blue-700">
+              Valor actual UsoCFDI: {JSON.stringify(watch('UsoCFDI'))}<br />
+              Error UsoCFDI: {errors?.UsoCFDI?.message || 'Sin error'}
+            </div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Uso CFDI</label>
             <Controller
               name="UsoCFDI"
