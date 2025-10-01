@@ -485,7 +485,10 @@ const CFDIForm = () => {
                 label: `${opt.key} - ${opt.name}`,
               }))}
               value={String(watch('FormaPago') || '')}
-              onChange={value => setValue('FormaPago', String(value || ''))}
+              onChange={value => {
+                console.log('Seleccionaste Forma de Pago:', value);
+                setValue('FormaPago', String(value || ''));
+              }}
               placeholder="Selecciona una forma de pago"
               isLoading={loadingCatalogs}
               error={!watch('FormaPago')}
@@ -501,7 +504,10 @@ const CFDIForm = () => {
                 label: `${opt.key} - ${opt.name}`,
               }))}
               value={String(watch('MetodoPago') || '')}
-              onChange={value => setValue('MetodoPago', String(value || ''))}
+              onChange={value => {
+                console.log('Seleccionaste Método de Pago:', value);
+                setValue('MetodoPago', String(value || ''));
+              }}
               placeholder="Selecciona un método de pago"
               isLoading={loadingCatalogs}
               error={!watch('MetodoPago')}
