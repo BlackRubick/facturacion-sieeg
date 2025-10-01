@@ -79,12 +79,17 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
         throw new Error(JSON.stringify(res.data?.message || 'Error al crear'));
       }
     } catch (err) {
-      console.log('Error al crear cliente:', err);
+      // Mostrar siempre el error en consola
+      if (err && typeof window !== 'undefined') {
+        // Para asegurar que el log se muestre en todos los navegadores
+        window.__lastCustomerError = err;
+      }
+      console.error('Error al crear cliente:', err);
       if (err.response) {
-        console.log('Error response:', err.response);
+        console.error('Error response:', err.response);
         alert('Error API: ' + JSON.stringify(err.response.data));
       } else {
-        alert('Error: ' + err.message);
+        alert('Error: ' + (err.message || JSON.stringify(err)));
       }
     }
     setLoading(false);
