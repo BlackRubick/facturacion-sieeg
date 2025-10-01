@@ -358,6 +358,11 @@ const CFDIForm = () => {
           Cantidad: prod.quantity || 1 
         })));
         setValue('items', conceptos);
+        // Restaurar los valores seleccionados de FormaPago y MetodoPago después de importar
+        setTimeout(() => {
+          setValue('FormaPago', watch('FormaPago') || '');
+          setValue('MetodoPago', watch('MetodoPago') || '');
+        }, 0);
       } else {
         alert('No se encontraron productos para ese pedido');
         setProductosImportados([]);
