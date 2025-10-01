@@ -45,7 +45,30 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    const dataToSend = { ...form, codpos: Number(form.codpos) };
+    // Asegurarse de enviar solo los campos requeridos y que regimen sea la clave
+    const dataToSend = {
+      rfc: form.rfc.trim(),
+      razons: form.razons.trim(),
+      codpos: Number(form.codpos),
+      email: form.email.trim(),
+      usocfdi: form.usocfdi || undefined,
+      regimen: typeof form.regimen === 'object' ? form.regimen.value : form.regimen,
+      calle: form.calle || undefined,
+      numero_exterior: form.numero_exterior || undefined,
+      numero_interior: form.numero_interior || undefined,
+      colonia: form.colonia || undefined,
+      ciudad: form.ciudad || undefined,
+      delegacion: form.delegacion || undefined,
+      localidad: form.localidad || undefined,
+      estado: form.estado || undefined,
+      pais: form.pais || 'MEX',
+      numregidtrib: form.numregidtrib || undefined,
+      nombre: form.nombre || undefined,
+      apellidos: form.apellidos || undefined,
+      telefono: form.telefono || undefined,
+      email2: form.email2 || undefined,
+      email3: form.email3 || undefined,
+    };
     try {
       const res = await FacturaAPIService.createClient(dataToSend);
       if (res.data?.status === 'success') {
