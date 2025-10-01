@@ -31,7 +31,7 @@ const WOOCOMMERCE_CONSUMER_SECRET = 'cs_9a3f25a9fd51c50866c4d7ad442abeb63be74c0e
 
 const CFDIForm = () => {
   const [catalogs, setCatalogs] = useState({
-    ClaveProductServ: [],
+    ClaveProdServ: [],
     ClaveUnidad: [],
     FormaPago: [],
     MetodoPago: [],
@@ -120,7 +120,7 @@ const CFDIForm = () => {
       setLoadingCatalogs(true);
       try {
         const [prod, unidad, forma, metodo, moneda, uso, pais, regimen, relacion, impuesto] = await Promise.all([
-          FacturaAPIService.getCatalog('ClaveProductServ'),
+          FacturaAPIService.getCatalog('ClaveProdServ'),
           FacturaAPIService.getCatalog('ClaveUnidad'),
           FacturaAPIService.getCatalog('FormaPago'),
           FacturaAPIService.getCatalog('MetodoPago'),
@@ -133,7 +133,7 @@ const CFDIForm = () => {
         ]);
         if (mounted) {
           setCatalogs({
-            ClaveProductServ: prod.data.data || [],
+            ClaveProdServ: prod.data.data || [],
             ClaveUnidad: unidad.data.data || [],
             FormaPago: forma.data.data || [],
             MetodoPago: metodo.data.data || [],
@@ -229,18 +229,20 @@ const CFDIForm = () => {
     // Mostrar en consola los valores antes de enviar
     console.log('Valores del formulario (forzados):', data);
     // Mapear los campos del formulario a los nombres esperados por la API
-    const items = data.items.map(item => ({
-      ClaveProdServ: String(item.ClaveProdServ || '').trim(),
-      NoIdentificacion: String(item.NoIdentificacion || '').trim(),
-      Cantidad: item.Cantidad ? Number(item.Cantidad) : 1,
-      ClaveUnidad: String(item.ClaveUnidad || '').trim(),
-      Unidad: String(item.Unidad || 'Pieza').trim(),
-      ValorUnitario: item.ValorUnitario ? Number(item.ValorUnitario) : 0,
-      Descripcion: String(item.Descripcion || '').trim(),
-      Descuento: item.Descuento !== undefined ? String(item.Descuento) : '0',
-      ObjetoImp: String(item.ObjetoImp || '02').trim(),
-      Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
-    ));
+    const items = data.items.map(item => {
+      return {
+        ClaveProdServ: String(item.ClaveProdServ || '').trim(),
+        NoIdentificacion: String(item.NoIdentificacion || '').trim(),
+        Cantidad: item.Cantidad ? Number(item.Cantidad) : 1,
+        ClaveUnidad: String(item.ClaveUnidad || '').trim(),
+        Unidad: String(item.Unidad || 'Pieza').trim(),
+        ValorUnitario: item.ValorUnitario ? Number(item.ValorUnitario) : 0,
+        Descripcion: String(item.Descripcion || '').trim(),
+        Descuento: item.Descuento !== undefined ? String(item.Descuento) : '0',
+        ObjetoImp: String(item.ObjetoImp || '02').trim(),
+        Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
+      };
+    });
     // Enviar UsoCFDI solo en la raíz, como indica la documentación oficial
     const usoCFDIValue = data.UsoCFDI || '';
     const cfdiData = {
@@ -380,7 +382,7 @@ const CFDIForm = () => {
   };
 
   // Componente interno para UsoCFDI con refuerzo de valor
-  function UsoCFDISelect({ field, fieldState, catalogs, setValue }) {
+  const UsoCFDISelect = ({ field, fieldState, catalogs, setValue }) => {
     const usoOptions = Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
       value: String(opt.key || opt.value),
       label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
