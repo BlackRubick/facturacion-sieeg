@@ -136,7 +136,6 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
               type="submit"
               className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded shadow w-full sm:w-auto"
               disabled={loading}
-              onClick={() => { console.log('Botón Crear clickeado'); }}
             >
               {loading ? 'Creando...' : 'Crear'}
             </button>
