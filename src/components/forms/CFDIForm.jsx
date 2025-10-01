@@ -240,7 +240,7 @@ const CFDIForm = () => {
       Descuento: item.Descuento !== undefined ? String(item.Descuento) : '0',
       ObjetoImp: String(item.ObjetoImp || '02').trim(),
       Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
-    }));
+    ));
     // Enviar UsoCFDI solo en la raíz, como indica la documentación oficial
     const usoCFDIValue = data.UsoCFDI || '';
     const cfdiData = {
@@ -378,6 +378,36 @@ const CFDIForm = () => {
     await fetchClients();
     setShowCustomerModal(false);
   };
+
+  // Componente interno para UsoCFDI con refuerzo de valor
+  function UsoCFDISelect({ field, fieldState, catalogs, setValue }) {
+    const usoOptions = Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
+      value: String(opt.key || opt.value),
+      label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
+    })) : [];
+    const validValue = usoOptions.find(opt => opt.value === field.value) ? field.value : (usoOptions[0]?.value || '');
+    React.useEffect(() => {
+      if (field.value !== validValue) {
+        field.onChange(validValue);
+        setValue('UsoCFDI', validValue, { shouldValidate: true, shouldDirty: true });
+      }
+    }, [validValue]);
+    return (
+      <Select
+        label="Selecciona uso CFDI"
+        options={usoOptions}
+        value={validValue}
+        onChange={v => {
+          field.onChange(v);
+          setValue('UsoCFDI', v, { shouldValidate: true, shouldDirty: true });
+        }}
+        placeholder="Selecciona uso CFDI"
+        isLoading={false}
+        error={!!fieldState.error}
+        helperText={fieldState.error?.message}
+      />
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-lg">
@@ -540,35 +570,9 @@ const CFDIForm = () => {
               name="UsoCFDI"
               control={control}
               rules={{ required: 'Debes seleccionar un uso CFDI.' }}
-              render={({ field, fieldState }) => {
-                const safeValue = field.value == null ? '' : String(field.value);
-                // Forzar que el valor nunca sea vacío si hay catálogo
-                const usoOptions = Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
-                  value: String(opt.key || opt.value),
-                  label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
-                })) : [];
-                const validValue = usoOptions.find(opt => opt.value === safeValue) ? safeValue : (usoOptions[0]?.value || '');
-                if (safeValue !== validValue) {
-                  setValue('UsoCFDI', validValue, { shouldValidate: true, shouldDirty: true });
-                }
-                return (
-                  <Select
-                    label="Selecciona uso CFDI"
-                    options={usoOptions}
-                    value={validValue}
-                    onChange={val => {
-                      const v = val == null ? '' : String(val);
-                      field.onChange(v);
-                      setValue('UsoCFDI', v, { shouldValidate: true, shouldDirty: true });
-                      console.log('[Select:UsoCFDI] onChange value:', v);
-                    }}
-                    placeholder="Selecciona uso CFDI"
-                    isLoading={false}
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
-                  />
-                );
-              }}
+              render={({ field, fieldState }) => (
+                <UsoCFDISelect field={field} fieldState={fieldState} catalogs={catalogs} setValue={setValue} />
+              )}
             />
           </div>
           <div>
