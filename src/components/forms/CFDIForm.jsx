@@ -200,8 +200,8 @@ const CFDIForm = () => {
         setValue('MetodoPago', metodoPPD.key);
       }
     }
-    // Forma de Pago: seleccionar '99' si existe, si no, no asignar nada
-    if (catalogs.FormaPago.length > 0 && !watch('FormaPago')) {
+    // Forma de Pago: seleccionar '99' si existe, solo si el campo está vacío
+    if (catalogs.FormaPago.length > 0 && (!watch('FormaPago') || watch('FormaPago') === '')) {
       const forma99 = catalogs.FormaPago.find(f => f.key === '99');
       if (forma99) {
         setValue('FormaPago', forma99.key);
@@ -344,7 +344,7 @@ const CFDIForm = () => {
           return {
             ClaveProdServ: claveProdServ,
             NoIdentificacion: prod.sku || '',
-            Cantidad: prod.quantity || 1, // <-- Usar Cantidad para el formulario y la factura
+            Cantidad: prod.quantity || 1,
             ClaveUnidad: claveUnidad,
             Unidad: unidad,
             ValorUnitario: prod.price || prod.total || '',
@@ -356,7 +356,7 @@ const CFDIForm = () => {
         }));
         setProductosImportados(order.line_items.map(prod => ({
           ...prod,
-          Cantidad: prod.quantity || 1 // <-- Agregar Cantidad para mostrar correctamente
+          Cantidad: prod.quantity || 1 
         })));
         setValue('items', conceptos);
       } else {
