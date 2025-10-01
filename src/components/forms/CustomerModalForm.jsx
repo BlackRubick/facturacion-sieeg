@@ -106,7 +106,7 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
       <div className="bg-white p-4 sm:p-6 rounded-xl shadow-xl w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl relative overflow-y-auto max-h-[90vh]">
         <button onClick={onClose} className="sticky top-4 right-4 float-right text-gray-500 hover:text-red-500 text-xl">×</button>
         <h3 className="text-xl font-bold mb-6 text-blue-700 text-center">Agregar Cliente</h3>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="RFC" name="rfc" value={form.rfc} onChange={handleChange} required />
             <Input label="Razón Social" name="razons" value={form.razons} onChange={handleChange} required />
@@ -133,14 +133,15 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
           <div className="flex flex-col sm:flex-row justify-end mt-6 gap-2">
             <Button type="button" onClick={onClose} className="bg-gray-400 text-white px-4 py-2 rounded shadow w-full sm:w-auto">Cancelar</Button>
             <button
-              type="submit"
+              type="button"
               className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded shadow w-full sm:w-auto"
               disabled={loading}
+              onClick={handleSubmit}
             >
               {loading ? 'Creando...' : 'Crear'}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
