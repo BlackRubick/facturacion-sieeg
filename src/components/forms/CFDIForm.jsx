@@ -106,6 +106,7 @@ const CFDIForm = () => {
       items: [],
     },
     resolver: zodResolver(invoiceSchema),
+    shouldUnregister: false, // <-- Mantener valores de los selects aunque se desmonten
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -480,6 +481,7 @@ const CFDIForm = () => {
             <Controller
               name="FormaPago"
               control={control}
+              defaultValue=""
               render={({ field }) => (
                 <select
                   className="w-full border rounded-lg p-2"
@@ -502,6 +504,7 @@ const CFDIForm = () => {
             <Controller
               name="MetodoPago"
               control={control}
+              defaultValue=""
               render={({ field }) => (
                 <select
                   className="w-full border rounded-lg p-2"
