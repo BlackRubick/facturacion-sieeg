@@ -384,6 +384,19 @@ const CFDIForm = () => {
     }));
   }
 
+  // Refrescar clientes después de crear uno nuevo desde el modal
+  const fetchClients = async () => {
+    try {
+      const res = await FacturaAPIService.listClients();
+      setClients(res.data.data || []);
+    } catch (err) {}
+  };
+
+  const handleCustomerCreated = async () => {
+    await fetchClients();
+    setShowCustomerModal(false);
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-lg">
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -721,7 +734,7 @@ const CFDIForm = () => {
       {errors && Object.keys(errors).length > 0 && (
         <pre className="text-red-500 mt-6">{JSON.stringify(cleanForJson(errors), null, 2)}</pre>
       )}
-      <CustomerModalForm open={showCustomerModal} onClose={() => setShowCustomerModal(false)} />
+      <CustomerModalForm open={showCustomerModal} onClose={() => setShowCustomerModal(false)} onCreated={handleCustomerCreated} />
     </form>
   );
 };
