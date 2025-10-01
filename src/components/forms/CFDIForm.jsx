@@ -357,11 +357,14 @@ const CFDIForm = () => {
           ...prod,
           Cantidad: prod.quantity || 1 
         })));
+        // Guardar valores actuales antes de sobrescribir items
+        const formaPagoActual = getValues('FormaPago');
+        const metodoPagoActual = getValues('MetodoPago');
         setValue('items', conceptos);
         // Restaurar los valores seleccionados de FormaPago y MetodoPago después de importar
         setTimeout(() => {
-          setValue('FormaPago', watch('FormaPago') || '');
-          setValue('MetodoPago', watch('MetodoPago') || '');
+          setValue('FormaPago', formaPagoActual || '');
+          setValue('MetodoPago', metodoPagoActual || '');
         }, 0);
       } else {
         alert('No se encontraron productos para ese pedido');
