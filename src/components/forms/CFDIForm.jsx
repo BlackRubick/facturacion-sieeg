@@ -200,14 +200,8 @@ const CFDIForm = () => {
         setValue('MetodoPago', metodoPPD.key);
       }
     }
-    // Forma de Pago: seleccionar '99' si existe, solo si el campo está vacío
-    if (catalogs.FormaPago.length > 0 && (!watch('FormaPago') || watch('FormaPago') === '')) {
-      const forma99 = catalogs.FormaPago.find(f => f.key === '99');
-      if (forma99) {
-        setValue('FormaPago', forma99.key);
-      }
-    }
-  }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
+    // Forma de Pago: seleccionar '99' si existe, si no, no asignar nada
+ , [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
 
   const onSubmit = async (dataRaw) => {
     // Calcular la fecha real según la opción seleccionada
@@ -237,8 +231,7 @@ const CFDIForm = () => {
     // Forzar sincronización de campos obligatorios usando watch
     const tipoDocumento = data.TipoDocumento || 'factura';
     const moneda = data.Moneda || 'MXN';
-    const formaPago = data.FormaPago; // Usar solo lo que selecciona el usuario
-    const metodoPago = data.MetodoPago; // Usar solo lo que selecciona el usuario
+    const metodoPago = data.MetodoPago || (Array.isArray(catalogs.MetodoPago) && catalogs.MetodoPago.length > 0 ? (catalogs.MetodoPago.find(m => m.key === 'PPD')?.key || catalogs.MetodoPago[0].key) : '');
     const serieId = Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
     // Usar el valor seleccionado por el usuario para UsoCFDI
     let usoCFDI = data.UsoCFDI || '';
