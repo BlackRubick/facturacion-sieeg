@@ -200,6 +200,7 @@ const CFDIForm = () => {
         setValue('MetodoPago', metodoPPD.key);
       }
     }
+    // Forma de Pago: seleccionar '99' si existe, si no, no asignar nada
     if (catalogs.FormaPago.length > 0 && !watch('FormaPago')) {
       const forma99 = catalogs.FormaPago.find(f => f.key === '99');
       if (forma99) {
