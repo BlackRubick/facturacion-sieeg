@@ -479,21 +479,33 @@ const CFDIForm = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Forma de Pago</label>
-            <select {...register('FormaPago')} className="w-full border rounded-lg p-2">
-              <option value="">Selecciona</option>
-              {catalogs.FormaPago.map((opt, idx) => (
-                <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-              ))}
-            </select>
+            <Controller
+              name="FormaPago"
+              control={control}
+              render={({ field }) => (
+                <select {...field} className="w-full border rounded-lg p-2">
+                  <option value="">Selecciona</option>
+                  {catalogs.FormaPago.map((opt, idx) => (
+                    <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
+                  ))}
+                </select>
+              )}
+            />
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Método de Pago</label>
-            <select {...register('MetodoPago')} className="w-full border rounded-lg p-2">
-              <option value="">Selecciona</option>
-              {catalogs.MetodoPago.map((opt, idx) => (
-                <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-              ))}
-            </select>
+            <Controller
+              name="MetodoPago"
+              control={control}
+              render={({ field }) => (
+                <select {...field} className="w-full border rounded-lg p-2">
+                  <option value="">Selecciona</option>
+                  {catalogs.MetodoPago.map((opt, idx) => (
+                    <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
+                  ))}
+                </select>
+              )}
+            />
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Moneda</label>
