@@ -9,12 +9,14 @@ const initialForm = {
 };
 
 const CustomerModalForm = ({ open, onClose, onCreated }) => {
+  console.log('CustomerModalForm renderizado, open:', open);
   const [form, setForm] = useState(initialForm);
   const [catalogs, setCatalogs] = useState({ UsoCFDI: [], RegimenFiscal: [] });
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
+    console.log('CustomerModalForm useEffect open:', open);
     if (open) {
       setForm(initialForm);
       fetchCatalogs();
@@ -130,7 +132,12 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
           </div>
           <div className="flex flex-col sm:flex-row justify-end mt-6 gap-2">
             <Button type="button" onClick={onClose} className="bg-gray-400 text-white px-4 py-2 rounded shadow w-full sm:w-auto">Cancelar</Button>
-            <button type="submit" className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded shadow w-full sm:w-auto" disabled={loading}>
+            <button
+              type="submit"
+              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded shadow w-full sm:w-auto"
+              disabled={loading}
+              onClick={() => { console.log('Botón Crear clickeado'); }}
+            >
               {loading ? 'Creando...' : 'Crear'}
             </button>
           </div>
