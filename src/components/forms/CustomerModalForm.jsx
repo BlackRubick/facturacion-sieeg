@@ -44,6 +44,7 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    console.log('SUBMIT EJECUTADO');
     setLoading(true);
     // Asegurarse de enviar solo los campos requeridos y que regimen sea la clave
     const dataToSend = {
@@ -69,6 +70,7 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
       email2: form.email2 || undefined,
       email3: form.email3 || undefined,
     };
+    console.log('DATOS A ENVIAR', dataToSend);
     try {
       const res = await FacturaAPIService.createClient(dataToSend);
       if (res.data?.status === 'success') {
@@ -128,7 +130,9 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
           </div>
           <div className="flex flex-col sm:flex-row justify-end mt-6 gap-2">
             <Button type="button" onClick={onClose} className="bg-gray-400 text-white px-4 py-2 rounded shadow w-full sm:w-auto">Cancelar</Button>
-            <Button type="submit" className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded shadow w-full sm:w-auto" disabled={loading}>{loading ? 'Creando...' : 'Crear'}</Button>
+            <button type="submit" className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded shadow w-full sm:w-auto" disabled={loading}>
+              {loading ? 'Creando...' : 'Crear'}
+            </button>
           </div>
         </form>
       </div>
