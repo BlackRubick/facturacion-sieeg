@@ -200,8 +200,8 @@ const CFDIForm = () => {
         setValue('MetodoPago', metodoPPD.key);
       }
     }
-    // Forma de Pago: seleccionar '99' si existe, si no, no asignar nada
- , [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
+
+  }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
 
   const onSubmit = async (dataRaw) => {
     // Calcular la fecha real según la opción seleccionada
