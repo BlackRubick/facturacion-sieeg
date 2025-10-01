@@ -480,9 +480,11 @@ const CFDIForm = () => {
               control={control}
               render={({ field }) => (
                 <select
-                  {...field}
                   className="w-full border rounded-lg p-2"
-                  onChange={e => field.onChange(e.target.value)}
+                  onChange={e => {
+                    field.onChange(e.target.value);
+                    setValue('FormaPago', e.target.value);
+                  }}
                   value={field.value || ""}
                 >
                   <option value="">Selecciona</option>
@@ -500,9 +502,11 @@ const CFDIForm = () => {
               control={control}
               render={({ field }) => (
                 <select
-                  {...field}
                   className="w-full border rounded-lg p-2"
-                  onChange={e => field.onChange(e.target.value)}
+                  onChange={e => {
+                    field.onChange(e.target.value);
+                    setValue('MetodoPago', e.target.value);
+                  }}
                   value={field.value || ""}
                 >
                   <option value="">Selecciona</option>
