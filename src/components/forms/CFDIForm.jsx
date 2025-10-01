@@ -481,24 +481,30 @@ const CFDIForm = () => {
             <Controller
               name="FormaPago"
               control={control}
-              render={({ field }) => (
-                <Select
-                  label="Forma de Pago"
-                  options={catalogs.FormaPago.map((opt, idx) => ({
-                    value: String(opt.key),
-                    label: `${opt.key} - ${opt.name}`,
-                  }))}
-                  value={field.value || ''}
-                  onChange={value => {
-                    console.log('Seleccionaste Forma de Pago:', value);
-                    field.onChange(value);
-                  }}
-                  placeholder="Selecciona una forma de pago"
-                  isLoading={loadingCatalogs}
-                  error={!field.value}
-                  helperText={!field.value ? 'Debes seleccionar una forma de pago.' : ''}
-                />
-              )}
+              render={({ field }) => {
+                console.log('RENDER FormaPago Controller', field.value);
+                return (
+                  <Select
+                    label="Forma de Pago"
+                    options={catalogs.FormaPago.map((opt, idx) => ({
+                      value: String(opt.key),
+                      label: `${opt.key} - ${opt.name}`,
+                    }))}
+                    value={field.value || ''}
+                    onChange={value => {
+                      console.log('Seleccionaste Forma de Pago:', value);
+                      field.onChange(String(value));
+                      setTimeout(() => {
+                        console.log('POST-CHANGE FormaPago (watch):', watch('FormaPago'));
+                      }, 0);
+                    }}
+                    placeholder="Selecciona una forma de pago"
+                    isLoading={loadingCatalogs}
+                    error={!field.value}
+                    helperText={!field.value ? 'Debes seleccionar una forma de pago.' : ''}
+                  />
+                );
+              }}
             />
           </div>
           <div>
@@ -506,24 +512,30 @@ const CFDIForm = () => {
             <Controller
               name="MetodoPago"
               control={control}
-              render={({ field }) => (
-                <Select
-                  label="Método de Pago"
-                  options={catalogs.MetodoPago.map((opt, idx) => ({
-                    value: String(opt.key),
-                    label: `${opt.key} - ${opt.name}`,
-                  }))}
-                  value={field.value || ''}
-                  onChange={value => {
-                    console.log('Seleccionaste Método de Pago:', value);
-                    field.onChange(value);
-                  }}
-                  placeholder="Selecciona un método de pago"
-                  isLoading={loadingCatalogs}
-                  error={!field.value}
-                  helperText={!field.value ? 'Debes seleccionar un método de pago.' : ''}
-                />
-              )}
+              render={({ field }) => {
+                console.log('RENDER MetodoPago Controller', field.value);
+                return (
+                  <Select
+                    label="Método de Pago"
+                    options={catalogs.MetodoPago.map((opt, idx) => ({
+                      value: String(opt.key),
+                      label: `${opt.key} - ${opt.name}`,
+                    }))}
+                    value={field.value || ''}
+                    onChange={value => {
+                      console.log('Seleccionaste Método de Pago:', value);
+                      field.onChange(String(value));
+                      setTimeout(() => {
+                        console.log('POST-CHANGE MetodoPago (watch):', watch('MetodoPago'));
+                      }, 0);
+                    }}
+                    placeholder="Selecciona un método de pago"
+                    isLoading={loadingCatalogs}
+                    error={!field.value}
+                    helperText={!field.value ? 'Debes seleccionar un método de pago.' : ''}
+                  />
+                );
+              }}
             />
           </div>
           <div>
