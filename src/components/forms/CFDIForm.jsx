@@ -425,11 +425,11 @@ const CFDIForm = () => {
             <Select
               label="Selecciona un cliente"
               options={clients.map(client => ({
-                value: client.UID || '',
+                value: String(client.UID || ''),
                 label: `${client.RazonSocial || (client.Contacto?.Nombre + ' ' + client.Contacto?.Apellidos) || 'Sin nombre'} (${client.RFC || ''})`,
               }))}
-              value={watch('customerId')}
-              onChange={value => setValue('customerId', value)}
+              value={String(watch('customerId') || '')}
+              onChange={value => setValue('customerId', String(value || ''))}
               placeholder="Buscar cliente..."
               isLoading={false}
             />
@@ -446,11 +446,11 @@ const CFDIForm = () => {
             <Select
               label="Selecciona una serie"
               options={series.map(s => ({
-                value: s.id || s.ID || s.SerieID || '',
+                value: String(s.id || s.ID || s.SerieID || ''),
                 label: `${s.SerieName} - ${s.SerieDescription || ''}`,
               }))}
-              value={watch('Serie')}
-              onChange={value => setValue('Serie', value || '')}
+              value={String(watch('Serie') || '')}
+              onChange={value => setValue('Serie', String(value || ''))}
               placeholder="Buscar serie..."
               isLoading={false}
               error={!watch('Serie')}
@@ -527,11 +527,11 @@ const CFDIForm = () => {
             <Select
               label="Selecciona una moneda"
               options={catalogs.Moneda.map((opt, idx) => ({
-                value: opt.key,
+                value: String(opt.key),
                 label: `${opt.key} - ${opt.name}`,
               }))}
-              value={watch('Moneda')}
-              onChange={value => setValue('Moneda', value || '')}
+              value={String(watch('Moneda') || '')}
+              onChange={value => setValue('Moneda', String(value || ''))}
               placeholder="Selecciona una moneda"
               isLoading={false}
               error={!watch('Moneda')}
@@ -543,11 +543,11 @@ const CFDIForm = () => {
             <Select
               label="Selecciona uso CFDI"
               options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
-                value: opt.key || opt.value,
+                value: String(opt.key || opt.value),
                 label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
               })) : []}
-              value={watch('UsoCFDI')}
-              onChange={value => setValue('UsoCFDI', value || '')}
+              value={String(watch('UsoCFDI') || '')}
+              onChange={value => setValue('UsoCFDI', String(value || ''))}
               placeholder="Selecciona uso CFDI"
               isLoading={false}
               error={!watch('UsoCFDI')}
@@ -612,8 +612,8 @@ const CFDIForm = () => {
               <Input label="Número De Pedido*" placeholder="Número De Pedido" {...register('Pedido', { required: true })} />
               <Input label="Codigo Postal*" placeholder="Ej: 29038" {...register('CodigoPostal', { required: true })} />
               <Input label="Regimen Fiscal*" placeholder="Ej: (612) - Personas Físicas con Actividades Empresariales y Profesionales" {...register('RegimenFiscal', { required: true })} />
-              <Select label="C.F.D.I.*" options={catalogs.UsoCFDI.map(opt => ({ value: opt.key || opt.value, label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}` }))} value={watch('CFDI')} onChange={value => setValue('CFDI', value)} placeholder="Selecciona CFDI" />
-              <Select label="Forma de Pago*" options={catalogs.FormaPago.map(opt => ({ value: opt.key, label: `${opt.key} - ${opt.name}` }))} value={watch('FormaPago')} onChange={value => setValue('FormaPago', value)} placeholder="Selecciona una forma de pago" />
+              <Select label="C.F.D.I.*" options={catalogs.UsoCFDI.map(opt => ({ value: String(opt.key || opt.value), label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}` }))} value={String(watch('CFDI') || '')} onChange={value => setValue('CFDI', String(value || ''))} placeholder="Selecciona CFDI" />
+              <Select label="Forma de Pago*" options={catalogs.FormaPago.map(opt => ({ value: String(opt.key), label: `${opt.key} - ${opt.name}` }))} value={String(watch('FormaPago') || '')} onChange={value => setValue('FormaPago', String(value || ''))} placeholder="Selecciona una forma de pago" />
             </div>
           </div>
         )}
