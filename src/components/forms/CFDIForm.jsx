@@ -183,9 +183,12 @@ const CFDIForm = () => {
     if (catalogs.Moneda.length > 0 && !watch('Moneda')) {
       setValue('Moneda', catalogs.Moneda[0].key || '');
     }
-    // UsoCFDI
-    if (catalogs.UsoCFDI.length > 0 && !watch('UsoCFDI')) {
-      setValue('UsoCFDI', catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '');
+    // UsoCFDI: siempre establecer el primer valor válido si está vacío
+    if (catalogs.UsoCFDI.length > 0) {
+      const firstUso = catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
+      if (!watch('UsoCFDI') || watch('UsoCFDI') === '') {
+        setValue('UsoCFDI', firstUso);
+      }
     }
     // País: seleccionar MEX - México
     if (catalogs.Pais.length > 0) {
@@ -539,15 +542,20 @@ const CFDIForm = () => {
               rules={{ required: 'Debes seleccionar un uso CFDI.' }}
               render={({ field, fieldState }) => {
                 const safeValue = field.value == null ? '' : String(field.value);
-                console.log('[Controller:UsoCFDI] value:', safeValue, 'options:', catalogs.UsoCFDI);
+                // Forzar que el valor nunca sea vacío si hay catálogo
+                const usoOptions = Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
+                  value: String(opt.key || opt.value),
+                  label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
+                })) : [];
+                const validValue = usoOptions.find(opt => opt.value === safeValue) ? safeValue : (usoOptions[0]?.value || '');
+                if (safeValue !== validValue) {
+                  setValue('UsoCFDI', validValue, { shouldValidate: true, shouldDirty: true });
+                }
                 return (
                   <Select
                     label="Selecciona uso CFDI"
-                    options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
-                      value: String(opt.key || opt.value),
-                      label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
-                    })) : []}
-                    value={safeValue}
+                    options={usoOptions}
+                    value={validValue}
                     onChange={val => {
                       const v = val == null ? '' : String(val);
                       field.onChange(v);
