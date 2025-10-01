@@ -526,18 +526,28 @@ const CFDIForm = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Uso CFDI</label>
-            <Select
-              label="Selecciona uso CFDI"
-              options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
-                value: String(opt.key || opt.value),
-                label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
-              })) : []}
-              value={String(watch('UsoCFDI') || '')}
-              onChange={value => setValue('UsoCFDI', String(value || ''))}
-              placeholder="Selecciona uso CFDI"
-              isLoading={false}
-              error={!watch('UsoCFDI')}
-              helperText={!watch('UsoCFDI') ? 'Debes seleccionar un uso CFDI.' : ''}
+            <Controller
+              name="UsoCFDI"
+              control={control}
+              rules={{ required: 'Debes seleccionar un uso CFDI.' }}
+              render={({ field, fieldState }) => {
+                const safeValue = field.value == null ? '' : String(field.value);
+                return (
+                  <Select
+                    label="Selecciona uso CFDI"
+                    options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
+                      value: String(opt.key || opt.value),
+                      label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
+                    })) : []}
+                    value={safeValue}
+                    onChange={field.onChange}
+                    placeholder="Selecciona uso CFDI"
+                    isLoading={false}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                );
+              }}
             />
           </div>
           <div>
