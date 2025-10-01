@@ -227,6 +227,8 @@ const CFDIForm = () => {
     const moneda = data.Moneda || 'MXN';
     const formaPago = data.FormaPago;
     const metodoPago = data.MetodoPago;
+    // Debug: mostrar valores antes de validar
+    console.log('DEBUG - FormaPago:', formaPago, 'MetodoPago:', metodoPago, 'dataRaw:', dataRaw);
     if (!formaPago) {
       alert('Debes seleccionar una Forma de Pago válida.');
       return;
