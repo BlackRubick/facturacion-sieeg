@@ -48,7 +48,6 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
     e.preventDefault();
     console.log('SUBMIT EJECUTADO');
     setLoading(true);
-    // Asegurarse de enviar solo los campos requeridos y que regimen sea la clave
     const dataToSend = {
       rfc: form.rfc.trim(),
       razons: form.razons.trim(),
@@ -74,21 +73,22 @@ const CustomerModalForm = ({ open, onClose, onCreated }) => {
     };
     console.log('DATOS A ENVIAR', dataToSend);
     try {
+      console.log('Llamando a FacturaAPIService.createClient...');
       const res = await FacturaAPIService.createClient(dataToSend);
+      console.log('Respuesta completa de la API:', res);
       if (res.data?.status === 'success') {
         alert('Cliente creado correctamente.');
         if (onCreated) onCreated();
         if (onClose) onClose();
       } else {
-        throw new Error(JSON.stringify(res.data?.message || 'Error al crear'));
+        console.error('Respuesta de error de la API:', res.data);
+        alert('Error al crear cliente: ' + JSON.stringify(res.data));
       }
     } catch (err) {
-      // Mostrar siempre el error en consola
       if (err && typeof window !== 'undefined') {
-        // Para asegurar que el log se muestre en todos los navegadores
         window.__lastCustomerError = err;
       }
-      console.error('Error al crear cliente:', err);
+      console.error('Error al crear cliente (catch):', err);
       if (err.response) {
         console.error('Error response:', err.response);
         alert('Error API: ' + JSON.stringify(err.response.data));
