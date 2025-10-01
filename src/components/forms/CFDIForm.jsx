@@ -237,6 +237,7 @@ const CFDIForm = () => {
     // Forzar sincronización de campos obligatorios usando watch
     const tipoDocumento = data.TipoDocumento || 'factura';
     const moneda = data.Moneda || 'MXN';
+    const formaPago = data.FormaPago || (Array.isArray(catalogs.FormaPago) && catalogs.FormaPago.length > 0 ? (catalogs.FormaPago.find(f => f.key === '99')?.key || catalogs.FormaPago[0].key) : '');
     const metodoPago = data.MetodoPago || (Array.isArray(catalogs.MetodoPago) && catalogs.MetodoPago.length > 0 ? (catalogs.MetodoPago.find(m => m.key === 'PPD')?.key || catalogs.MetodoPago[0].key) : '');
     const serieId = Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
     // Usar el valor seleccionado por el usuario para UsoCFDI
