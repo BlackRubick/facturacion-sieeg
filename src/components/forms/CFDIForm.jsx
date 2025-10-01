@@ -238,7 +238,8 @@ const CFDIForm = () => {
       ObjetoImp: String(item.ObjetoImp || '02').trim(),
       Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
     }));
-    // Cambiar el nombre del campo a UsoCfdi (como suelen esperar los backends)
+    // Enviar todos los nombres posibles para UsoCFDI
+    const usoCFDIValue = data.UsoCFDI || '';
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
@@ -248,7 +249,11 @@ const CFDIForm = () => {
       FormaPago: data.FormaPago,
       MetodoPago: data.MetodoPago,
       Moneda: data.Moneda || 'MXN',
-      UsoCfdi: data.UsoCFDI || '', // <--- CAMBIO DE NOMBRE
+      UsoCFDI: usoCFDIValue,
+      UsoCfdi: usoCFDIValue,
+      usoCFDI: usoCFDIValue,
+      usoCfdi: usoCFDIValue,
+      uso_cfdi: usoCFDIValue,
       Conceptos: items,
       BorradorSiFalla: String(data.BorradorSiFalla || '0'),
       Draft: String(data.Draft || '0'),
