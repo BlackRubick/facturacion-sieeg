@@ -532,6 +532,7 @@ const CFDIForm = () => {
               rules={{ required: 'Debes seleccionar un uso CFDI.' }}
               render={({ field, fieldState }) => {
                 const safeValue = field.value == null ? '' : String(field.value);
+                console.log('[Controller:UsoCFDI] value:', safeValue, 'options:', catalogs.UsoCFDI);
                 return (
                   <Select
                     label="Selecciona uso CFDI"
@@ -540,7 +541,12 @@ const CFDIForm = () => {
                       label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
                     })) : []}
                     value={safeValue}
-                    onChange={field.onChange}
+                    onChange={val => {
+                      const v = val == null ? '' : String(val);
+                      field.onChange(v);
+                      setValue('UsoCFDI', v, { shouldValidate: true, shouldDirty: true });
+                      console.log('[Select:UsoCFDI] onChange value:', v);
+                    }}
                     placeholder="Selecciona uso CFDI"
                     isLoading={false}
                     error={!!fieldState.error}
