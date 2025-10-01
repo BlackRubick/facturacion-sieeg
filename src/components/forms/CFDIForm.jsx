@@ -223,28 +223,6 @@ const CFDIForm = () => {
     }
     // Construir los datos corregidos para validar y enviar
     const data = { ...dataRaw, dueDate: fechaCFDI };
-    // Forzar sincronización de campos obligatorios usando watch
-    const tipoDocumento = data.TipoDocumento || 'factura';
-    const moneda = data.Moneda || 'MXN';
-    const formaPago = data.FormaPago;
-    const metodoPago = data.MetodoPago;
-    // Debug: mostrar valores antes de validar
-    console.log('DEBUG - FormaPago:', formaPago, 'MetodoPago:', metodoPago, 'dataRaw:', dataRaw);
-    if (!formaPago) {
-      alert('Debes seleccionar una Forma de Pago válida.');
-      return;
-    }
-    if (!metodoPago) {
-      alert('Debes seleccionar un Método de Pago válido.');
-      return;
-    }
-    const serieId = Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined);
-    // Usar el valor seleccionado por el usuario para UsoCFDI
-    let usoCFDI = data.UsoCFDI || '';
-    if (!usoCFDI && Array.isArray(catalogs.UsoCFDI) && catalogs.UsoCFDI.length > 0) {
-      usoCFDI = catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '';
-      setValue('UsoCFDI', usoCFDI);
-    }
     // Mostrar en consola los valores antes de enviar
     console.log('Valores del formulario (forzados):', data);
     // Mapear los campos del formulario a los nombres esperados por la API
@@ -264,12 +242,12 @@ const CFDIForm = () => {
       Receptor: {
         UID: String(data.customerId || '').trim(),
       },
-      TipoDocumento: tipoDocumento,
-      Serie: serieId,
-      FormaPago: formaPago,
-      MetodoPago: metodoPago,
-      Moneda: moneda,
-      UsoCFDI: usoCFDI,
+      TipoDocumento: data.TipoDocumento || 'factura',
+      Serie: Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined),
+      FormaPago: data.FormaPago,
+      MetodoPago: data.MetodoPago,
+      Moneda: data.Moneda || 'MXN',
+      UsoCFDI: data.UsoCFDI || '',
       Conceptos: items,
       BorradorSiFalla: String(data.BorradorSiFalla || '0'),
       Draft: String(data.Draft || '0'),
