@@ -482,21 +482,25 @@ const CFDIForm = () => {
               name="FormaPago"
               control={control}
               rules={{ required: 'Debes seleccionar una forma de pago.' }}
-              render={({ field, fieldState }) => (
-                <Select
-                  label="Forma de Pago"
-                  options={catalogs.FormaPago.map((opt, idx) => ({
-                    value: String(opt.key),
-                    label: `${opt.key} - ${opt.name}`,
-                  }))}
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                  placeholder="Selecciona una forma de pago"
-                  isLoading={loadingCatalogs}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                />
-              )}
+              render={({ field, fieldState }) => {
+                const safeValue = field.value == null ? '' : String(field.value);
+                console.log('[Controller:FormaPago] value:', safeValue, 'options:', catalogs.FormaPago);
+                return (
+                  <Select
+                    label="Forma de Pago"
+                    options={catalogs.FormaPago.map((opt, idx) => ({
+                      value: String(opt.key),
+                      label: `${opt.key} - ${opt.name}`,
+                    }))}
+                    value={safeValue}
+                    onChange={field.onChange}
+                    placeholder="Selecciona una forma de pago"
+                    isLoading={loadingCatalogs}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                );
+              }}
             />
           </div>
           <div>
@@ -505,21 +509,25 @@ const CFDIForm = () => {
               name="MetodoPago"
               control={control}
               rules={{ required: 'Debes seleccionar un método de pago.' }}
-              render={({ field, fieldState }) => (
-                <Select
-                  label="Método de Pago"
-                  options={catalogs.MetodoPago.map((opt, idx) => ({
-                    value: String(opt.key),
-                    label: `${opt.key} - ${opt.name}`,
-                  }))}
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                  placeholder="Selecciona un método de pago"
-                  isLoading={loadingCatalogs}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                />
-              )}
+              render={({ field, fieldState }) => {
+                const safeValue = field.value == null ? '' : String(field.value);
+                console.log('[Controller:MetodoPago] value:', safeValue, 'options:', catalogs.MetodoPago);
+                return (
+                  <Select
+                    label="Método de Pago"
+                    options={catalogs.MetodoPago.map((opt, idx) => ({
+                      value: String(opt.key),
+                      label: `${opt.key} - ${opt.name}`,
+                    }))}
+                    value={safeValue}
+                    onChange={field.onChange}
+                    placeholder="Selecciona un método de pago"
+                    isLoading={loadingCatalogs}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                );
+              }}
             />
           </div>
           <div>
