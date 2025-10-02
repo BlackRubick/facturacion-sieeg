@@ -1060,7 +1060,19 @@ const CFDIForm = () => {
                       label: `${opt.key} - ${opt.name}`,
                     }))}
                     value={safeValue}
-                    onChange={field.onChange}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      
+                      // 🔥 NUEVA FUNCIONALIDAD: Si selecciona PPD, cambiar FormaPago a 99
+                      if (value === 'PPD') {
+                        console.log('🎯 MetodoPago PPD seleccionado, cambiando FormaPago a 99 - Por definir');
+                        setValue('FormaPago', '99', { 
+                          shouldValidate: true, 
+                          shouldDirty: true, 
+                          shouldTouch: true 
+                        });
+                      }
+                    }}
                     placeholder="Selecciona un método de pago"
                     isLoading={loadingCatalogs}
                     error={!!fieldState.error}
