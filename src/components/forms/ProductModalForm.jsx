@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import FacturaAPIService from '../../services/facturaApi';
 import Button from '../common/Button/Button';
 import Input from '../common/Input/Input';
 import Select from '../common/Select/Select';
+import SearchableSelect from '../common/SearchableSelect/SearchableSelect';
 
 const ProductModalForm = ({ open, onClose, onCreated }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -176,7 +177,7 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
                 control={control}
                 rules={{ required: 'Debes seleccionar una clave de producto/servicio' }}
                 render={({ field, fieldState }) => (
-                  <Select
+                  <SearchableSelect
                     label="Clave Producto/Servicio *"
                     options={catalogs.ClaveProductServ.map((opt) => ({
                       value: String(opt.key),
@@ -184,10 +185,11 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
                     }))}
                     value={field.value || ''}
                     onChange={field.onChange}
-                    placeholder="Selecciona una clave de producto/servicio"
+                    placeholder="Buscar clave de producto/servicio..."
                     isLoading={loadingCatalogs}
                     error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
+                    helperText={fieldState.error?.message || `${catalogs.ClaveProductServ.length} opciones disponibles`}
+                    maxDisplayOptions={50}
                   />
                 )}
               />
@@ -200,7 +202,7 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
                 control={control}
                 rules={{ required: 'Debes seleccionar una clave de unidad' }}
                 render={({ field, fieldState }) => (
-                  <Select
+                  <SearchableSelect
                     label="Clave Unidad *"
                     options={catalogs.ClaveUnidad.map((opt) => ({
                       value: String(opt.key),
@@ -208,10 +210,11 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
                     }))}
                     value={field.value || ''}
                     onChange={handleClaveUnityChange}
-                    placeholder="Selecciona una clave de unidad"
+                    placeholder="Buscar clave de unidad..."
                     isLoading={loadingCatalogs}
                     error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
+                    helperText={fieldState.error?.message || `${catalogs.ClaveUnidad.length} opciones disponibles`}
+                    maxDisplayOptions={50}
                   />
                 )}
               />
