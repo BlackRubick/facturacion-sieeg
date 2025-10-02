@@ -421,10 +421,74 @@ const CFDIForm = () => {
     setLoadingClientData(true);
     try {
       console.log('🔍 Obteniendo datos del cliente con UID:', clientUID);
+      
+      // MÉTODO 1: Intentar buscar en la lista de clientes ya cargada
+      console.log('🔍 Buscando cliente en lista local...');
+      const localClient = clients.find(client => String(client.UID) === String(clientUID));
+      if (localClient) {
+        console.log('✅ Cliente encontrado en lista local:', JSON.stringify(localClient, null, 2));
+        setSelectedClientData(localClient);
+        
+        // Procesar auto-rellenado con datos locales
+        setTimeout(() => {
+          console.log('🔄 Iniciando auto-rellenado con datos locales...');
+          
+          if (localClient.UsoCFDI) {
+            console.log('🎯 UsoCFDI encontrado en datos locales:', localClient.UsoCFDI);
+            if (catalogs.UsoCFDI.length > 0) {
+              const usoCFDIExists = catalogs.UsoCFDI.find(uso => 
+                (uso.key && uso.key === localClient.UsoCFDI) || 
+                (uso.value && uso.value === localClient.UsoCFDI)
+              );
+              if (usoCFDIExists) {
+                setValue('UsoCFDI', String(localClient.UsoCFDI), { shouldValidate: true });
+                console.log('✅ UsoCFDI auto-rellenado desde datos locales:', localClient.UsoCFDI);
+              }
+            }
+          }
+          
+          if (localClient.RegimenId) {
+            console.log('🎯 RegimenId encontrado en datos locales:', localClient.RegimenId);
+            if (catalogs.RegimenFiscal.length > 0) {
+              const regimenExists = catalogs.RegimenFiscal.find(regimen => 
+                regimen.key === localClient.RegimenId
+              );
+              if (regimenExists) {
+                setValue('RegimenFiscal', String(localClient.RegimenId), { shouldValidate: true });
+                console.log('✅ RegimenFiscal auto-rellenado desde datos locales:', localClient.RegimenId);
+              }
+            }
+          }
+          
+          console.log('🏁 Auto-rellenado desde datos locales completado');
+        }, 100);
+        
+        setLoadingClientData(false);
+        return;
+      }
+      
+      // MÉTODO 2: Consultar cliente individual por UID
+      console.log('🔍 Cliente no encontrado en lista local, consultando API individual...');
       const response = await FacturaAPIService.getClientByUID(clientUID);
+      
+      // Debug completo de la respuesta
+      console.log('🔍 Respuesta RAW completa de la API:', JSON.stringify(response, null, 2));
+      console.log('🔍 response.data:', JSON.stringify(response.data, null, 2));
+      console.log('🔍 response.data.data:', JSON.stringify(response.data.data, null, 2));
+      
       const clientData = response.data.data || response.data;
       
-      console.log('📋 Datos completos del cliente recibidos:', JSON.stringify(clientData, null, 2));
+      console.log('📋 Datos del cliente procesados:', JSON.stringify(clientData, null, 2));
+      console.log('📋 Campos específicos del cliente:');
+      console.log('   - UID:', clientData.UID);
+      console.log('   - RazonSocial:', clientData.RazonSocial);
+      console.log('   - RFC:', clientData.RFC);
+      console.log('   - UsoCFDI:', clientData.UsoCFDI);
+      console.log('   - RegimenId:', clientData.RegimenId);
+      console.log('   - Regimen:', clientData.Regimen);
+      console.log('   - FormaPago:', clientData.FormaPago);
+      console.log('   - MetodoPago:', clientData.MetodoPago);
+      
       setSelectedClientData(clientData);
 
       // Esperar un poco para asegurar que los catálogos estén cargados
@@ -569,6 +633,23 @@ const CFDIForm = () => {
               <div>• Regimen (descripción): <code className="bg-white px-1 rounded text-xs">{selectedClientData.Regimen || 'No definido'}</code></div>
               <div>• FormaPago del cliente: <code className="bg-white px-1 rounded">{selectedClientData.FormaPago || 'No definido'}</code></div>
               <div>• MetodoPago del cliente: <code className="bg-white px-1 rounded">{selectedClientData.MetodoPago || 'No definido'}</code></div>
+              
+              {/* Botón de debug para ver todos los datos */}
+              <div className="mt-3 pt-2 border-t border-gray-300">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    console.log('🧪 DEBUG - Todos los datos del cliente:', selectedClientData);
+                    console.log('🧪 DEBUG - Claves disponibles en el cliente:', Object.keys(selectedClientData));
+                    console.log('🧪 DEBUG - Catálogos UsoCFDI:', catalogs.UsoCFDI.slice(0, 5));
+                    console.log('🧪 DEBUG - Catálogos RegimenFiscal:', catalogs.RegimenFiscal.slice(0, 5));
+                    alert('Revisa la consola para ver todos los datos del cliente');
+                  }}
+                  className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
+                >
+                  🧪 Ver datos completos en consola
+                </button>
+              </div>
             </div>
           </div>
         )}
