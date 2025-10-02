@@ -30,23 +30,60 @@ const FACTURA_API_KEY = import.meta.env.VITE_FACTURA_API_KEY;
 const FACTURA_SECRET_KEY = import.meta.env.VITE_FACTURA_SECRET_KEY;
 const FACTURA_PLUGIN = import.meta.env.VITE_FACTURA_PLUGIN;
 
-// Mapeo de métodos de pago de WooCommerce a códigos SAT
-const mapPaymentMethodToSAT = (wooPaymentMethod) => {
-  const paymentMap = {
-    'bacs': '02', // Transferencia bancaria
-    'cheque': '02', // Cheque (también transferencia)
-    'cod': '01', // Efectivo
-    'paypal': '04', // Tarjeta de crédito/débito (PayPal generalmente usa tarjetas)
-    'stripe': '04', // Tarjeta de crédito/débito
-    'mercadopago': '04', // Tarjeta de crédito/débito
-    'oxxo': '01', // Efectivo
-    'spei': '02', // Transferencia bancaria
-    'card': '04', // Tarjeta de crédito/débito
-    'credit_card': '04', // Tarjeta de crédito/débito
-    'debit_card': '28', // Tarjeta de débito
+// Mapeo de métodos de pago de WooCommerce a códigos SAT (igual que en CFDIForm)
+const mapearMetodoPago = (wooPaymentMethod) => {
+  // Mapeos más completos basados en los catálogos del SAT
+  const mapeos = {
+    // WooCommerce -> {FormaPago, MetodoPago}
+    
+    // Efectivo y equivalentes
+    'cod': { FormaPago: '01', MetodoPago: 'PUE' }, // Contra entrega -> Efectivo
+    'oxxo': { FormaPago: '01', MetodoPago: 'PUE' }, // OXXO -> Efectivo
+    'cash': { FormaPago: '01', MetodoPago: 'PUE' }, // Efectivo -> Efectivo
+    
+    // Cheques
+    'cheque': { FormaPago: '02', MetodoPago: 'PUE' }, // Cheque -> Cheque nominativo
+    'check': { FormaPago: '02', MetodoPago: 'PUE' }, // Check -> Cheque nominativo
+    
+    // Transferencias bancarias
+    'bacs': { FormaPago: '03', MetodoPago: 'PUE' }, // Transferencia bancaria -> Transferencia electrónica de fondos
+    'spei': { FormaPago: '03', MetodoPago: 'PUE' }, // SPEI -> Transferencia electrónica de fondos
+    'wire_transfer': { FormaPago: '03', MetodoPago: 'PUE' }, // Transferencia -> Transferencia electrónica de fondos
+    
+    // Tarjetas de crédito/débito
+    'stripe': { FormaPago: '04', MetodoPago: 'PUE' }, // Stripe -> Tarjeta de crédito
+    'paypal': { FormaPago: '04', MetodoPago: 'PUE' }, // PayPal -> Tarjeta de crédito  
+    'mercadopago': { FormaPago: '04', MetodoPago: 'PUE' }, // MercadoPago -> Tarjeta de crédito
+    'square': { FormaPago: '04', MetodoPago: 'PUE' }, // Square -> Tarjeta de crédito
+    'credit_card': { FormaPago: '04', MetodoPago: 'PUE' }, // Tarjeta de crédito -> Tarjeta de crédito
+    'debit_card': { FormaPago: '28', MetodoPago: 'PUE' }, // Tarjeta de débito -> Tarjeta de débito
+    
+    // Monederos electrónicos
+    'paypal_express': { FormaPago: '05', MetodoPago: 'PUE' }, // PayPal Express -> Monedero electrónico
+    'amazon_payments': { FormaPago: '05', MetodoPago: 'PUE' }, // Amazon Pay -> Monedero electrónico
+    
+    // Otros métodos comunes en México
+    'conekta': { FormaPago: '04', MetodoPago: 'PUE' }, // Conekta -> Tarjeta de crédito
+    'openpay': { FormaPago: '04', MetodoPago: 'PUE' }, // OpenPay -> Tarjeta de crédito
+    'clip': { FormaPago: '04', MetodoPago: 'PUE' }, // Clip -> Tarjeta de crédito
+    
+    // Métodos de pago diferido
+    'bank_deposit': { FormaPago: '03', MetodoPago: 'PPD' }, // Depósito bancario -> Pago diferido
+    'installments': { FormaPago: '04', MetodoPago: 'PPD' }, // Pagos a plazos -> Pago diferido
   };
   
-  return paymentMap[wooPaymentMethod] || '99'; // Por defecto "Por definir"
+  // Si no encuentra mapeo exacto, intentar mapeo por patrones
+  if (!mapeos[wooPaymentMethod]) {
+    const metodoBajo = wooPaymentMethod.toLowerCase();
+    
+    if (metodoBajo.includes('paypal')) return { FormaPago: '04', MetodoPago: 'PUE' };
+    if (metodoBajo.includes('stripe') || metodoBajo.includes('card') || metodoBajo.includes('tarjeta')) return { FormaPago: '04', MetodoPago: 'PUE' };
+    if (metodoBajo.includes('transfer') || metodoBajo.includes('spei') || metodoBajo.includes('bancari')) return { FormaPago: '03', MetodoPago: 'PUE' };
+    if (metodoBajo.includes('oxxo') || metodoBajo.includes('cash') || metodoBajo.includes('efectivo')) return { FormaPago: '01', MetodoPago: 'PUE' };
+    if (metodoBajo.includes('cheque')) return { FormaPago: '02', MetodoPago: 'PUE' };
+  }
+  
+  return mapeos[wooPaymentMethod] || { FormaPago: '99', MetodoPago: 'PUE' }; // Por defecto: Otros
 };
 
 const CFDIGlobalForm = () => {
@@ -65,6 +102,7 @@ const CFDIGlobalForm = () => {
   const [validadoCorreo, setValidadoCorreo] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [formaPagoFromOrder, setFormaPagoFromOrder] = useState(null);
+  const [metodoPagoFromOrder, setMetodoPagoFromOrder] = useState(null);
 
   const {
     register,
@@ -200,15 +238,52 @@ const CFDIGlobalForm = () => {
       if (!res.ok) throw new Error('No se encontró el pedido');
       const order = await res.json();
       
-      // Obtener método de pago y mapear a código SAT
-      const paymentMethod = order.payment_method || order.meta_data?.find(meta => meta.key === '_payment_method')?.value;
-      const formaPagoSAT = mapPaymentMethodToSAT(paymentMethod);
-      setFormaPagoFromOrder(formaPagoSAT);
+      // 🔥 LOG COMPLETO DEL PEDIDO WOOCOMMERCE (igual que en CFDIForm)
+      console.log('==================================================');
+      console.log('🛒 PEDIDO WOOCOMMERCE COMPLETO - DATOS DEL PAGO');
+      console.log('==================================================');
+      console.log('📋 ID del pedido:', order.id);
+      console.log('💳 payment_method:', order.payment_method);
+      console.log('💳 payment_method_title:', order.payment_method_title);
+      console.log('💰 total:', order.total);
+      console.log('📊 status:', order.status);
+      console.log('💱 currency:', order.currency);
       
-      // Actualizar clienteData con la forma de pago obtenida
-      if (clienteData) {
-        setClienteData({ ...clienteData, FormaPago: formaPagoSAT });
+      // Logs específicos de métodos de pago
+      console.log('');
+      console.log('🔍 ANÁLISIS DETALLADO DEL MÉTODO DE PAGO:');
+      console.log('   - Tipo de payment_method:', typeof order.payment_method);
+      console.log('   - Valor exacto payment_method:', JSON.stringify(order.payment_method));
+      console.log('   - Tipo de payment_method_title:', typeof order.payment_method_title);
+      console.log('   - Valor exacto payment_method_title:', JSON.stringify(order.payment_method_title));
+      
+      // Obtener método de pago y mapear a códigos SAT
+      const paymentMethod = order.payment_method || order.meta_data?.find(meta => meta.key === '_payment_method')?.value;
+      const pagoMapeado = mapearMetodoPago(paymentMethod);
+      
+      console.log('🎯 Método de pago mapeado:', pagoMapeado);
+      
+      // Mostrar información del mapeo al usuario
+      if (pagoMapeado.FormaPago !== '99') {
+        console.log(`✅ Método de pago WooCommerce "${order.payment_method}" (${order.payment_method_title}) mapeado a FormaPago: ${pagoMapeado.FormaPago}, MetodoPago: ${pagoMapeado.MetodoPago}`);
+      } else {
+        console.log(`⚠️ Método de pago WooCommerce "${order.payment_method}" no tiene mapeo específico, usando valores por defecto`);
       }
+      
+      // Guardar los valores mapeados
+      setFormaPagoFromOrder(pagoMapeado.FormaPago);
+      setMetodoPagoFromOrder(pagoMapeado.MetodoPago);
+      
+      // Actualizar clienteData con los valores obtenidos
+      if (clienteData) {
+        setClienteData({ 
+          ...clienteData, 
+          FormaPago: pagoMapeado.FormaPago,
+          MetodoPago: pagoMapeado.MetodoPago 
+        });
+      }
+      
+      console.log('==================================================');
       
       if (order.line_items && Array.isArray(order.line_items)) {
         let notFound = [];
@@ -262,6 +337,7 @@ const CFDIGlobalForm = () => {
     setClienteError("");
     setClienteData(null);
     setFormaPagoFromOrder(null); // Reset forma de pago al buscar nuevo cliente
+    setMetodoPagoFromOrder(null); // Reset método de pago al buscar nuevo cliente
     setProductosImportados([]); // Reset productos importados
     setPedidoInput(""); // Reset input de pedido
     try {
@@ -324,6 +400,30 @@ const CFDIGlobalForm = () => {
               )}
             </div>
           )}
+          {clienteData && (
+            <div className="mb-4">
+              <label className="block mb-1 text-sm font-semibold text-gray-700">Método de Pago</label>
+              {metodoPagoFromOrder ? (
+                // Mostrar método de pago obtenido de WooCommerce de forma sólida
+                <div className="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 text-gray-700 font-medium">
+                  {clienteData?.MetodoPago} - {catalogs.MetodoPago?.find(mp => mp.key === clienteData?.MetodoPago)?.name || 'Método de pago obtenido del pedido'}
+                  <span className="text-xs text-green-600 ml-2">(Obtenido automáticamente del pedido)</span>
+                </div>
+              ) : (
+                // Select manual cuando no se ha importado pedido
+                <select
+                  value={clienteData?.MetodoPago || ''}
+                  onChange={e => setClienteData({ ...clienteData, MetodoPago: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
+                >
+                  <option value="">Selecciona</option>
+                  {catalogs.MetodoPago && catalogs.MetodoPago.map((opt, idx) => (
+                    <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
           {clienteData && clienteData.FormaPago !== '' && (
             <CorreoValidador
               clienteCorreo={clienteData.Contacto?.Email}
@@ -376,8 +476,8 @@ const CFDIGlobalForm = () => {
                     },
                     TipoDocumento: 'factura',
                     Serie: 5483035, // Serie C, asignada automáticamente
-                    FormaPago: clienteData.FormaPago || '03', // Seleccionada por el usuario
-                    MetodoPago: 'PUE', // Asignada automáticamente
+                    FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o seleccionada por el usuario
+                    MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o asignado por defecto
                     Moneda: 'MXN',
                     UsoCFDI: clienteData.UsoCFDI || 'G03',
                     Conceptos: fields.map(item => ({
