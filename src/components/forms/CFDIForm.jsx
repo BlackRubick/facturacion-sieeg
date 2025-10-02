@@ -55,6 +55,8 @@ const CFDIForm = () => {
   const [productosImportados, setProductosImportados] = useState([]);
   const [emittedUID, setEmittedUID] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [selectedClientData, setSelectedClientData] = useState(null);
+  const [loadingClientData, setLoadingClientData] = useState(false);
 
   const periodicidadOptions = [
     { value: '01', label: 'Diario' },
@@ -197,6 +199,17 @@ const CFDIForm = () => {
     // Quitar asignación automática de Método de Pago y Forma de Pago
     // No se asigna ningún valor por defecto, el usuario debe seleccionar
   }, [series, catalogs.Moneda, catalogs.UsoCFDI, catalogs.Pais, catalogs.MetodoPago, catalogs.FormaPago]);
+
+  // Efecto para auto-rellenar datos cuando los catálogos se cargan después de seleccionar cliente
+  useEffect(() => {
+    if (selectedClientData && !loadingCatalogs) {
+      // Re-ejecutar auto-rellenado cuando los catálogos estén listos
+      const clientUID = watch('customerId');
+      if (clientUID && selectedClientData.UID === clientUID) {
+        handleClientSelection(clientUID);
+      }
+    }
+  }, [selectedClientData, loadingCatalogs, catalogs]);
 
   const onSubmit = async (dataRaw) => {
     // Calcular la fecha real según la opción seleccionada
@@ -376,6 +389,71 @@ const CFDIForm = () => {
     setShowCustomerModal(false);
   };
 
+  // Función para obtener los datos completos del cliente seleccionado
+  const handleClientSelection = async (clientUID) => {
+    if (!clientUID) {
+      setSelectedClientData(null);
+      return;
+    }
+
+    setLoadingClientData(true);
+    try {
+      const response = await FacturaAPIService.getClientByUID(clientUID);
+      const clientData = response.data.data || response.data;
+      
+      console.log('Datos completos del cliente:', clientData);
+      setSelectedClientData(clientData);
+
+      // Auto-rellenar campos basados en los datos del cliente
+      if (clientData.UsoCFDI && catalogs.UsoCFDI.length > 0) {
+        const usoCFDIExists = catalogs.UsoCFDI.find(uso => 
+          uso.key === clientData.UsoCFDI || uso.value === clientData.UsoCFDI
+        );
+        if (usoCFDIExists) {
+          setValue('UsoCFDI', clientData.UsoCFDI, { shouldValidate: true });
+          console.log('UsoCFDI auto-rellenado:', clientData.UsoCFDI);
+        }
+      }
+
+      if (clientData.RegimenFiscal && catalogs.RegimenFiscal.length > 0) {
+        const regimenExists = catalogs.RegimenFiscal.find(regimen => 
+          regimen.key === clientData.RegimenFiscal
+        );
+        if (regimenExists) {
+          setValue('RegimenFiscal', clientData.RegimenFiscal, { shouldValidate: true });
+          console.log('RegimenFiscal auto-rellenado:', clientData.RegimenFiscal);
+        }
+      }
+
+      // Si el cliente tiene otros datos que quieras auto-rellenar, agrégalos aquí
+      // Por ejemplo, si tiene FormaPago o MetodoPago predeterminados:
+      if (clientData.FormaPago && catalogs.FormaPago.length > 0) {
+        const formaPagoExists = catalogs.FormaPago.find(forma => 
+          forma.key === clientData.FormaPago
+        );
+        if (formaPagoExists) {
+          setValue('FormaPago', clientData.FormaPago, { shouldValidate: true });
+          console.log('FormaPago auto-rellenado:', clientData.FormaPago);
+        }
+      }
+
+      if (clientData.MetodoPago && catalogs.MetodoPago.length > 0) {
+        const metodoPagoExists = catalogs.MetodoPago.find(metodo => 
+          metodo.key === clientData.MetodoPago
+        );
+        if (metodoPagoExists) {
+          setValue('MetodoPago', clientData.MetodoPago, { shouldValidate: true });
+          console.log('MetodoPago auto-rellenado:', clientData.MetodoPago);
+        }
+      }
+
+    } catch (error) {
+      console.error('Error al obtener datos del cliente:', error);
+      alert('Error al cargar los datos del cliente: ' + (error.response?.data?.message || error.message));
+    }
+    setLoadingClientData(false);
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-lg">
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -399,7 +477,21 @@ const CFDIForm = () => {
         </div>
       )}
       <div className="mb-8 p-6 bg-gray-50 rounded-xl shadow">
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">Datos del Cliente</h3>
+        <h3 className="text-lg font-semibold text-gray-700 mb-4">
+          Datos del Cliente
+          {loadingClientData && (
+            <span className="ml-2 text-sm text-blue-600 animate-pulse">
+              🔄 Cargando datos del cliente...
+            </span>
+          )}
+        </h3>
+        {selectedClientData && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+            <p className="text-sm text-blue-700">
+              ✅ Datos auto-rellenados para: <strong>{selectedClientData.RazonSocial || 'Cliente seleccionado'}</strong>
+            </p>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
           <div className="flex items-center gap-2">
             <Select
@@ -409,9 +501,12 @@ const CFDIForm = () => {
                 label: `${client.RazonSocial || (client.Contacto?.Nombre + ' ' + client.Contacto?.Apellidos) || 'Sin nombre'} (${client.RFC || ''})`,
               }))}
               value={String(watch('customerId') || '')}
-              onChange={value => setValue('customerId', String(value || ''))}
+              onChange={value => {
+                setValue('customerId', String(value || ''));
+                handleClientSelection(String(value || ''));
+              }}
               placeholder="Buscar cliente..."
-              isLoading={false}
+              isLoading={loadingClientData}
             />
             <Button
               type="button"
