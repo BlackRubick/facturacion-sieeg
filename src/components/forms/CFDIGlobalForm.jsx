@@ -377,54 +377,6 @@ const CFDIGlobalForm = () => {
             </div>
           )}
           {clienteData && (
-            <div className="mb-4">
-              <label className="block mb-1 text-sm font-semibold text-gray-700">Forma de Pago</label>
-              {formaPagoFromOrder ? (
-                // Mostrar forma de pago obtenida de WooCommerce de forma sólida
-                <div className="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 text-gray-700 font-medium">
-                  {clienteData?.FormaPago} - {catalogs.FormaPago?.find(fp => fp.key === clienteData?.FormaPago)?.name || 'Forma de pago obtenida del pedido'}
-                  <span className="text-xs text-green-600 ml-2">(Obtenida automáticamente del pedido)</span>
-                </div>
-              ) : (
-                // Select manual cuando no se ha importado pedido
-                <select
-                  value={clienteData?.FormaPago || ''}
-                  onChange={e => setClienteData({ ...clienteData, FormaPago: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
-                >
-                  <option value="">Selecciona</option>
-                  {catalogs.FormaPago && catalogs.FormaPago.map((opt, idx) => (
-                    <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-                  ))}
-                </select>
-              )}
-            </div>
-          )}
-          {clienteData && (
-            <div className="mb-4">
-              <label className="block mb-1 text-sm font-semibold text-gray-700">Método de Pago</label>
-              {metodoPagoFromOrder ? (
-                // Mostrar método de pago obtenido de WooCommerce de forma sólida
-                <div className="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 text-gray-700 font-medium">
-                  {clienteData?.MetodoPago} - {catalogs.MetodoPago?.find(mp => mp.key === clienteData?.MetodoPago)?.name || 'Método de pago obtenido del pedido'}
-                  <span className="text-xs text-green-600 ml-2">(Obtenido automáticamente del pedido)</span>
-                </div>
-              ) : (
-                // Select manual cuando no se ha importado pedido
-                <select
-                  value={clienteData?.MetodoPago || ''}
-                  onChange={e => setClienteData({ ...clienteData, MetodoPago: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
-                >
-                  <option value="">Selecciona</option>
-                  {catalogs.MetodoPago && catalogs.MetodoPago.map((opt, idx) => (
-                    <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-                  ))}
-                </select>
-              )}
-            </div>
-          )}
-          {clienteData && clienteData.FormaPago !== '' && (
             <CorreoValidador
               clienteCorreo={clienteData.Contacto?.Email}
               clienteData={clienteData}
@@ -434,7 +386,7 @@ const CFDIGlobalForm = () => {
               setValidadoCorreo={setValidadoCorreo}
             />
           )}
-          {clienteData && clienteData.FormaPago !== '' && validadoCorreo && (
+          {clienteData && validadoCorreo && (
             <div className="mb-8">
               {/* Mostrar productos importados primero */}
               {productosImportados.length > 0 && (
@@ -476,8 +428,8 @@ const CFDIGlobalForm = () => {
                     },
                     TipoDocumento: 'factura',
                     Serie: 5483035, // Serie C, asignada automáticamente
-                    FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o seleccionada por el usuario
-                    MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o asignado por defecto
+                    FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
+                    MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
                     Moneda: 'MXN',
                     UsoCFDI: clienteData.UsoCFDI || 'G03',
                     Conceptos: fields.map(item => ({
