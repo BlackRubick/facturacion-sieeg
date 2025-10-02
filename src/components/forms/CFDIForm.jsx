@@ -313,14 +313,38 @@ const CFDIForm = () => {
     
     console.log('✅ UsoCFDI final que se usará:', usoCFDIValue);
     
+    // 🔍 DEBUG CRÍTICO: FormaPago y MetodoPago
+    console.log('🚨 DEBUG CRÍTICO - FormaPago y MetodoPago:');
+    console.log('   - data.FormaPago:', data.FormaPago);
+    console.log('   - data.MetodoPago:', data.MetodoPago);
+    console.log('   - Tipo FormaPago:', typeof data.FormaPago);
+    console.log('   - Tipo MetodoPago:', typeof data.MetodoPago);
+    console.log('   - FormaPago está vacío?:', !data.FormaPago);
+    console.log('   - MetodoPago está vacío?:', !data.MetodoPago);
+    console.log('   - Watch FormaPago:', watch('FormaPago'));
+    console.log('   - Watch MetodoPago:', watch('MetodoPago'));
+    
+    // Validar que FormaPago y MetodoPago no estén vacíos
+    if (!data.FormaPago || data.FormaPago.trim() === '') {
+      console.error('❌ ERROR: FormaPago está vacío o no seleccionado!');
+      alert('Error: Debes seleccionar una Forma de Pago antes de crear el CFDI.');
+      return;
+    }
+    
+    if (!data.MetodoPago || data.MetodoPago.trim() === '') {
+      console.error('❌ ERROR: MetodoPago está vacío o no seleccionado!');
+      alert('Error: Debes seleccionar un Método de Pago antes de crear el CFDI.');
+      return;
+    }
+    
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
       },
       TipoDocumento: data.TipoDocumento || 'factura',
       Serie: Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined),
-      FormaPago: data.FormaPago,
-      MetodoPago: data.MetodoPago,
+      FormaPago: String(data.FormaPago).trim(),
+      MetodoPago: String(data.MetodoPago).trim(),
       Moneda: data.Moneda || 'MXN',
       UsoCFDI: String(usoCFDIValue).trim(), // <-- Asegurar que sea string y sin espacios
       Conceptos: items,
@@ -512,6 +536,45 @@ const CFDIForm = () => {
                   shouldTouch: true 
                 });
                 console.log('✅ RegimenFiscal auto-rellenado desde datos locales:', localClient.RegimenId);
+              }
+            }
+          }
+
+          // 🔥 NUEVO: Auto-rellenar FormaPago y MetodoPago
+          if (localClient.FormaPago) {
+            console.log('🎯 FormaPago encontrado en datos locales:', localClient.FormaPago);
+            if (catalogs.FormaPago.length > 0) {
+              const formaPagoExists = catalogs.FormaPago.find(forma => 
+                forma.key === localClient.FormaPago
+              );
+              if (formaPagoExists) {
+                setValue('FormaPago', String(localClient.FormaPago), { 
+                  shouldValidate: true, 
+                  shouldDirty: true, 
+                  shouldTouch: true 
+                });
+                console.log('✅ FormaPago auto-rellenado desde datos locales:', localClient.FormaPago);
+              } else {
+                console.log('⚠️ FormaPago del cliente no existe en catálogo:', localClient.FormaPago);
+              }
+            }
+          }
+
+          if (localClient.MetodoPago) {
+            console.log('🎯 MetodoPago encontrado en datos locales:', localClient.MetodoPago);
+            if (catalogs.MetodoPago.length > 0) {
+              const metodoPagoExists = catalogs.MetodoPago.find(metodo => 
+                metodo.key === localClient.MetodoPago
+              );
+              if (metodoPagoExists) {
+                setValue('MetodoPago', String(localClient.MetodoPago), { 
+                  shouldValidate: true, 
+                  shouldDirty: true, 
+                  shouldTouch: true 
+                });
+                console.log('✅ MetodoPago auto-rellenado desde datos locales:', localClient.MetodoPago);
+              } else {
+                console.log('⚠️ MetodoPago del cliente no existe en catálogo:', localClient.MetodoPago);
               }
             }
           }
