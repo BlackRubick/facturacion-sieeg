@@ -390,6 +390,113 @@ const CFDIForm = () => {
       const res = await fetch(url);
       if (!res.ok) throw new Error('No se encontró el pedido');
       const order = await res.json();
+      
+      // 🔥 NUEVO: Obtener método de pago del pedido WooCommerce
+      console.log('💳 Método de pago del pedido WooCommerce:', order.payment_method);
+      console.log('💳 Título del método de pago:', order.payment_method_title);
+      console.log('💳 Datos completos del pedido:', {
+        id: order.id,
+        payment_method: order.payment_method,
+        payment_method_title: order.payment_method_title,
+        status: order.status,
+        total: order.total
+      });
+      
+      // Mapear método de pago de WooCommerce a catálogos SAT
+      const mapearMetodoPago = (wooPaymentMethod) => {
+        // Mapeos más completos basados en los catálogos del SAT
+        const mapeos = {
+          // WooCommerce -> {FormaPago, MetodoPago}
+          
+          // Efectivo y equivalentes
+          'cod': { FormaPago: '01', MetodoPago: 'PUE' }, // Contra entrega -> Efectivo
+          'oxxo': { FormaPago: '01', MetodoPago: 'PUE' }, // OXXO -> Efectivo
+          'cash': { FormaPago: '01', MetodoPago: 'PUE' }, // Efectivo -> Efectivo
+          
+          // Cheques
+          'cheque': { FormaPago: '02', MetodoPago: 'PUE' }, // Cheque -> Cheque nominativo
+          'check': { FormaPago: '02', MetodoPago: 'PUE' }, // Check -> Cheque nominativo
+          
+          // Transferencias bancarias
+          'bacs': { FormaPago: '03', MetodoPago: 'PUE' }, // Transferencia bancaria -> Transferencia electrónica de fondos
+          'spei': { FormaPago: '03', MetodoPago: 'PUE' }, // SPEI -> Transferencia electrónica de fondos
+          'wire_transfer': { FormaPago: '03', MetodoPago: 'PUE' }, // Transferencia -> Transferencia electrónica de fondos
+          
+          // Tarjetas de crédito/débito
+          'stripe': { FormaPago: '04', MetodoPago: 'PUE' }, // Stripe -> Tarjeta de crédito
+          'paypal': { FormaPago: '04', MetodoPago: 'PUE' }, // PayPal -> Tarjeta de crédito  
+          'mercadopago': { FormaPago: '04', MetodoPago: 'PUE' }, // MercadoPago -> Tarjeta de crédito
+          'square': { FormaPago: '04', MetodoPago: 'PUE' }, // Square -> Tarjeta de crédito
+          'credit_card': { FormaPago: '04', MetodoPago: 'PUE' }, // Tarjeta de crédito -> Tarjeta de crédito
+          'debit_card': { FormaPago: '28', MetodoPago: 'PUE' }, // Tarjeta de débito -> Tarjeta de débito
+          
+          // Monederos electrónicos
+          'paypal_express': { FormaPago: '05', MetodoPago: 'PUE' }, // PayPal Express -> Monedero electrónico
+          'amazon_payments': { FormaPago: '05', MetodoPago: 'PUE' }, // Amazon Pay -> Monedero electrónico
+          
+          // Otros métodos comunes en México
+          'conekta': { FormaPago: '04', MetodoPago: 'PUE' }, // Conekta -> Tarjeta de crédito
+          'openpay': { FormaPago: '04', MetodoPago: 'PUE' }, // OpenPay -> Tarjeta de crédito
+          'clip': { FormaPago: '04', MetodoPago: 'PUE' }, // Clip -> Tarjeta de crédito
+          
+          // Métodos de pago diferido
+          'bank_deposit': { FormaPago: '03', MetodoPago: 'PPD' }, // Depósito bancario -> Pago diferido
+          'installments': { FormaPago: '04', MetodoPago: 'PPD' }, // Pagos a plazos -> Pago diferido
+        };
+        
+        // Si no encuentra mapeo exacto, intentar mapeo por patrones
+        if (!mapeos[wooPaymentMethod]) {
+          const metodoBajo = wooPaymentMethod.toLowerCase();
+          
+          if (metodoBajo.includes('paypal')) return { FormaPago: '04', MetodoPago: 'PUE' };
+          if (metodoBajo.includes('stripe') || metodoBajo.includes('card') || metodoBajo.includes('tarjeta')) return { FormaPago: '04', MetodoPago: 'PUE' };
+          if (metodoBajo.includes('transfer') || metodoBajo.includes('spei') || metodoBajo.includes('bancari')) return { FormaPago: '03', MetodoPago: 'PUE' };
+          if (metodoBajo.includes('oxxo') || metodoBajo.includes('cash') || metodoBajo.includes('efectivo')) return { FormaPago: '01', MetodoPago: 'PUE' };
+          if (metodoBajo.includes('cheque')) return { FormaPago: '02', MetodoPago: 'PUE' };
+        }
+        
+        return mapeos[wooPaymentMethod] || { FormaPago: '99', MetodoPago: 'PUE' }; // Por defecto: Otros
+      };
+      
+      const pagoMapeado = mapearMetodoPago(order.payment_method);
+      console.log('🎯 Método de pago mapeado:', pagoMapeado);
+      
+      // Mostrar información del mapeo al usuario
+      if (pagoMapeado.FormaPago !== '99') {
+        console.log(`✅ Método de pago WooCommerce "${order.payment_method}" (${order.payment_method_title}) mapeado a FormaPago: ${pagoMapeado.FormaPago}, MetodoPago: ${pagoMapeado.MetodoPago}`);
+      } else {
+        console.log(`⚠️ Método de pago WooCommerce "${order.payment_method}" no tiene mapeo específico, usando valores por defecto`);
+      }
+      
+      // Auto-rellenar FormaPago y MetodoPago si están disponibles en los catálogos
+      if (pagoMapeado.FormaPago && catalogs.FormaPago.length > 0) {
+        const formaPagoExists = catalogs.FormaPago.find(forma => forma.key === pagoMapeado.FormaPago);
+        if (formaPagoExists) {
+          setValue('FormaPago', pagoMapeado.FormaPago, { 
+            shouldValidate: true, 
+            shouldDirty: true, 
+            shouldTouch: true 
+          });
+          console.log('✅ FormaPago auto-rellenado desde pedido WooCommerce:', pagoMapeado.FormaPago);
+        } else {
+          console.log('⚠️ FormaPago no encontrado en catálogo:', pagoMapeado.FormaPago);
+        }
+      }
+      
+      if (pagoMapeado.MetodoPago && catalogs.MetodoPago.length > 0) {
+        const metodoPagoExists = catalogs.MetodoPago.find(metodo => metodo.key === pagoMapeado.MetodoPago);
+        if (metodoPagoExists) {
+          setValue('MetodoPago', pagoMapeado.MetodoPago, { 
+            shouldValidate: true, 
+            shouldDirty: true, 
+            shouldTouch: true 
+          });
+          console.log('✅ MetodoPago auto-rellenado desde pedido WooCommerce:', pagoMapeado.MetodoPago);
+        } else {
+          console.log('⚠️ MetodoPago no encontrado en catálogo:', pagoMapeado.MetodoPago);
+        }
+      }
+
       if (order.line_items && Array.isArray(order.line_items)) {
         let notFound = [];
         // Consultar cada producto directamente en WooCommerce
@@ -445,6 +552,13 @@ const CFDIForm = () => {
           Cantidad: prod.quantity || 1 
         })));
         setValue('items', conceptos);
+        
+        // Notificar al usuario sobre el auto-rellenado del método de pago
+        if (pagoMapeado.FormaPago !== '99') {
+          setTimeout(() => {
+            alert(`✅ Pedido importado exitosamente!\n\n💳 Método de pago detectado: "${order.payment_method_title || order.payment_method}"\n📋 Se auto-rellenaron:\n• Forma de Pago: ${pagoMapeado.FormaPago}\n• Método de Pago: ${pagoMapeado.MetodoPago}\n\n¡Revisa que los datos sean correctos antes de crear el CFDI!`);
+          }, 500);
+        }
       } else {
         alert('No se encontraron productos para ese pedido');
         setProductosImportados([]);
