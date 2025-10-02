@@ -168,7 +168,6 @@ const CustomersManager = () => {
             </tbody>
           </table>
         </div>
-        <button onClick={() => handleOpenModal()} className="bg-blue-700 text-white px-4 py-2 rounded font-semibold text-sm shadow hover:bg-blue-800 transition-colors mb-4">Agregar cliente</button>
         {/* Modal de edición/agregado */}
         {modalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
