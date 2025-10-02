@@ -1017,7 +1017,6 @@ const CFDIForm = () => {
             {!watch('TipoDocumento') && <span className="text-red-500 text-xs">Debes seleccionar el tipo de documento.</span>}
           </div>
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Forma de Pago</label>
             <Controller
               name="FormaPago"
               control={control}
@@ -1044,7 +1043,6 @@ const CFDIForm = () => {
             />
           </div>
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Método de Pago</label>
             <Controller
               name="MetodoPago"
               control={control}
@@ -1099,7 +1097,6 @@ const CFDIForm = () => {
             />
           </div>
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Uso CFDI</label>
             <Controller
               name="UsoCFDI"
               control={control}
@@ -1142,7 +1139,6 @@ const CFDIForm = () => {
             </select>
           </div>
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Régimen Fiscal</label>
             <Controller
               name="RegimenFiscal"
               control={control}
