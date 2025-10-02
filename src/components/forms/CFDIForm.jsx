@@ -219,13 +219,13 @@ const CFDIForm = () => {
             }
           }
 
-          if (selectedClientData.RegimenFiscal && !watch('RegimenFiscal')) {
+          if (selectedClientData.RegimenId && !watch('RegimenFiscal')) {
             const regimenExists = catalogs.RegimenFiscal.find(regimen => 
-              regimen.key === selectedClientData.RegimenFiscal
+              regimen.key === selectedClientData.RegimenId
             );
             if (regimenExists) {
-              setValue('RegimenFiscal', String(selectedClientData.RegimenFiscal), { shouldValidate: true });
-              console.log('✅ RegimenFiscal re-rellenado:', selectedClientData.RegimenFiscal);
+              setValue('RegimenFiscal', String(selectedClientData.RegimenId), { shouldValidate: true });
+              console.log('✅ RegimenFiscal re-rellenado con RegimenId:', selectedClientData.RegimenId);
             }
           }
         }, 100);
@@ -459,32 +459,32 @@ const CFDIForm = () => {
           console.log('ℹ️ Cliente no tiene UsoCFDI definido');
         }
 
-        // Auto-rellenar RegimenFiscal
-        if (clientData.RegimenFiscal) {
-          console.log('🎯 Intentando auto-rellenar RegimenFiscal con valor:', clientData.RegimenFiscal);
+        // Auto-rellenar RegimenFiscal - CORREGIDO: usar RegimenId de la API
+        if (clientData.RegimenId) {
+          console.log('🎯 Intentando auto-rellenar RegimenFiscal con valor RegimenId:', clientData.RegimenId);
           console.log('📚 Catálogo RegimenFiscal disponible:', catalogs.RegimenFiscal.length, 'elementos');
           
           if (catalogs.RegimenFiscal.length > 0) {
             const regimenExists = catalogs.RegimenFiscal.find(regimen => 
-              regimen.key === clientData.RegimenFiscal
+              regimen.key === clientData.RegimenId
             );
             
             if (regimenExists) {
-              setValue('RegimenFiscal', String(clientData.RegimenFiscal), { 
+              setValue('RegimenFiscal', String(clientData.RegimenId), { 
                 shouldValidate: true, 
                 shouldDirty: true,
                 shouldTouch: true 
               });
-              console.log('✅ RegimenFiscal auto-rellenado exitosamente:', clientData.RegimenFiscal);
+              console.log('✅ RegimenFiscal auto-rellenado exitosamente con RegimenId:', clientData.RegimenId);
             } else {
-              console.log('❌ RegimenFiscal no encontrado en catálogo:', clientData.RegimenFiscal);
+              console.log('❌ RegimenId no encontrado en catálogo:', clientData.RegimenId);
               console.log('🔍 Valores disponibles en catálogo:', catalogs.RegimenFiscal.map(r => r.key));
             }
           } else {
             console.log('⚠️ Catálogo RegimenFiscal aún no está cargado');
           }
         } else {
-          console.log('ℹ️ Cliente no tiene RegimenFiscal definido');
+          console.log('ℹ️ Cliente no tiene RegimenId definido');
         }
 
         // Auto-rellenar FormaPago
@@ -565,7 +565,8 @@ const CFDIForm = () => {
             </p>
             <div className="text-xs text-gray-600 space-y-1">
               <div>• UsoCFDI del cliente: <code className="bg-white px-1 rounded">{selectedClientData.UsoCFDI || 'No definido'}</code></div>
-              <div>• RegimenFiscal del cliente: <code className="bg-white px-1 rounded">{selectedClientData.RegimenFiscal || 'No definido'}</code></div>
+              <div>• RegimenId del cliente: <code className="bg-white px-1 rounded">{selectedClientData.RegimenId || 'No definido'}</code></div>
+              <div>• Regimen (descripción): <code className="bg-white px-1 rounded text-xs">{selectedClientData.Regimen || 'No definido'}</code></div>
               <div>• FormaPago del cliente: <code className="bg-white px-1 rounded">{selectedClientData.FormaPago || 'No definido'}</code></div>
               <div>• MetodoPago del cliente: <code className="bg-white px-1 rounded">{selectedClientData.MetodoPago || 'No definido'}</code></div>
             </div>
