@@ -259,7 +259,12 @@ const CFDIForm = () => {
     // Construir los datos corregidos para validar y enviar
     const data = { ...dataRaw, dueDate: fechaCFDI };
     // Mostrar en consola los valores antes de enviar
-    console.log('Valores del formulario (forzados):', data);
+    console.log('🚀 Valores del formulario RAW (dataRaw):', dataRaw);
+    console.log('🚀 Valores del formulario procesados (data):', data);
+    console.log('🚀 UsoCFDI específico:', data.UsoCFDI);
+    console.log('🚀 FormaPago específico:', data.FormaPago);
+    console.log('🚀 MetodoPago específico:', data.MetodoPago);
+    console.log('🚀 RegimenFiscal específico:', data.RegimenFiscal);
     // Mapear los campos del formulario a los nombres esperados por la API
     const items = data.items.map(item => ({
       ClaveProdServ: String(item.ClaveProdServ || '').trim(),
@@ -275,6 +280,15 @@ const CFDIForm = () => {
     }));
     // Enviar UsoCFDI solo en la raíz, como indica la documentación oficial
     const usoCFDIValue = data.UsoCFDI || '';
+    
+    // Validación adicional para UsoCFDI
+    if (!usoCFDIValue) {
+      console.error('❌ ERROR: UsoCFDI está vacío!');
+      console.log('🔍 Datos disponibles en form:', data);
+      alert('Error: No se ha seleccionado un Uso CFDI. Por favor selecciona uno antes de enviar.');
+      return;
+    }
+    
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
@@ -290,7 +304,9 @@ const CFDIForm = () => {
       Draft: String(data.Draft || '0'),
       dueDate: fechaCFDI,
     };
-    console.log('Objeto enviado a la API:', cfdiData);
+    
+    console.log('📤 Objeto final enviado a la API:', cfdiData);
+    console.log('📤 UsoCFDI que se envía:', cfdiData.UsoCFDI);
     if (isGlobal) {
       cfdiData.InformacionGlobal = {
         Periodicidad: data.Periodicidad,
@@ -441,7 +457,11 @@ const CFDIForm = () => {
                 (uso.value && uso.value === localClient.UsoCFDI)
               );
               if (usoCFDIExists) {
-                setValue('UsoCFDI', String(localClient.UsoCFDI), { shouldValidate: true });
+                setValue('UsoCFDI', String(localClient.UsoCFDI), { 
+                  shouldValidate: true, 
+                  shouldDirty: true, 
+                  shouldTouch: true 
+                });
                 console.log('✅ UsoCFDI auto-rellenado desde datos locales:', localClient.UsoCFDI);
               }
             }
@@ -454,7 +474,11 @@ const CFDIForm = () => {
                 regimen.key === localClient.RegimenId
               );
               if (regimenExists) {
-                setValue('RegimenFiscal', String(localClient.RegimenId), { shouldValidate: true });
+                setValue('RegimenFiscal', String(localClient.RegimenId), { 
+                  shouldValidate: true, 
+                  shouldDirty: true, 
+                  shouldTouch: true 
+                });
                 console.log('✅ RegimenFiscal auto-rellenado desde datos locales:', localClient.RegimenId);
               }
             }
@@ -996,7 +1020,22 @@ const CFDIForm = () => {
         )}
       </div>
       <div className="flex gap-4 mt-8">
-        <Button type="submit" disabled={isSubmitting} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow text-lg">Crear CFDI</Button>
+        <Button 
+          type="button" 
+          onClick={() => {
+            const currentValues = watch();
+            console.log('🧪 DEBUG - Valores actuales del formulario:', currentValues);
+            console.log('🧪 DEBUG - UsoCFDI actual:', currentValues.UsoCFDI);
+            console.log('🧪 DEBUG - FormaPago actual:', currentValues.FormaPago);
+            console.log('🧪 DEBUG - MetodoPago actual:', currentValues.MetodoPago);
+            console.log('🧪 DEBUG - RegimenFiscal actual:', currentValues.RegimenFiscal);
+            alert('Revisa la consola para ver los valores actuales del formulario');
+          }}
+          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg shadow text-sm"
+        >
+          🧪 Debug Formulario
+        </Button>
+        <Button type="submit" disabled={isSubmitting} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow text-lg">Crear CFDI</Button>
       </div>
       {emittedUID && (
         <div className="mt-10 p-8 bg-green-50 rounded-2xl shadow-lg">
