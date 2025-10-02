@@ -324,15 +324,31 @@ const CFDIForm = () => {
     console.log('   - Watch FormaPago:', watch('FormaPago'));
     console.log('   - Watch MetodoPago:', watch('MetodoPago'));
     
+    // 🔧 SOLUCION: Usar valores del watch si data está vacío
+    let formaPagoFinal = data.FormaPago || watch('FormaPago') || '';
+    let metodoPagoFinal = data.MetodoPago || watch('MetodoPago') || '';
+    
+    console.log('🔧 SOLUCION FormaPago:');
+    console.log('   - data.FormaPago:', data.FormaPago);
+    console.log('   - watch FormaPago:', watch('FormaPago'));
+    console.log('   - formaPagoFinal:', formaPagoFinal);
+    
+    console.log('🔧 SOLUCION MetodoPago:');
+    console.log('   - data.MetodoPago:', data.MetodoPago);
+    console.log('   - watch MetodoPago:', watch('MetodoPago'));
+    console.log('   - metodoPagoFinal:', metodoPagoFinal);
+    
     // Validar que FormaPago y MetodoPago no estén vacíos
-    if (!data.FormaPago || data.FormaPago.trim() === '') {
+    if (!formaPagoFinal || formaPagoFinal.trim() === '') {
       console.error('❌ ERROR: FormaPago está vacío o no seleccionado!');
+      console.log('🔍 Valores disponibles en FormaPago:', catalogs.FormaPago.slice(0, 3));
       alert('Error: Debes seleccionar una Forma de Pago antes de crear el CFDI.');
       return;
     }
     
-    if (!data.MetodoPago || data.MetodoPago.trim() === '') {
+    if (!metodoPagoFinal || metodoPagoFinal.trim() === '') {
       console.error('❌ ERROR: MetodoPago está vacío o no seleccionado!');
+      console.log('🔍 Valores disponibles en MetodoPago:', catalogs.MetodoPago.slice(0, 3));
       alert('Error: Debes seleccionar un Método de Pago antes de crear el CFDI.');
       return;
     }
@@ -343,8 +359,8 @@ const CFDIForm = () => {
       },
       TipoDocumento: data.TipoDocumento || 'factura',
       Serie: Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined),
-      FormaPago: String(data.FormaPago).trim(),
-      MetodoPago: String(data.MetodoPago).trim(),
+      FormaPago: String(formaPagoFinal).trim(), // <-- Usar el valor final corregido
+      MetodoPago: String(metodoPagoFinal).trim(), // <-- Usar el valor final corregido
       Moneda: data.Moneda || 'MXN',
       UsoCFDI: String(usoCFDIValue).trim(), // <-- Asegurar que sea string y sin espacios
       Conceptos: items,
@@ -528,28 +544,52 @@ const CFDIForm = () => {
       if (pagoMapeado.FormaPago && catalogs.FormaPago.length > 0) {
         const formaPagoExists = catalogs.FormaPago.find(forma => forma.key === pagoMapeado.FormaPago);
         if (formaPagoExists) {
+          // 🔧 Forzar el registro del valor usando múltiples métodos
           setValue('FormaPago', pagoMapeado.FormaPago, { 
             shouldValidate: true, 
             shouldDirty: true, 
             shouldTouch: true 
           });
-          console.log('✅ FormaPago auto-rellenado desde pedido WooCommerce:', pagoMapeado.FormaPago);
+          
+          // 🔧 Verificación inmediata
+          setTimeout(() => {
+            const valorVerificacion = watch('FormaPago');
+            console.log('✅ FormaPago auto-rellenado desde pedido WooCommerce:', pagoMapeado.FormaPago);
+            console.log('🔍 Verificación inmediata FormaPago:', valorVerificacion);
+            if (valorVerificacion !== pagoMapeado.FormaPago) {
+              console.log('⚠️ Reintentando setValue para FormaPago...');
+              setValue('FormaPago', pagoMapeado.FormaPago, { shouldValidate: true });
+            }
+          }, 100);
         } else {
           console.log('⚠️ FormaPago no encontrado en catálogo:', pagoMapeado.FormaPago);
+          console.log('🔍 Catálogo FormaPago disponible:', catalogs.FormaPago.slice(0, 3));
         }
       }
       
       if (pagoMapeado.MetodoPago && catalogs.MetodoPago.length > 0) {
         const metodoPagoExists = catalogs.MetodoPago.find(metodo => metodo.key === pagoMapeado.MetodoPago);
         if (metodoPagoExists) {
+          // 🔧 Forzar el registro del valor usando múltiples métodos
           setValue('MetodoPago', pagoMapeado.MetodoPago, { 
             shouldValidate: true, 
             shouldDirty: true, 
             shouldTouch: true 
           });
-          console.log('✅ MetodoPago auto-rellenado desde pedido WooCommerce:', pagoMapeado.MetodoPago);
+          
+          // 🔧 Verificación inmediata
+          setTimeout(() => {
+            const valorVerificacion = watch('MetodoPago');
+            console.log('✅ MetodoPago auto-rellenado desde pedido WooCommerce:', pagoMapeado.MetodoPago);
+            console.log('🔍 Verificación inmediata MetodoPago:', valorVerificacion);
+            if (valorVerificacion !== pagoMapeado.MetodoPago) {
+              console.log('⚠️ Reintentando setValue para MetodoPago...');
+              setValue('MetodoPago', pagoMapeado.MetodoPago, { shouldValidate: true });
+            }
+          }, 100);
         } else {
           console.log('⚠️ MetodoPago no encontrado en catálogo:', pagoMapeado.MetodoPago);
+          console.log('🔍 Catálogo MetodoPago disponible:', catalogs.MetodoPago.slice(0, 3));
         }
       }
 
@@ -1323,7 +1363,7 @@ const CFDIForm = () => {
           </div>
         )}
       </div>
-      <div className="flex gap-4 mt-8">
+      <div className="flex gap-2 mt-8 flex-wrap">
         <Button 
           type="button" 
           onClick={() => {
@@ -1335,10 +1375,41 @@ const CFDIForm = () => {
             console.log('🧪 DEBUG - RegimenFiscal actual:', currentValues.RegimenFiscal);
             alert('Revisa la consola para ver los valores actuales del formulario');
           }}
-          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg shadow text-sm"
+          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow text-sm"
         >
           🧪 Debug Formulario
         </Button>
+        
+        <Button 
+          type="button" 
+          onClick={() => {
+            const formaPago = watch('FormaPago');
+            const metodoPago = watch('MetodoPago');
+            console.log('💳 DEBUG ESPECÍFICO - Métodos de Pago:');
+            console.log('   - FormaPago watch:', formaPago);
+            console.log('   - MetodoPago watch:', metodoPago);
+            console.log('   - FormaPago tipo:', typeof formaPago);
+            console.log('   - MetodoPago tipo:', typeof metodoPago);
+            console.log('   - FormaPago vacío?:', !formaPago);
+            console.log('   - MetodoPago vacío?:', !metodoPago);
+            
+            // Intentar forzar valores si están vacíos
+            if (!formaPago && catalogs.FormaPago.length > 0) {
+              console.log('⚠️ Intentando establecer FormaPago por defecto');
+              setValue('FormaPago', catalogs.FormaPago[0].key, { shouldValidate: true });
+            }
+            if (!metodoPago && catalogs.MetodoPago.length > 0) {
+              console.log('⚠️ Intentando establecer MetodoPago por defecto');
+              setValue('MetodoPago', catalogs.MetodoPago[0].key, { shouldValidate: true });
+            }
+            
+            alert(`FormaPago: ${formaPago || 'VACÍO'}\nMetodoPago: ${metodoPago || 'VACÍO'}\n\nRevisa la consola para más detalles.`);
+          }}
+          className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg shadow text-sm"
+        >
+          💳 Debug Pagos
+        </Button>
+        
         <Button type="submit" disabled={isSubmitting} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow text-lg">Crear CFDI</Button>
       </div>
       {emittedUID && (
