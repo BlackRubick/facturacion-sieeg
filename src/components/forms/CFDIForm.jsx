@@ -258,10 +258,18 @@ const CFDIForm = () => {
     }
     // Construir los datos corregidos para validar y enviar
     const data = { ...dataRaw, dueDate: fechaCFDI };
-    // Mostrar en consola los valores antes de enviar
+    
+    // Debug detallado del UsoCFDI
     console.log('🚀 Valores del formulario RAW (dataRaw):', dataRaw);
     console.log('🚀 Valores del formulario procesados (data):', data);
-    console.log('🚀 UsoCFDI específico:', data.UsoCFDI);
+    console.log('� DEBUG UsoCFDI detallado:');
+    console.log('   - dataRaw.UsoCFDI:', dataRaw.UsoCFDI);
+    console.log('   - data.UsoCFDI:', data.UsoCFDI);
+    console.log('   - Tipo de UsoCFDI:', typeof data.UsoCFDI);
+    console.log('   - UsoCFDI está vacío?:', !data.UsoCFDI);
+    console.log('   - UsoCFDI es string vacío?:', data.UsoCFDI === '');
+    console.log('   - Valor watch actual:', watch('UsoCFDI'));
+    
     console.log('🚀 FormaPago específico:', data.FormaPago);
     console.log('🚀 MetodoPago específico:', data.MetodoPago);
     console.log('🚀 RegimenFiscal específico:', data.RegimenFiscal);
@@ -278,16 +286,32 @@ const CFDIForm = () => {
       ObjetoImp: String(item.ObjetoImp || '02').trim(),
       Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
     }));
-    // Enviar UsoCFDI solo en la raíz, como indica la documentación oficial
-    const usoCFDIValue = data.UsoCFDI || '';
+    // Enviar UsoCFDI solo en la raíz, como indica la documentación oficial  
+    let usoCFDIValue = data.UsoCFDI || '';
     
-    // Validación adicional para UsoCFDI
-    if (!usoCFDIValue) {
-      console.error('❌ ERROR: UsoCFDI está vacío!');
+    // Validación adicional para UsoCFDI - MÁS DETALLADA
+    console.log('🔍 Validando UsoCFDI:');
+    console.log('   - usoCFDIValue inicial:', usoCFDIValue);
+    console.log('   - usoCFDIValue length:', usoCFDIValue.length);
+    console.log('   - usoCFDIValue trimmed:', usoCFDIValue.trim());
+    
+    if (!usoCFDIValue || usoCFDIValue.trim() === '') {
+      console.error('❌ ERROR: UsoCFDI está vacío o es solo espacios!');
       console.log('🔍 Datos disponibles en form:', data);
-      alert('Error: No se ha seleccionado un Uso CFDI. Por favor selecciona uno antes de enviar.');
-      return;
+      console.log('🔍 Valor directo del watch:', watch('UsoCFDI'));
+      
+      // Intentar obtener el valor directamente del watch
+      const watchValue = watch('UsoCFDI');
+      if (watchValue && watchValue.trim() !== '') {
+        console.log('⚠️ Usando valor del watch en su lugar:', watchValue);
+        usoCFDIValue = watchValue.trim();
+      } else {
+        alert('Error: No se ha seleccionado un Uso CFDI. Por favor selecciona uno antes de enviar.');
+        return;
+      }
     }
+    
+    console.log('✅ UsoCFDI final que se usará:', usoCFDIValue);
     
     const cfdiData = {
       Receptor: {
@@ -298,7 +322,7 @@ const CFDIForm = () => {
       FormaPago: data.FormaPago,
       MetodoPago: data.MetodoPago,
       Moneda: data.Moneda || 'MXN',
-      UsoCFDI: usoCFDIValue, // <-- SOLO AQUÍ
+      UsoCFDI: String(usoCFDIValue).trim(), // <-- Asegurar que sea string y sin espacios
       Conceptos: items,
       BorradorSiFalla: String(data.BorradorSiFalla || '0'),
       Draft: String(data.Draft || '0'),
@@ -307,6 +331,14 @@ const CFDIForm = () => {
     
     console.log('📤 Objeto final enviado a la API:', cfdiData);
     console.log('📤 UsoCFDI que se envía:', cfdiData.UsoCFDI);
+    
+    // Validación final antes del envío
+    if (!cfdiData.UsoCFDI || cfdiData.UsoCFDI.trim() === '') {
+      console.error('❌ ERROR FINAL: UsoCFDI en cfdiData está vacío!');
+      alert('Error crítico: UsoCFDI se perdió en el procesamiento. Contacta al desarrollador.');
+      return;
+    }
+    
     if (isGlobal) {
       cfdiData.InformacionGlobal = {
         Periodicidad: data.Periodicidad,
