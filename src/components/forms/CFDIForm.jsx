@@ -391,16 +391,72 @@ const CFDIForm = () => {
       if (!res.ok) throw new Error('No se encontró el pedido');
       const order = await res.json();
       
-      // 🔥 NUEVO: Obtener método de pago del pedido WooCommerce
-      console.log('💳 Método de pago del pedido WooCommerce:', order.payment_method);
-      console.log('💳 Título del método de pago:', order.payment_method_title);
-      console.log('💳 Datos completos del pedido:', {
-        id: order.id,
-        payment_method: order.payment_method,
-        payment_method_title: order.payment_method_title,
-        status: order.status,
-        total: order.total
+      // 🔥 LOG COMPLETO DEL PEDIDO WOOCOMMERCE
+      console.log('==================================================');
+      console.log('🛒 PEDIDO WOOCOMMERCE COMPLETO - DATOS DEL PAGO');
+      console.log('==================================================');
+      console.log('📋 ID del pedido:', order.id);
+      console.log('💳 payment_method:', order.payment_method);
+      console.log('💳 payment_method_title:', order.payment_method_title);
+      console.log('💰 total:', order.total);
+      console.log('📊 status:', order.status);
+      console.log('� currency:', order.currency);
+      
+      // Logs específicos de métodos de pago
+      console.log('');
+      console.log('🔍 ANÁLISIS DETALLADO DEL MÉTODO DE PAGO:');
+      console.log('   - Tipo de payment_method:', typeof order.payment_method);
+      console.log('   - Valor exacto payment_method:', JSON.stringify(order.payment_method));
+      console.log('   - Tipo de payment_method_title:', typeof order.payment_method_title);
+      console.log('   - Valor exacto payment_method_title:', JSON.stringify(order.payment_method_title));
+      
+      // Buscar otros campos relacionados con pago
+      console.log('');
+      console.log('🔎 OTROS CAMPOS RELACIONADOS CON PAGO:');
+      if (order.meta_data && Array.isArray(order.meta_data)) {
+        const paymentMetas = order.meta_data.filter(meta => 
+          meta.key && (
+            meta.key.includes('payment') || 
+            meta.key.includes('_payment') ||
+            meta.key.includes('billing') ||
+            meta.key === '_payment_method' ||
+            meta.key === '_payment_method_title'
+          )
+        );
+        
+        if (paymentMetas.length > 0) {
+          console.log('   📋 Meta datos de pago encontrados:');
+          paymentMetas.forEach(meta => {
+            console.log(`      • ${meta.key}: ${JSON.stringify(meta.value)}`);
+          });
+        } else {
+          console.log('   ❌ No se encontraron meta datos de pago');
+        }
+      }
+      
+      // Buscar en billing info
+      if (order.billing) {
+        console.log('');
+        console.log('🏦 INFORMACIÓN DE FACTURACIÓN:');
+        console.log('   - billing completo:', JSON.stringify(order.billing, null, 2));
+      }
+      
+      // Buscar campos de transacción
+      const transactionFields = ['transaction_id', '_transaction_id', 'payment_url', '_payment_url'];
+      console.log('');
+      console.log('💳 CAMPOS DE TRANSACCIÓN:');
+      transactionFields.forEach(field => {
+        if (order[field]) {
+          console.log(`   - ${field}:`, order[field]);
+        }
       });
+      
+      // Log del objeto completo (solo las claves principales)
+      console.log('');
+      console.log('🗂️ ESTRUCTURA COMPLETA DEL PEDIDO (claves principales):');
+      console.log('   Claves disponibles:', Object.keys(order));
+      
+      console.log('==================================================');
       
       // Mapear método de pago de WooCommerce a catálogos SAT
       const mapearMetodoPago = (wooPaymentMethod) => {
@@ -556,9 +612,20 @@ const CFDIForm = () => {
         // Notificar al usuario sobre el auto-rellenado del método de pago
         if (pagoMapeado.FormaPago !== '99') {
           setTimeout(() => {
-            alert(`✅ Pedido importado exitosamente!\n\n💳 Método de pago detectado: "${order.payment_method_title || order.payment_method}"\n📋 Se auto-rellenaron:\n• Forma de Pago: ${pagoMapeado.FormaPago}\n• Método de Pago: ${pagoMapeado.MetodoPago}\n\n¡Revisa que los datos sean correctos antes de crear el CFDI!`);
+            alert(`✅ Pedido importado exitosamente!\n\n💳 Método de pago detectado: "${order.payment_method_title || order.payment_method}"\n📋 Se auto-rellenaron:\n• Forma de Pago: ${pagoMapeado.FormaPago}\n• Método de Pago: ${pagoMapeado.MetodoPago}\n\n¡Revisa la consola para ver todos los detalles del pedido!\n¡Revisa que los datos sean correctos antes de crear el CFDI!`);
           }, 500);
         }
+        
+        // 🧪 Log adicional para debugging completo
+        console.log('');
+        console.log('🧪 DEBUG: PEDIDO COMPLETO PARA ANÁLISIS');
+        console.log('=====================================');
+        console.log('Para ver el pedido completo, ejecuta en la consola:');
+        console.log('window.lastWooCommerceOrder');
+        console.log('=====================================');
+        
+        // Guardar el pedido en una variable global para debugging
+        window.lastWooCommerceOrder = order;
       } else {
         alert('No se encontraron productos para ese pedido');
         setProductosImportados([]);
@@ -833,17 +900,45 @@ const CFDIForm = () => {
         </Button>
       </div>
       {showImportPedido && (
-        <div className="mb-8 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
-          <input
-            type="text"
-            placeholder="Número de pedido"
-            value={pedidoInput}
-            onChange={e => setPedidoInput(e.target.value)}
-            className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
-          />
-          <Button type="button" onClick={handleImportPedido} disabled={loadingPedido} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
-            {loadingPedido ? 'Cargando...' : 'Cargar pedido'}
-          </Button>
+        <div className="mb-8 p-4 bg-blue-50 rounded-lg">
+          <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
+            <input
+              type="text"
+              placeholder="Número de pedido"
+              value={pedidoInput}
+              onChange={e => setPedidoInput(e.target.value)}
+              className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
+            />
+            <Button type="button" onClick={handleImportPedido} disabled={loadingPedido} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
+              {loadingPedido ? 'Cargando...' : 'Cargar pedido'}
+            </Button>
+          </div>
+          
+          {/* Botón de debug para el último pedido */}
+          <div className="border-t border-blue-200 pt-3">
+            <Button 
+              type="button" 
+              onClick={() => {
+                if (window.lastWooCommerceOrder) {
+                  console.log('🧪 ÚLTIMO PEDIDO WOOCOMMERCE IMPORTADO:');
+                  console.log('=====================================');
+                  console.log(JSON.stringify(window.lastWooCommerceOrder, null, 2));
+                  console.log('=====================================');
+                  console.log('💳 Método de pago específico:', window.lastWooCommerceOrder.payment_method);
+                  console.log('💳 Título del método:', window.lastWooCommerceOrder.payment_method_title);
+                  alert('Revisa la consola para ver los detalles completos del último pedido importado');
+                } else {
+                  alert('No hay ningún pedido importado aún. Importa un pedido primero.');
+                }
+              }}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-2 px-4 rounded-lg shadow"
+            >
+              🧪 Ver último pedido en consola
+            </Button>
+            <p className="text-xs text-gray-600 mt-2">
+              Este botón te mostrará todos los datos del último pedido importado en la consola del navegador
+            </p>
+          </div>
         </div>
       )}
       <div className="mb-8 p-6 bg-gray-50 rounded-xl shadow">
