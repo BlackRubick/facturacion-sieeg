@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import FacturaAPIService from '../../services/facturaApi';
 import Button from '../common/Button/Button';
 import Input from '../common/Input/Input';
+import Select from '../common/Select/Select';
 import CustomerModalForm from './CustomerModalForm';
 
 const defaultConcepto = {
@@ -110,6 +111,7 @@ const CFDIGlobalForm = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    watch,
   } = useForm({
     defaultValues: {
       customerId: '',
@@ -168,6 +170,13 @@ const CFDIGlobalForm = () => {
     };
     fetchCatalogs();
   }, []);
+
+  // Establecer valor por defecto para UsoCFDI cuando se carguen los catálogos
+  useEffect(() => {
+    if (catalogs.UsoCFDI && catalogs.UsoCFDI.length > 0 && !watch('UsoCFDI')) {
+      setValue('UsoCFDI', catalogs.UsoCFDI[0].key || catalogs.UsoCFDI[0].value || '');
+    }
+  }, [catalogs.UsoCFDI, setValue, watch]);
 
   const onSubmit = async (data) => {
     const cfdiData = {
@@ -346,6 +355,18 @@ const CFDIGlobalForm = () => {
       if (data.status === 'success' && data.Data) {
         setClienteData(data.Data);
         setValue('customerId', data.Data.UID || '');
+        
+        // Auto-rellenar UsoCFDI si el cliente lo tiene configurado
+        if (data.Data.UsoCFDI && catalogs.UsoCFDI && catalogs.UsoCFDI.length > 0) {
+          const usoCFDIExists = catalogs.UsoCFDI.find(uso => 
+            (uso.key && uso.key === data.Data.UsoCFDI) || 
+            (uso.value && uso.value === data.Data.UsoCFDI)
+          );
+          if (usoCFDIExists) {
+            setValue('UsoCFDI', String(data.Data.UsoCFDI), { shouldValidate: true });
+            console.log('✅ UsoCFDI auto-rellenado desde cliente:', data.Data.UsoCFDI);
+          }
+        }
       } else {
         setClienteError('No se encontró el cliente para ese RFC');
         alert('El RFC no está dado de alta. Por favor registre el cliente.');
@@ -376,6 +397,41 @@ const CFDIGlobalForm = () => {
               <span className="font-semibold text-green-700 text-base">Cliente encontrado</span>
             </div>
           )}
+          
+          {clienteData && (
+            <div className="mb-4">
+              <Controller
+                name="UsoCFDI"
+                control={control}
+                rules={{ required: 'Debes seleccionar un uso CFDI.' }}
+                render={({ field, fieldState }) => {
+                  const safeValue = field.value == null ? '' : String(field.value);
+                  console.log('[Controller:UsoCFDI] value:', safeValue, 'options:', catalogs.UsoCFDI);
+                  return (
+                    <Select
+                      label="Selecciona uso CFDI*"
+                      options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
+                        value: String(opt.key || opt.value),
+                        label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
+                      })) : []}
+                      value={safeValue}
+                      onChange={val => {
+                        const v = val == null ? '' : String(val);
+                        field.onChange(v);
+                        setValue('UsoCFDI', v, { shouldValidate: true, shouldDirty: true });
+                        console.log('[Select:UsoCFDI] onChange value:', v);
+                      }}
+                      placeholder="Selecciona uso CFDI"
+                      isLoading={loadingCatalogs}
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                    />
+                  );
+                }}
+              />
+            </div>
+          )}
+          
           {clienteData && (
             <CorreoValidador
               clienteCorreo={clienteData.Contacto?.Email}
@@ -431,7 +487,7 @@ const CFDIGlobalForm = () => {
                     FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
                     MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
                     Moneda: 'MXN',
-                    UsoCFDI: clienteData.UsoCFDI || 'G03',
+                    UsoCFDI: watch('UsoCFDI') || clienteData.UsoCFDI || 'G03',
                     Conceptos: fields.map(item => ({
                       ClaveProdServ: item.ClaveProdServ,
                       NoIdentificacion: item.NoIdentificacion,
