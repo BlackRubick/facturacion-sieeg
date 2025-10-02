@@ -202,14 +202,36 @@ const CFDIForm = () => {
 
   // Efecto para auto-rellenar datos cuando los catálogos se cargan después de seleccionar cliente
   useEffect(() => {
-    if (selectedClientData && !loadingCatalogs) {
-      // Re-ejecutar auto-rellenado cuando los catálogos estén listos
+    if (selectedClientData && !loadingCatalogs && catalogs.UsoCFDI.length > 0 && catalogs.RegimenFiscal.length > 0) {
+      console.log('🔄 Re-ejecutando auto-rellenado porque los catálogos ya están listos');
       const clientUID = watch('customerId');
       if (clientUID && selectedClientData.UID === clientUID) {
-        handleClientSelection(clientUID);
+        // Solo re-ejecutar el auto-rellenado, no la petición completa
+        setTimeout(() => {
+          if (selectedClientData.UsoCFDI && !watch('UsoCFDI')) {
+            const usoCFDIExists = catalogs.UsoCFDI.find(uso => 
+              (uso.key && uso.key === selectedClientData.UsoCFDI) || 
+              (uso.value && uso.value === selectedClientData.UsoCFDI)
+            );
+            if (usoCFDIExists) {
+              setValue('UsoCFDI', String(selectedClientData.UsoCFDI), { shouldValidate: true });
+              console.log('✅ UsoCFDI re-rellenado:', selectedClientData.UsoCFDI);
+            }
+          }
+
+          if (selectedClientData.RegimenFiscal && !watch('RegimenFiscal')) {
+            const regimenExists = catalogs.RegimenFiscal.find(regimen => 
+              regimen.key === selectedClientData.RegimenFiscal
+            );
+            if (regimenExists) {
+              setValue('RegimenFiscal', String(selectedClientData.RegimenFiscal), { shouldValidate: true });
+              console.log('✅ RegimenFiscal re-rellenado:', selectedClientData.RegimenFiscal);
+            }
+          }
+        }, 100);
       }
     }
-  }, [selectedClientData, loadingCatalogs, catalogs]);
+  }, [selectedClientData, loadingCatalogs, catalogs.UsoCFDI, catalogs.RegimenFiscal]);
 
   const onSubmit = async (dataRaw) => {
     // Calcular la fecha real según la opción seleccionada
@@ -398,57 +420,108 @@ const CFDIForm = () => {
 
     setLoadingClientData(true);
     try {
+      console.log('🔍 Obteniendo datos del cliente con UID:', clientUID);
       const response = await FacturaAPIService.getClientByUID(clientUID);
       const clientData = response.data.data || response.data;
       
-      console.log('Datos completos del cliente:', clientData);
+      console.log('📋 Datos completos del cliente recibidos:', JSON.stringify(clientData, null, 2));
       setSelectedClientData(clientData);
 
-      // Auto-rellenar campos basados en los datos del cliente
-      if (clientData.UsoCFDI && catalogs.UsoCFDI.length > 0) {
-        const usoCFDIExists = catalogs.UsoCFDI.find(uso => 
-          uso.key === clientData.UsoCFDI || uso.value === clientData.UsoCFDI
-        );
-        if (usoCFDIExists) {
-          setValue('UsoCFDI', clientData.UsoCFDI, { shouldValidate: true });
-          console.log('UsoCFDI auto-rellenado:', clientData.UsoCFDI);
+      // Esperar un poco para asegurar que los catálogos estén cargados
+      setTimeout(() => {
+        console.log('🔄 Iniciando auto-rellenado de campos...');
+        
+        // Auto-rellenar UsoCFDI
+        if (clientData.UsoCFDI) {
+          console.log('🎯 Intentando auto-rellenar UsoCFDI con valor:', clientData.UsoCFDI);
+          console.log('📚 Catálogo UsoCFDI disponible:', catalogs.UsoCFDI.length, 'elementos');
+          
+          if (catalogs.UsoCFDI.length > 0) {
+            const usoCFDIExists = catalogs.UsoCFDI.find(uso => 
+              (uso.key && uso.key === clientData.UsoCFDI) || 
+              (uso.value && uso.value === clientData.UsoCFDI)
+            );
+            
+            if (usoCFDIExists) {
+              setValue('UsoCFDI', String(clientData.UsoCFDI), { 
+                shouldValidate: true, 
+                shouldDirty: true,
+                shouldTouch: true 
+              });
+              console.log('✅ UsoCFDI auto-rellenado exitosamente:', clientData.UsoCFDI);
+            } else {
+              console.log('❌ UsoCFDI no encontrado en catálogo:', clientData.UsoCFDI);
+            }
+          } else {
+            console.log('⚠️ Catálogo UsoCFDI aún no está cargado');
+          }
+        } else {
+          console.log('ℹ️ Cliente no tiene UsoCFDI definido');
         }
-      }
 
-      if (clientData.RegimenFiscal && catalogs.RegimenFiscal.length > 0) {
-        const regimenExists = catalogs.RegimenFiscal.find(regimen => 
-          regimen.key === clientData.RegimenFiscal
-        );
-        if (regimenExists) {
-          setValue('RegimenFiscal', clientData.RegimenFiscal, { shouldValidate: true });
-          console.log('RegimenFiscal auto-rellenado:', clientData.RegimenFiscal);
+        // Auto-rellenar RegimenFiscal
+        if (clientData.RegimenFiscal) {
+          console.log('🎯 Intentando auto-rellenar RegimenFiscal con valor:', clientData.RegimenFiscal);
+          console.log('📚 Catálogo RegimenFiscal disponible:', catalogs.RegimenFiscal.length, 'elementos');
+          
+          if (catalogs.RegimenFiscal.length > 0) {
+            const regimenExists = catalogs.RegimenFiscal.find(regimen => 
+              regimen.key === clientData.RegimenFiscal
+            );
+            
+            if (regimenExists) {
+              setValue('RegimenFiscal', String(clientData.RegimenFiscal), { 
+                shouldValidate: true, 
+                shouldDirty: true,
+                shouldTouch: true 
+              });
+              console.log('✅ RegimenFiscal auto-rellenado exitosamente:', clientData.RegimenFiscal);
+            } else {
+              console.log('❌ RegimenFiscal no encontrado en catálogo:', clientData.RegimenFiscal);
+              console.log('🔍 Valores disponibles en catálogo:', catalogs.RegimenFiscal.map(r => r.key));
+            }
+          } else {
+            console.log('⚠️ Catálogo RegimenFiscal aún no está cargado');
+          }
+        } else {
+          console.log('ℹ️ Cliente no tiene RegimenFiscal definido');
         }
-      }
 
-      // Si el cliente tiene otros datos que quieras auto-rellenar, agrégalos aquí
-      // Por ejemplo, si tiene FormaPago o MetodoPago predeterminados:
-      if (clientData.FormaPago && catalogs.FormaPago.length > 0) {
-        const formaPagoExists = catalogs.FormaPago.find(forma => 
-          forma.key === clientData.FormaPago
-        );
-        if (formaPagoExists) {
-          setValue('FormaPago', clientData.FormaPago, { shouldValidate: true });
-          console.log('FormaPago auto-rellenado:', clientData.FormaPago);
+        // Auto-rellenar FormaPago
+        if (clientData.FormaPago && catalogs.FormaPago.length > 0) {
+          const formaPagoExists = catalogs.FormaPago.find(forma => 
+            forma.key === clientData.FormaPago
+          );
+          if (formaPagoExists) {
+            setValue('FormaPago', String(clientData.FormaPago), { 
+              shouldValidate: true, 
+              shouldDirty: true,
+              shouldTouch: true 
+            });
+            console.log('✅ FormaPago auto-rellenado:', clientData.FormaPago);
+          }
         }
-      }
 
-      if (clientData.MetodoPago && catalogs.MetodoPago.length > 0) {
-        const metodoPagoExists = catalogs.MetodoPago.find(metodo => 
-          metodo.key === clientData.MetodoPago
-        );
-        if (metodoPagoExists) {
-          setValue('MetodoPago', clientData.MetodoPago, { shouldValidate: true });
-          console.log('MetodoPago auto-rellenado:', clientData.MetodoPago);
+        // Auto-rellenar MetodoPago
+        if (clientData.MetodoPago && catalogs.MetodoPago.length > 0) {
+          const metodoPagoExists = catalogs.MetodoPago.find(metodo => 
+            metodo.key === clientData.MetodoPago
+          );
+          if (metodoPagoExists) {
+            setValue('MetodoPago', String(clientData.MetodoPago), { 
+              shouldValidate: true, 
+              shouldDirty: true,
+              shouldTouch: true 
+            });
+            console.log('✅ MetodoPago auto-rellenado:', clientData.MetodoPago);
+          }
         }
-      }
+
+        console.log('🏁 Auto-rellenado completado');
+      }, 100); // Pequeño delay para asegurar que todo esté listo
 
     } catch (error) {
-      console.error('Error al obtener datos del cliente:', error);
+      console.error('❌ Error al obtener datos del cliente:', error);
       alert('Error al cargar los datos del cliente: ' + (error.response?.data?.message || error.message));
     }
     setLoadingClientData(false);
@@ -487,9 +560,15 @@ const CFDIForm = () => {
         </h3>
         {selectedClientData && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-            <p className="text-sm text-blue-700">
-              ✅ Datos auto-rellenados para: <strong>{selectedClientData.RazonSocial || 'Cliente seleccionado'}</strong>
+            <p className="text-sm text-blue-700 font-semibold mb-2">
+              ✅ Cliente seleccionado: <strong>{selectedClientData.RazonSocial || 'Sin nombre'}</strong> ({selectedClientData.RFC || 'Sin RFC'})
             </p>
+            <div className="text-xs text-gray-600 space-y-1">
+              <div>• UsoCFDI del cliente: <code className="bg-white px-1 rounded">{selectedClientData.UsoCFDI || 'No definido'}</code></div>
+              <div>• RegimenFiscal del cliente: <code className="bg-white px-1 rounded">{selectedClientData.RegimenFiscal || 'No definido'}</code></div>
+              <div>• FormaPago del cliente: <code className="bg-white px-1 rounded">{selectedClientData.FormaPago || 'No definido'}</code></div>
+              <div>• MetodoPago del cliente: <code className="bg-white px-1 rounded">{selectedClientData.MetodoPago || 'No definido'}</code></div>
+            </div>
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -671,14 +750,29 @@ const CFDIForm = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Régimen Fiscal</label>
-            <select {...register('RegimenFiscal')} className="w-full border rounded-lg p-2">
-              <option value="">Selecciona</option>
-              {catalogs.RegimenFiscal && catalogs.RegimenFiscal.map((opt, idx) => {
-                  return (
-                      <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-                  );
-              })}
-            </select>
+            <Controller
+              name="RegimenFiscal"
+              control={control}
+              render={({ field, fieldState }) => {
+                const safeValue = field.value == null ? '' : String(field.value);
+                console.log('[Controller:RegimenFiscal] value:', safeValue, 'options:', catalogs.RegimenFiscal);
+                return (
+                  <Select
+                    label="Régimen Fiscal"
+                    options={catalogs.RegimenFiscal.map((opt, idx) => ({
+                      value: String(opt.key),
+                      label: `${opt.key} - ${opt.name}`,
+                    }))}
+                    value={safeValue}
+                    onChange={field.onChange}
+                    placeholder="Selecciona un régimen fiscal"
+                    isLoading={loadingCatalogs}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                );
+              }}
+            />
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Fecha de CFDI *</label>
