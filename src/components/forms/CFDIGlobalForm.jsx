@@ -391,12 +391,6 @@ const CFDIGlobalForm = () => {
           {clienteError && (
             <div className="p-2 bg-red-100 text-red-700 rounded mt-2">{clienteError}</div>
           )}
-          {clienteData && (
-            <div className="p-4 bg-green-100 border border-green-300 rounded-lg mt-2 flex items-center gap-3 shadow-sm">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-              <span className="font-semibold text-green-700 text-base">Cliente encontrado</span>
-            </div>
-          )}
           
           {clienteData && (
             <div className="mb-4">
