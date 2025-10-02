@@ -7,6 +7,7 @@ import Button from '../common/Button/Button';
 import Input from '../common/Input/Input';
 import Select from '../common/Select/Select';
 import CustomerModalForm from './CustomerModalForm';
+import ProductModalForm from './ProductModalForm';
 
 const defaultConcepto = {
   ClaveProdServ: '',
@@ -55,6 +56,7 @@ const CFDIForm = () => {
   const [productosImportados, setProductosImportados] = useState([]);
   const [emittedUID, setEmittedUID] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [showProductModal, setShowProductModal] = useState(false);
   const [selectedClientData, setSelectedClientData] = useState(null);
   const [loadingClientData, setLoadingClientData] = useState(false);
 
@@ -703,6 +705,21 @@ const CFDIForm = () => {
     setShowCustomerModal(false);
   };
 
+  // Refrescar productos después de crear uno nuevo desde el modal
+  const fetchProducts = async () => {
+    try {
+      const res = await FacturaAPIService.listProducts({ per_page: 100 });
+      setProducts(res.data.data || []);
+    } catch (err) {
+      console.error('Error cargando productos:', err);
+    }
+  };
+
+  const handleProductCreated = async () => {
+    await fetchProducts();
+    setShowProductModal(false);
+  };
+
   // Función para obtener los datos completos del cliente seleccionado
   const handleClientSelection = async (clientUID) => {
     if (!clientUID) {
@@ -1225,51 +1242,61 @@ const CFDIForm = () => {
             {fields.map((item, idx) => (
               <div key={item.id} className="border border-gray-200 p-4 rounded-lg bg-white shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Controller
-                      name={`items.${idx}.ClaveProdServ`}
-                      control={control}
-                      rules={{ required: 'Debes seleccionar un producto o servicio.' }}
-                      render={({ field, fieldState }) => (
-                        <Select
-                          {...field}
-                          label="Producto/Servicio"
-                          options={products.map((prod) => ({
-                            value: prod.claveprodserv || '',
-                            label: `${prod.name || 'Sin nombre'} (${prod.claveprodserv || 'Sin clave'})`,
-                            sku: prod.sku || '',
-                            claveunidad: prod.claveunidad || '',
-                            unidad: prod.unidad || '',
-                            price: prod.price || 0,
-                            descripcion: prod.name || '',
-                          }))}
-                          placeholder="Selecciona un producto"
-                          isLoading={loadingCatalogs}
-                          onChange={(value) => {
-                            field.onChange(value);
-                            const selected = products.find(p => p.claveprodserv === value);
-                            if (selected) {
-                              setValue(`items.${idx}.ClaveProdServ`, selected.claveprodserv || '');
-                              setValue(`items.${idx}.NoIdentificacion`, selected.sku || '');
-                              setValue(`items.${idx}.ClaveUnidad`, selected.claveunidad || '');
-                              setValue(`items.${idx}.Unidad`, selected.unidad || 'Pieza');
-                              setValue(`items.${idx}.ValorUnitario`, selected.price || 0);
-                              setValue(`items.${idx}.Descripcion`, selected.name || '');
-                            } else {
-                              setValue(`items.${idx}.ClaveProdServ`, '');
-                              setValue(`items.${idx}.NoIdentificacion`, '');
-                              setValue(`items.${idx}.ClaveUnidad`, '');
-                              setValue(`items.${idx}.Unidad`, '');
-                              setValue(`items.${idx}.ValorUnitario`, 0);
-                              setValue(`items.${idx}.Descripcion`, '');
-                            }
-                          }}
-                          value={field.value}
-                          error={!!fieldState.error || !field.value}
-                          helperText={fieldState.error?.message || (!field.value ? 'Debes seleccionar un producto.' : '')}
-                        />
-                      )}
-                    />
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <Controller
+                        name={`items.${idx}.ClaveProdServ`}
+                        control={control}
+                        rules={{ required: 'Debes seleccionar un producto o servicio.' }}
+                        render={({ field, fieldState }) => (
+                          <Select
+                            {...field}
+                            label="Producto/Servicio"
+                            options={products.map((prod) => ({
+                              value: prod.claveprodserv || '',
+                              label: `${prod.name || 'Sin nombre'} (${prod.claveprodserv || 'Sin clave'})`,
+                              sku: prod.sku || '',
+                              claveunidad: prod.claveunidad || '',
+                              unidad: prod.unidad || '',
+                              price: prod.price || 0,
+                              descripcion: prod.name || '',
+                            }))}
+                            placeholder="Selecciona un producto"
+                            isLoading={loadingCatalogs}
+                            onChange={(value) => {
+                              field.onChange(value);
+                              const selected = products.find(p => p.claveprodserv === value);
+                              if (selected) {
+                                setValue(`items.${idx}.ClaveProdServ`, selected.claveprodserv || '');
+                                setValue(`items.${idx}.NoIdentificacion`, selected.sku || '');
+                                setValue(`items.${idx}.ClaveUnidad`, selected.claveunidad || '');
+                                setValue(`items.${idx}.Unidad`, selected.unidad || 'Pieza');
+                                setValue(`items.${idx}.ValorUnitario`, selected.price || 0);
+                                setValue(`items.${idx}.Descripcion`, selected.name || '');
+                              } else {
+                                setValue(`items.${idx}.ClaveProdServ`, '');
+                                setValue(`items.${idx}.NoIdentificacion`, '');
+                                setValue(`items.${idx}.ClaveUnidad`, '');
+                                setValue(`items.${idx}.Unidad`, '');
+                                setValue(`items.${idx}.ValorUnitario`, 0);
+                                setValue(`items.${idx}.Descripcion`, '');
+                              }
+                            }}
+                            value={field.value}
+                            error={!!fieldState.error || !field.value}
+                            helperText={fieldState.error?.message || (!field.value ? 'Debes seleccionar un producto.' : '')}
+                          />
+                        )}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => setShowProductModal(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white rounded-full shadow flex items-center justify-center text-xl w-10 h-10 mb-6"
+                      title="Agregar producto"
+                    >
+                      +
+                    </Button>
                   </div>
                   <Input label="NoIdentificacion" {...register(`items.${idx}.NoIdentificacion`, { required: true })} />
                   <Input label="Cantidad" type="number" {...register(`items.${idx}.quantity`, { valueAsNumber: true, required: true })} />
@@ -1353,6 +1380,7 @@ const CFDIForm = () => {
         <pre className="text-red-500 mt-6">{JSON.stringify(cleanForJson(errors), null, 2)}</pre>
       )}
       <CustomerModalForm open={showCustomerModal} onClose={() => setShowCustomerModal(false)} onCreated={handleCustomerCreated} />
+      <ProductModalForm open={showProductModal} onClose={() => setShowProductModal(false)} onCreated={handleProductCreated} />
     </form>
   );
 };

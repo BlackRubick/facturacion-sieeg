@@ -104,6 +104,10 @@ class FacturaAPIService {
     // Listar productos propios
     return httpClient.get('/v3/products/list', { params: { page, per_page } });
   }
+  async createProduct(productData) {
+    // Crear nuevo producto
+    return httpClient.post('/v3/products/create', productData);
+  }
   async getSeries() {
     // Listar todas las series
     return httpClient.get('/v4/series');
