@@ -59,14 +59,11 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
     setLoadingCatalogs(false);
   };
 
-  const onSubmit = async (data, event) => {
-    // Prevenir recarga de página
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+  const onSubmit = async (data) => {
+    console.log('🎯 onSubmit ejecutado con data:', data);
     
     setIsSubmitting(true);
+    console.log('🚀 Iniciando creación de producto...');
     try {
       console.log('🚀 Creando producto con datos:', data);
       
@@ -144,8 +141,18 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSubmitting) {
+          handleClose();
+        }
+      }}
+    >
+      <div 
+        className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
@@ -169,14 +176,7 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
             </button>
           </div>
 
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleSubmit(onSubmit)(e);
-            }} 
-            className="space-y-4"
-          >
+          <div className="space-y-4">
             {/* Código/SKU - Opcional */}
             <div>
               <Input
@@ -294,7 +294,19 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
                 Cancelar
               </Button>
               <Button
-                type="submit"
+                type="button"
+                onClick={(e) => {
+                  console.log('🔥 Click en botón Crear Producto');
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  // Obtener los datos del formulario manualmente
+                  const formData = watch();
+                  console.log('📋 Datos del formulario:', formData);
+                  
+                  // Llamar directamente a onSubmit con los datos
+                  onSubmit(formData);
+                }}
                 disabled={isSubmitting || loadingCatalogs}
                 className={`flex-1 text-white py-2 px-4 rounded-lg ${
                   isSubmitting || loadingCatalogs 
@@ -305,7 +317,7 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
                 {isSubmitting ? '⏳ Creando...' : '✨ Crear Producto'}
               </Button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
