@@ -59,20 +59,36 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
     setLoadingCatalogs(false);
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data, event) => {
+    // Prevenir recarga de página
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     setIsSubmitting(true);
     try {
       console.log('🚀 Creando producto con datos:', data);
       
+      // Validar datos antes de enviar
+      if (!data.name || !data.price || !data.clavePS || !data.claveUnity || !data.unity) {
+        throw new Error('Faltan campos obligatorios');
+      }
+      
       // Preparar datos para la API según la documentación
       const productData = {
         code: data.code || undefined, // Opcional
-        name: data.name, // Requerido
+        name: data.name.trim(), // Requerido
         price: parseFloat(data.price), // Requerido, como número
-        clavePS: data.clavePS, // Requerido
-        unity: data.unity, // Requerido
-        claveUnity: data.claveUnity, // Requerido
+        clavePS: data.clavePS.trim(), // Requerido
+        unity: data.unity.trim(), // Requerido
+        claveUnity: data.claveUnity.trim(), // Requerido
       };
+
+      // Validar que el precio sea válido
+      if (isNaN(productData.price) || productData.price <= 0) {
+        throw new Error('El precio debe ser un número válido mayor a 0');
+      }
 
       console.log('📤 Datos enviados a la API:', productData);
 
@@ -80,25 +96,36 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
       
       console.log('✅ Producto creado exitosamente:', response.data);
       
-      alert(`Producto creado exitosamente: ${response.data.data?.name || data.name}`);
+      // Usar setTimeout para asegurar que el estado se actualice correctamente
+      setTimeout(() => {
+        alert(`✅ Producto creado exitosamente: ${response.data.data?.name || data.name}`);
+        
+        // Limpiar formulario y cerrar modal
+        reset();
+        onClose();
+        
+        // Notificar al componente padre para que refresque la lista
+        if (onCreated) {
+          onCreated();
+        }
+      }, 100);
       
-      // Limpiar formulario y cerrar modal
-      reset();
-      onClose();
-      
-      // Notificar al componente padre para que refresque la lista
-      if (onCreated) {
-        onCreated();
-      }
     } catch (err) {
       console.error('❌ Error creando producto:', err);
       const errorMessage = err.response?.data?.message || err.message || 'Error desconocido';
-      alert('Error al crear el producto: ' + errorMessage);
+      
+      // Usar setTimeout para mostrar el error
+      setTimeout(() => {
+        alert('❌ Error al crear el producto: ' + errorMessage);
+      }, 100);
     }
     setIsSubmitting(false);
   };
 
   const handleClose = () => {
+    if (isSubmitting) {
+      return; // No permitir cerrar mientras se está enviando
+    }
     reset();
     onClose();
   };
@@ -121,16 +148,35 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
       <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Crear Nuevo Producto</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              Crear Nuevo Producto
+              {loadingCatalogs && (
+                <span className="ml-2 text-sm text-blue-600">
+                  <span className="animate-spin inline-block">⏳</span> Cargando catálogos...
+                </span>
+              )}
+            </h2>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              disabled={isSubmitting}
+              className={`text-2xl font-bold ${
+                isSubmitting 
+                  ? 'text-gray-300 cursor-not-allowed' 
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
             >
               ×
             </button>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSubmit(onSubmit)(e);
+            }} 
+            className="space-y-4"
+          >
             {/* Código/SKU - Opcional */}
             <div>
               <Input
@@ -238,16 +284,25 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
               <Button
                 type="button"
                 onClick={handleClose}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
+                disabled={isSubmitting}
+                className={`flex-1 text-white py-2 px-4 rounded-lg ${
+                  isSubmitting 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-gray-500 hover:bg-gray-600'
+                }`}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
+                disabled={isSubmitting || loadingCatalogs}
+                className={`flex-1 text-white py-2 px-4 rounded-lg ${
+                  isSubmitting || loadingCatalogs 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-green-500 hover:bg-green-600'
+                }`}
               >
-                {isSubmitting ? 'Creando...' : 'Crear Producto'}
+                {isSubmitting ? '⏳ Creando...' : '✨ Crear Producto'}
               </Button>
             </div>
           </form>
