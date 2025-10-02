@@ -27,9 +27,9 @@ const Login = () => {
     <div className="min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-blue-100 to-blue-200">
       <div className="bg-white rounded-xl shadow-2xl border border-blue-100 w-full max-w-md p-8 flex flex-col items-center mx-2">
         <img
-          src="https://scontent.fvsa3-1.fna.fbcdn.net/v/t39.30808-6/515292611_1284277727032591_8320234014361064430_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeGdanYlcmHYPjafcCDzEzzlyJok2LBdrCLImiTYsF2sIrkE24XlUQfRwY_PgjExbMm3s95yZmeK5JNz6tE-Up4Z&_nc_ohc=5ztiVbOUyp0Q7kNvwFq6qMG&_nc_oc=Adk8soL-EgZlUlNdHaxEUPxfgHB2IjG5O-s3ibSKdA6nqoE2Xj2pCHie-7V2c1nB9LU&_nc_zt=23&_nc_ht=scontent.fvsa3-1.fna&_nc_gid=DZT-u_jS_qXgydy6k4m1ow&oh=00_Afbh2xXI1MrAd5DqLAt2E3SjNEsVmZ0jU5_E6b9RNiZQWQ&oe=68E15EBA"
-          alt="Logo"
-          className="w-32 h-32 object-cover rounded-full mt-2 mb-4 shadow-lg border-4 border-blue-200"
+          src="/src/styles/SIEEG NEW.jpg"
+          alt="Logo SIEEG"
+          className="h-20 object-contain mt-2 mb-6 shadow-lg"
         />
         <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
           <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">Iniciar sesión</h2>

@@ -652,7 +652,6 @@ const CFDIForm = () => {
         // Notificar al usuario sobre el auto-rellenado del método de pago
         if (pagoMapeado.FormaPago !== '99') {
           setTimeout(() => {
-            alert(`✅ Pedido importado exitosamente!\n\n💳 Método de pago detectado: "${order.payment_method_title || order.payment_method}"\n📋 Se auto-rellenaron:\n• Forma de Pago: ${pagoMapeado.FormaPago}\n• Método de Pago: ${pagoMapeado.MetodoPago}\n\n¡Revisa la consola para ver todos los detalles del pedido!\n¡Revisa que los datos sean correctos antes de crear el CFDI!`);
           }, 500);
         }
         
