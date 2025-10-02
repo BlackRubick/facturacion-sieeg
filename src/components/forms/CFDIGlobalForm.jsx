@@ -30,6 +30,25 @@ const FACTURA_API_KEY = import.meta.env.VITE_FACTURA_API_KEY;
 const FACTURA_SECRET_KEY = import.meta.env.VITE_FACTURA_SECRET_KEY;
 const FACTURA_PLUGIN = import.meta.env.VITE_FACTURA_PLUGIN;
 
+// Mapeo de métodos de pago de WooCommerce a códigos SAT
+const mapPaymentMethodToSAT = (wooPaymentMethod) => {
+  const paymentMap = {
+    'bacs': '02', // Transferencia bancaria
+    'cheque': '02', // Cheque (también transferencia)
+    'cod': '01', // Efectivo
+    'paypal': '04', // Tarjeta de crédito/débito (PayPal generalmente usa tarjetas)
+    'stripe': '04', // Tarjeta de crédito/débito
+    'mercadopago': '04', // Tarjeta de crédito/débito
+    'oxxo': '01', // Efectivo
+    'spei': '02', // Transferencia bancaria
+    'card': '04', // Tarjeta de crédito/débito
+    'credit_card': '04', // Tarjeta de crédito/débito
+    'debit_card': '28', // Tarjeta de débito
+  };
+  
+  return paymentMap[wooPaymentMethod] || '99'; // Por defecto "Por definir"
+};
+
 const CFDIGlobalForm = () => {
   const [showDraft, setShowDraft] = useState(false);
   const [draftData, setDraftData] = useState(null);
@@ -45,6 +64,7 @@ const CFDIGlobalForm = () => {
   const [cfdiMessage, setCfdiMessage] = useState("");
   const [validadoCorreo, setValidadoCorreo] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [formaPagoFromOrder, setFormaPagoFromOrder] = useState(null);
 
   const {
     register,
@@ -179,6 +199,17 @@ const CFDIGlobalForm = () => {
       const res = await fetch(url);
       if (!res.ok) throw new Error('No se encontró el pedido');
       const order = await res.json();
+      
+      // Obtener método de pago y mapear a código SAT
+      const paymentMethod = order.payment_method || order.meta_data?.find(meta => meta.key === '_payment_method')?.value;
+      const formaPagoSAT = mapPaymentMethodToSAT(paymentMethod);
+      setFormaPagoFromOrder(formaPagoSAT);
+      
+      // Actualizar clienteData con la forma de pago obtenida
+      if (clienteData) {
+        setClienteData({ ...clienteData, FormaPago: formaPagoSAT });
+      }
+      
       if (order.line_items && Array.isArray(order.line_items)) {
         let notFound = [];
         const conceptos = await Promise.all(order.line_items.map(async prod => {
@@ -230,6 +261,9 @@ const CFDIGlobalForm = () => {
     if (!rfc) return;
     setClienteError("");
     setClienteData(null);
+    setFormaPagoFromOrder(null); // Reset forma de pago al buscar nuevo cliente
+    setProductosImportados([]); // Reset productos importados
+    setPedidoInput(""); // Reset input de pedido
     try {
       const res = await FacturaAPIService.getClientByRFC(rfc);
       const data = res.data;
@@ -269,16 +303,25 @@ const CFDIGlobalForm = () => {
           {clienteData && (
             <div className="mb-4">
               <label className="block mb-1 text-sm font-semibold text-gray-700">Forma de Pago</label>
-              <select
-                value={clienteData?.FormaPago || ''}
-                onChange={e => setClienteData({ ...clienteData, FormaPago: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
-              >
-                <option value="">Selecciona</option>
-                {catalogs.FormaPago && catalogs.FormaPago.map((opt, idx) => (
-                  <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
-                ))}
-              </select>
+              {formaPagoFromOrder ? (
+                // Mostrar forma de pago obtenida de WooCommerce de forma sólida
+                <div className="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 text-gray-700 font-medium">
+                  {clienteData?.FormaPago} - {catalogs.FormaPago?.find(fp => fp.key === clienteData?.FormaPago)?.name || 'Forma de pago obtenida del pedido'}
+                  <span className="text-xs text-green-600 ml-2">(Obtenida automáticamente del pedido)</span>
+                </div>
+              ) : (
+                // Select manual cuando no se ha importado pedido
+                <select
+                  value={clienteData?.FormaPago || ''}
+                  onChange={e => setClienteData({ ...clienteData, FormaPago: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
+                >
+                  <option value="">Selecciona</option>
+                  {catalogs.FormaPago && catalogs.FormaPago.map((opt, idx) => (
+                    <option key={opt.key + '-' + idx} value={opt.key}>{opt.key} - {opt.name}</option>
+                  ))}
+                </select>
+              )}
             </div>
           )}
           {clienteData && clienteData.FormaPago !== '' && (
