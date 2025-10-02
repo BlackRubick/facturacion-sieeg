@@ -314,7 +314,7 @@ const ProductModalForm = ({ open, onClose, onCreated }) => {
                     : 'bg-green-500 hover:bg-green-600'
                 }`}
               >
-                {isSubmitting ? '⏳ Creando...' : '✨ Crear Producto'}
+                {isSubmitting ? '⏳ Creando...' : ' Crear Producto'}
               </Button>
             </div>
           </div>
