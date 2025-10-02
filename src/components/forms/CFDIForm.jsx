@@ -954,73 +954,10 @@ const CFDIForm = () => {
             </Button>
           </div>
           
-          {/* Botón de debug para el último pedido */}
-          <div className="border-t border-blue-200 pt-3">
-            <Button 
-              type="button" 
-              onClick={() => {
-                if (window.lastWooCommerceOrder) {
-                  console.log('🧪 ÚLTIMO PEDIDO WOOCOMMERCE IMPORTADO:');
-                  console.log('=====================================');
-                  console.log(JSON.stringify(window.lastWooCommerceOrder, null, 2));
-                  console.log('=====================================');
-                  console.log('💳 Método de pago específico:', window.lastWooCommerceOrder.payment_method);
-                  console.log('💳 Título del método:', window.lastWooCommerceOrder.payment_method_title);
-                  alert('Revisa la consola para ver los detalles completos del último pedido importado');
-                } else {
-                  alert('No hay ningún pedido importado aún. Importa un pedido primero.');
-                }
-              }}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-2 px-4 rounded-lg shadow"
-            >
-              🧪 Ver último pedido en consola
-            </Button>
-            <p className="text-xs text-gray-600 mt-2">
-              Este botón te mostrará todos los datos del último pedido importado en la consola del navegador
-            </p>
-          </div>
         </div>
       )}
       <div className="mb-8 p-6 bg-gray-50 rounded-xl shadow">
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">
-          Datos del Cliente
-          {loadingClientData && (
-            <span className="ml-2 text-sm text-blue-600 animate-pulse">
-              🔄 Cargando datos del cliente...
-            </span>
-          )}
-        </h3>
-        {selectedClientData && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-            <p className="text-sm text-blue-700 font-semibold mb-2">
-              ✅ Cliente seleccionado: <strong>{selectedClientData.RazonSocial || 'Sin nombre'}</strong> ({selectedClientData.RFC || 'Sin RFC'})
-            </p>
-            <div className="text-xs text-gray-600 space-y-1">
-              <div>• UsoCFDI del cliente: <code className="bg-white px-1 rounded">{selectedClientData.UsoCFDI || 'No definido'}</code></div>
-              <div>• RegimenId del cliente: <code className="bg-white px-1 rounded">{selectedClientData.RegimenId || 'No definido'}</code></div>
-              <div>• Regimen (descripción): <code className="bg-white px-1 rounded text-xs">{selectedClientData.Regimen || 'No definido'}</code></div>
-              <div>• FormaPago del cliente: <code className="bg-white px-1 rounded">{selectedClientData.FormaPago || 'No definido'}</code></div>
-              <div>• MetodoPago del cliente: <code className="bg-white px-1 rounded">{selectedClientData.MetodoPago || 'No definido'}</code></div>
-              
-              {/* Botón de debug para ver todos los datos */}
-              <div className="mt-3 pt-2 border-t border-gray-300">
-                <button 
-                  type="button"
-                  onClick={() => {
-                    console.log('🧪 DEBUG - Todos los datos del cliente:', selectedClientData);
-                    console.log('🧪 DEBUG - Claves disponibles en el cliente:', Object.keys(selectedClientData));
-                    console.log('🧪 DEBUG - Catálogos UsoCFDI:', catalogs.UsoCFDI.slice(0, 5));
-                    console.log('🧪 DEBUG - Catálogos RegimenFiscal:', catalogs.RegimenFiscal.slice(0, 5));
-                    alert('Revisa la consola para ver todos los datos del cliente');
-                  }}
-                  className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded"
-                >
-                  🧪 Ver datos completos en consola
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
           <div className="flex items-center gap-2">
             <Select
@@ -1151,11 +1088,6 @@ const CFDIForm = () => {
             />
           </div>
           <div>
-            {/* Debug visual para UsoCFDI */}
-            <div className="mb-2 text-xs text-blue-700">
-              Valor actual UsoCFDI: {JSON.stringify(watch('UsoCFDI'))}<br />
-              Error UsoCFDI: {errors?.UsoCFDI?.message || 'Sin error'}
-            </div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Uso CFDI</label>
             <Controller
               name="UsoCFDI"
@@ -1364,51 +1296,9 @@ const CFDIForm = () => {
         )}
       </div>
       <div className="flex gap-2 mt-8 flex-wrap">
-        <Button 
-          type="button" 
-          onClick={() => {
-            const currentValues = watch();
-            console.log('🧪 DEBUG - Valores actuales del formulario:', currentValues);
-            console.log('🧪 DEBUG - UsoCFDI actual:', currentValues.UsoCFDI);
-            console.log('🧪 DEBUG - FormaPago actual:', currentValues.FormaPago);
-            console.log('🧪 DEBUG - MetodoPago actual:', currentValues.MetodoPago);
-            console.log('🧪 DEBUG - RegimenFiscal actual:', currentValues.RegimenFiscal);
-            alert('Revisa la consola para ver los valores actuales del formulario');
-          }}
-          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow text-sm"
-        >
-          🧪 Debug Formulario
-        </Button>
+
         
-        <Button 
-          type="button" 
-          onClick={() => {
-            const formaPago = watch('FormaPago');
-            const metodoPago = watch('MetodoPago');
-            console.log('💳 DEBUG ESPECÍFICO - Métodos de Pago:');
-            console.log('   - FormaPago watch:', formaPago);
-            console.log('   - MetodoPago watch:', metodoPago);
-            console.log('   - FormaPago tipo:', typeof formaPago);
-            console.log('   - MetodoPago tipo:', typeof metodoPago);
-            console.log('   - FormaPago vacío?:', !formaPago);
-            console.log('   - MetodoPago vacío?:', !metodoPago);
-            
-            // Intentar forzar valores si están vacíos
-            if (!formaPago && catalogs.FormaPago.length > 0) {
-              console.log('⚠️ Intentando establecer FormaPago por defecto');
-              setValue('FormaPago', catalogs.FormaPago[0].key, { shouldValidate: true });
-            }
-            if (!metodoPago && catalogs.MetodoPago.length > 0) {
-              console.log('⚠️ Intentando establecer MetodoPago por defecto');
-              setValue('MetodoPago', catalogs.MetodoPago[0].key, { shouldValidate: true });
-            }
-            
-            alert(`FormaPago: ${formaPago || 'VACÍO'}\nMetodoPago: ${metodoPago || 'VACÍO'}\n\nRevisa la consola para más detalles.`);
-          }}
-          className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg shadow text-sm"
-        >
-          💳 Debug Pagos
-        </Button>
+
         
         <Button type="submit" disabled={isSubmitting} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow text-lg">Crear CFDI</Button>
       </div>
