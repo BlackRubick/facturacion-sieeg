@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:cors": "concurrently \"npm run dev\" \"sleep 3 && ./start-dev-browser.sh\"",
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server-proxy.js",
-    "build:prod": "vite build && npm run start"
+    "build:prod": "vite build && npm run start",
+    "test:credentials": "node test-credentials.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
