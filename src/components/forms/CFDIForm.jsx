@@ -1273,7 +1273,6 @@ const CFDIForm = () => {
                 <div className="text-sm text-gray-700">SKU: <span className="font-mono">{prod.sku}</span></div>
                 <div className="text-sm text-gray-700">Cantidad: <span className="font-mono">{prod.quantity}</span></div>
                 <div className="text-sm text-gray-700">Precio: <span className="font-mono">${prod.price || prod.total}</span></div>
-                <div className="text-sm text-gray-700">Descripción: <span className="font-mono">{prod.name}</span></div>
               </div>
             ))}
             <div className="text-xs text-gray-500 mt-2">Estos productos fueron importados del pedido #{pedidoInput}.</div>
