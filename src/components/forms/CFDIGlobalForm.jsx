@@ -1066,7 +1066,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
 
       {/* Selección de Uso CFDI */}
       <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-300">
-        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Paso final: Selecciona el uso de CFDI</h3>
+        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Selecciona el uso de CFDI</h3>
         <p className="text-sm text-gray-600 mb-4">
           Ahora que has revisado tus datos, selecciona para qué vas a usar este CFDI:
         </p>
