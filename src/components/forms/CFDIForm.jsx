@@ -1279,7 +1279,7 @@ const CFDIForm = () => {
             {productosImportados.map((prod, idx) => (
               <div key={idx} className={`px-4 py-3 border-b border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm ${
                 idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-              } hover:bg-blue-50 transition-colors`}>
+              } hover:bg-black-100 transition-colors`}>
                 <div className="text-blue-700 font-medium">{prod.name || 'Sin nombre'}</div>
                 <div className="text-center text-gray-700">
                   <span className="font-mono bg-gray-100 px-2 py-1 rounded">{prod.quantity}</span>
