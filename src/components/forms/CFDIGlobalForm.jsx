@@ -532,7 +532,6 @@ const CFDIGlobalForm = () => {
                 {/* Header de la tabla */}
                 <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 grid grid-cols-1 md:grid-cols-5 gap-4 font-medium text-sm text-gray-700">
                   <div>Producto</div>
-                  <div className="text-center">SKU</div>
                   <div className="text-center">Cantidad</div>
                   <div className="text-center">Precio</div>
                   <div className="text-center">Total</div>
@@ -544,9 +543,7 @@ const CFDIGlobalForm = () => {
                     idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                   } hover:bg-black-50 transition-colors`}>
                     <div className="text-black-700 font-medium">{prod.name || 'Sin nombre'}</div>
-                    <div className="text-center text-gray-600">
-                      <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{prod.sku || 'N/A'}</span>
-                    </div>
+
                     <div className="text-center text-gray-700">
                       <span className="font-mono bg-gray-100 px-2 py-1 rounded">{prod.quantity}</span>
                     </div>
