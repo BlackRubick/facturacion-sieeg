@@ -528,14 +528,41 @@ const CFDIGlobalForm = () => {
           {clienteData && productosImportados.length > 0 && (
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-700 mb-3">Productos del pedido #{pedidoInput}:</h3>
-              <div className="space-y-2">
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                {/* Header de la tabla */}
+                <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 grid grid-cols-1 md:grid-cols-5 gap-4 font-medium text-sm text-gray-700">
+                  <div>Producto</div>
+                  <div className="text-center">SKU</div>
+                  <div className="text-center">Cantidad</div>
+                  <div className="text-center">Precio</div>
+                  <div className="text-center">Total</div>
+                </div>
+                
+                {/* Filas de productos */}
                 {productosImportados.map((prod, idx) => (
-                  <div key={idx} className="border border-green-200 bg-green-50 p-3 rounded-lg shadow flex flex-col md:flex-row md:items-center md:gap-4">
-                    <div className="text-black-700 text-sm">{prod.name || 'Sin nombre'}</div>
-                    <div className="text-sm text-gray-700">Cantidad: <span className="font-mono">{prod.quantity}</span></div>
-                    <div className="text-sm text-gray-700">Precio: <span className="font-mono">${prod.price || prod.total}</span></div>
+                  <div key={idx} className={`px-4 py-3 border-b border-gray-100 grid grid-cols-1 md:grid-cols-5 gap-4 text-sm ${
+                    idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  } hover:bg-green-50 transition-colors`}>
+                    <div className="text-green-700 font-medium">{prod.name || 'Sin nombre'}</div>
+                    <div className="text-center text-gray-600">
+                      <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{prod.sku || 'N/A'}</span>
+                    </div>
+                    <div className="text-center text-gray-700">
+                      <span className="font-mono bg-gray-100 px-2 py-1 rounded">{prod.quantity}</span>
+                    </div>
+                    <div className="text-center text-gray-700">
+                      <span className="font-mono bg-gray-100 px-2 py-1 rounded">${prod.price || prod.total}</span>
+                    </div>
+                    <div className="text-center text-gray-700 font-medium">
+                      <span className="font-mono bg-green-100 px-2 py-1 rounded">${((prod.price || prod.total) * prod.quantity).toFixed(2)}</span>
+                    </div>
                   </div>
                 ))}
+                
+                {/* Footer */}
+                <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
+                  Productos importados del pedido #{pedidoInput} • Total de {productosImportados.length} productos
+                </div>
               </div>
             </div>
           )}
