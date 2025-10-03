@@ -1,11 +1,20 @@
 import axios from 'axios';
 
 const isProd = import.meta.env.VITE_FACTURA_API_ENV === 'produccion';
-const isDevelopment = import.meta.env.MODE === 'development';
+// Usar URLs directas - Producción: https://api.factura.com, Sandbox: https://sandbox.factura.com/api
+const baseURL = isProd ? 'https://api.factura.com' : 'https://sandbox.factura.com/api';
+
+console.log('🔧 HttpClient Config:', {
+  entorno: isProd ? 'Producción' : 'Sandbox',
+  baseURL,
+  apiKey: import.meta.env.VITE_FACTURA_API_KEY?.substring(0, 20) + '...',
+  secretKey: import.meta.env.VITE_FACTURA_SECRET_KEY?.substring(0, 20) + '...',
+  plugin: import.meta.env.VITE_FACTURA_PLUGIN,
+  apiEnv: import.meta.env.VITE_FACTURA_API_ENV
+});
 
 const config = {
-  // En desarrollo usa rutas relativas (proxy), en producción usa la URL base configurada
-  baseURL: isDevelopment ? '/' : (import.meta.env.VITE_FACTURA_API_URL || '/'),
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
     'F-PLUGIN': import.meta.env.VITE_FACTURA_PLUGIN,
