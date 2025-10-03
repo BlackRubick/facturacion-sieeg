@@ -778,70 +778,10 @@ const CFDIGlobalForm = () => {
               )}
 
               {/* Datos del cliente con opción de editar */}
-              <div className="p-6 bg-gray-50 border border-gray-300 rounded-lg shadow-sm">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-700">Datos del cliente</h3>
-                  <Button 
-                    type="button" 
-                    onClick={() => {
-                      // Aquí podrías abrir un modal de edición o cambiar a modo edición
-                      // Por ahora, vamos a usar un estado para mostrar la edición inline
-                      // Implementaremos esto en el PreviewCliente component
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow text-sm"
-                  >
-                    ✏️ Editar datos
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <strong>RFC:</strong> {clienteData.RFC}
-                  </div>
-                  <div>
-                    <strong>Razón Social:</strong> {clienteData.RazonSocial}
-                  </div>
-                  <div>
-                    <strong>Código Postal:</strong> {clienteData.CodigoPostal}
-                  </div>
-                  <div>
-                    <strong>Email:</strong> {clienteData.Contacto?.Email}
-                  </div>
-                  <div>
-                    <strong>Régimen:</strong> {clienteData.Regimen}
-                  </div>
-                  <div>
-                    <strong>Uso CFDI:</strong> {clienteData.UsoCFDI}
-                  </div>
-                  {clienteData.Calle && (
-                    <div className="md:col-span-2">
-                      <strong>Dirección:</strong> {[
-                        clienteData.Calle,
-                        clienteData.Numero,
-                        clienteData.Interior,
-                        clienteData.Colonia,
-                        clienteData.Ciudad,
-                        clienteData.Estado,
-                        clienteData.CodigoPostal
-                      ].filter(Boolean).join(', ')}
-                    </div>
-                  )}
-                  {(clienteData.Contacto?.Nombre || clienteData.Contacto?.Telefono) && (
-                    <>
-                      {clienteData.Contacto?.Nombre && (
-                        <div>
-                          <strong>Contacto:</strong> {[clienteData.Contacto.Nombre, clienteData.Contacto.Apellidos].filter(Boolean).join(' ')}
-                        </div>
-                      )}
-                      {clienteData.Contacto?.Telefono && (
-                        <div>
-                          <strong>Teléfono:</strong> {clienteData.Contacto.Telefono}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
+              <PreviewClienteStep2 
+                clienteData={clienteData}
+                onClienteUpdate={handleClienteUpdate}
+              />
 
               {/* Botones de navegación */}
               <div className="flex justify-between mt-6">
@@ -1520,6 +1460,283 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
         >
            Facturar
         </Button>
+      </div>
+    </div>
+  );
+}
+
+// Componente Preview del Cliente para el Paso 2 (más simple, solo mostrar datos y botón editar)
+function PreviewClienteStep2({ clienteData, onClienteUpdate }) {
+  const [editMode, setEditMode] = useState(false);
+  const [editingData, setEditingData] = useState(null);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
+  const [editCatalogs, setEditCatalogs] = useState({ UsoCFDI: [], RegimenFiscal: [] });
+  const [catalogLoading, setCatalogLoading] = useState(false);
+
+  useEffect(() => {
+    if (editMode && !editingData) {
+      // Preparar datos para edición
+      setEditingData({
+        rfc: clienteData.RFC || '',
+        razons: clienteData.RazonSocial || '',
+        codpos: clienteData.CodigoPostal || '',
+        email: clienteData.Contacto?.Email || '',
+        usocfdi: clienteData.UsoCFDI || '',
+        regimen: clienteData.RegimenId || '',
+        calle: clienteData.Calle || '',
+        numero_exterior: clienteData.Numero || '',
+        numero_interior: clienteData.Interior || '',
+        colonia: clienteData.Colonia || '',
+        ciudad: clienteData.Ciudad || '',
+        delegacion: clienteData.Delegacion || '',
+        localidad: clienteData.Localidad || '',
+        estado: clienteData.Estado || '',
+        pais: clienteData.Pais || 'MEX',
+        numregidtrib: clienteData.NumRegIdTrib || '',
+        nombre: clienteData.Contacto?.Nombre || '',
+        apellidos: clienteData.Contacto?.Apellidos || '',
+        telefono: clienteData.Contacto?.Telefono || '',
+        email2: clienteData.Contacto?.Email2 || '',
+        email3: clienteData.Contacto?.Email3 || '',
+      });
+
+      // Cargar catálogos para la edición
+      const fetchCatalogs = async () => {
+        setCatalogLoading(true);
+        try {
+          const [uso, regimen] = await Promise.all([
+            FacturaAPIService.getUsoCFDI(),
+            FacturaAPIService.getCatalog('RegimenFiscal'),
+          ]);
+          setEditCatalogs({
+            UsoCFDI: uso.data?.data || uso.data || [],
+            RegimenFiscal: regimen.data?.data || regimen.data || [],
+          });
+        } catch (err) {
+          console.error('Error al cargar catálogos:', err);
+        }
+        setCatalogLoading(false);
+      };
+      fetchCatalogs();
+    }
+  }, [editMode, editingData, clienteData]);
+
+  const handleEditChange = (field, value) => {
+    setEditingData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveClient = async () => {
+    if (!editingData || !clienteData?.UID) return;
+    setLoadingUpdate(true);
+    try {
+      const dataToUpdate = { 
+        ...editingData, 
+        codpos: Number(editingData.codpos) 
+      };
+      const response = await FacturaAPIService.updateClient(clienteData.UID, dataToUpdate);
+      if (response.data?.status === 'success') {
+        alert('Datos del cliente actualizados correctamente');
+        setEditMode(false);
+        setEditingData(null);
+        
+        // Recargar los datos del cliente para mostrar la información actualizada
+        if (onClienteUpdate && clienteData?.RFC) {
+          await onClienteUpdate(clienteData.RFC);
+        }
+      } else {
+        throw new Error(response.data?.message || 'Error al actualizar');
+      }
+    } catch (err) {
+      alert('Error al actualizar cliente: ' + (err.response?.data?.message || err.message));
+    }
+    setLoadingUpdate(false);
+  };
+
+  if (editMode) {
+    return (
+      <div className="p-6 bg-blue-50 border border-blue-300 rounded-lg shadow-sm">
+        <h3 className="text-lg font-semibold text-blue-700 mb-4">Editar datos del cliente</h3>
+        <div className="space-y-6">
+          {/* Información Fiscal */}
+          <div>
+            <h4 className="text-md font-semibold text-blue-600 mb-3 border-b border-blue-200 pb-1">Información Fiscal</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input 
+                label="RFC*" 
+                value={editingData?.rfc || ''} 
+                onChange={e => handleEditChange('rfc', e.target.value)}
+                required 
+              />
+              <Input 
+                label="Código Postal*" 
+                value={editingData?.codpos || ''} 
+                onChange={e => handleEditChange('codpos', e.target.value)}
+                required 
+                type="number" 
+              />
+              <div className="md:col-span-2">
+                <Input 
+                  label="Razón Social*" 
+                  value={editingData?.razons || ''} 
+                  onChange={e => handleEditChange('razons', e.target.value)}
+                  required 
+                />
+              </div>
+              <Input 
+                label="Email Principal*" 
+                value={editingData?.email || ''} 
+                onChange={e => handleEditChange('email', e.target.value)}
+                required 
+                type="email" 
+              />
+              <Input 
+                label="País*" 
+                value={editingData?.pais || ''} 
+                onChange={e => handleEditChange('pais', e.target.value)}
+                required 
+              />
+            </div>
+          </div>
+
+          {/* Catálogos SAT */}
+          <div>
+            <h4 className="text-md font-semibold text-blue-600 mb-3 border-b border-blue-200 pb-1">Catálogos SAT</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select 
+                label="Uso CFDI" 
+                value={editingData?.usocfdi || ''} 
+                onChange={val => handleEditChange('usocfdi', val)} 
+                options={Array.isArray(editCatalogs.UsoCFDI) ? editCatalogs.UsoCFDI.map(opt => ({ 
+                  value: opt.key || opt.value, 
+                  label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}` 
+                })) : []} 
+                isLoading={catalogLoading} 
+                placeholder="Selecciona uso CFDI" 
+              />
+              <Select 
+                label="Régimen Fiscal*" 
+                value={editingData?.regimen || ''} 
+                onChange={val => handleEditChange('regimen', val)} 
+                options={Array.isArray(editCatalogs.RegimenFiscal) ? editCatalogs.RegimenFiscal.map(opt => ({ 
+                  value: opt.key || opt.value, 
+                  label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}` 
+                })) : []} 
+                isLoading={catalogLoading} 
+                placeholder="Selecciona régimen fiscal" 
+                required 
+              />
+            </div>
+          </div>
+
+          {/* Dirección */}
+          <div>
+            <h4 className="text-md font-semibold text-blue-600 mb-3 border-b border-blue-200 pb-1">Dirección</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Input label="Calle" value={editingData?.calle || ''} onChange={e => handleEditChange('calle', e.target.value)} />
+              </div>
+              <Input label="Número Exterior" value={editingData?.numero_exterior || ''} onChange={e => handleEditChange('numero_exterior', e.target.value)} />
+              <Input label="Número Interior" value={editingData?.numero_interior || ''} onChange={e => handleEditChange('numero_interior', e.target.value)} />
+              <Input label="Colonia" value={editingData?.colonia || ''} onChange={e => handleEditChange('colonia', e.target.value)} />
+              <Input label="Ciudad" value={editingData?.ciudad || ''} onChange={e => handleEditChange('ciudad', e.target.value)} />
+              <Input label="Estado" value={editingData?.estado || ''} onChange={e => handleEditChange('estado', e.target.value)} />
+              <Input label="Delegación" value={editingData?.delegacion || ''} onChange={e => handleEditChange('delegacion', e.target.value)} />
+            </div>
+          </div>
+
+          {/* Información de Contacto */}
+          <div>
+            <h4 className="text-md font-semibold text-blue-600 mb-3 border-b border-blue-200 pb-1">Información de Contacto</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input label="Nombre" value={editingData?.nombre || ''} onChange={e => handleEditChange('nombre', e.target.value)} />
+              <Input label="Apellidos" value={editingData?.apellidos || ''} onChange={e => handleEditChange('apellidos', e.target.value)} />
+              <Input label="Teléfono" value={editingData?.telefono || ''} onChange={e => handleEditChange('telefono', e.target.value)} />
+              <Input label="Email 2" value={editingData?.email2 || ''} onChange={e => handleEditChange('email2', e.target.value)} type="email" />
+              <Input label="Email 3" value={editingData?.email3 || ''} onChange={e => handleEditChange('email3', e.target.value)} type="email" />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-4 mt-6">
+          <Button 
+            type="button" 
+            onClick={() => { setEditMode(false); setEditingData(null); }}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg shadow"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            type="button" 
+            onClick={handleSaveClient}
+            disabled={loadingUpdate}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow"
+          >
+            {loadingUpdate ? 'Guardando...' : 'Guardar cambios'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 bg-gray-50 border border-gray-300 rounded-lg shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-700">Datos del cliente</h3>
+        <Button 
+          type="button" 
+          onClick={() => setEditMode(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow text-sm"
+        >
+          ✏️ Editar datos
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <strong>RFC:</strong> {clienteData.RFC}
+        </div>
+        <div>
+          <strong>Razón Social:</strong> {clienteData.RazonSocial}
+        </div>
+        <div>
+          <strong>Código Postal:</strong> {clienteData.CodigoPostal}
+        </div>
+        <div>
+          <strong>Email:</strong> {clienteData.Contacto?.Email}
+        </div>
+        <div>
+          <strong>Régimen:</strong> {clienteData.Regimen}
+        </div>
+        <div>
+          <strong>Uso CFDI:</strong> {clienteData.UsoCFDI}
+        </div>
+        {clienteData.Calle && (
+          <div className="md:col-span-2">
+            <strong>Dirección:</strong> {[
+              clienteData.Calle,
+              clienteData.Numero,
+              clienteData.Interior,
+              clienteData.Colonia,
+              clienteData.Ciudad,
+              clienteData.Estado,
+              clienteData.CodigoPostal
+            ].filter(Boolean).join(', ')}
+          </div>
+        )}
+        {(clienteData.Contacto?.Nombre || clienteData.Contacto?.Telefono) && (
+          <>
+            {clienteData.Contacto?.Nombre && (
+              <div>
+                <strong>Contacto:</strong> {[clienteData.Contacto.Nombre, clienteData.Contacto.Apellidos].filter(Boolean).join(' ')}
+              </div>
+            )}
+            {clienteData.Contacto?.Telefono && (
+              <div>
+                <strong>Teléfono:</strong> {clienteData.Contacto.Telefono}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
