@@ -955,7 +955,6 @@ const CFDIGlobalForm = () => {
           {/* Resultado final - CFDI emitido */}
           {emittedUID && (
             <div className="mt-10 p-8 bg-green-50 rounded-2xl shadow-lg">
-              <h3 className="text-lg font-bold mb-2 text-green-700">🎉 CFDI emitido exitosamente</h3>
               {cfdiMessage && (
                 <div className="mb-4 text-green-800 font-semibold">{cfdiMessage}</div>
               )}
