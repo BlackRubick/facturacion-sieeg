@@ -779,7 +779,7 @@ const CFDIGlobalForm = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Número de pedido de WooCommerce
+                        Número de pedido
                       </label>
                       <input
                         type="text"
@@ -934,79 +934,143 @@ const CFDIGlobalForm = () => {
           {currentStep === 3 && (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Finalizar factura</h2>
-                <p className="text-gray-600">Selecciona el uso CFDI y genera tu factura</p>
-              </div>
-
-              {/* Selección de Uso CFDI */}
-              <div className="p-6 bg-yellow-50 rounded-lg border border-yellow-300">
-                <h3 className="text-lg font-semibold text-yellow-700 mb-3">Selecciona el uso de CFDI</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Selecciona para qué vas a usar este CFDI:
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  {emittedUID ? '¡Factura generada!' : 'Finalizar factura'}
+                </h2>
+                <p className="text-gray-600">
+                  {emittedUID ? 'Tu factura ha sido generada exitosamente' : 'Selecciona el uso CFDI y genera tu factura'}
                 </p>
-                <Controller
-                  name="UsoCFDI"
-                  control={control}
-                  rules={{ required: 'Debes seleccionar un uso CFDI.' }}
-                  render={({ field, fieldState }) => {
-                    const safeValue = field.value == null ? '' : String(field.value);
-                    console.log('[Controller:UsoCFDI] value:', safeValue, 'options:', catalogs.UsoCFDI);
-                    return (
-                      <Select
-                        label="Selecciona uso CFDI*"
-                        options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
-                          value: String(opt.key || opt.value),
-                          label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
-                        })) : []}
-                        value={safeValue}
-                        onChange={val => {
-                          const v = val == null ? '' : String(val);
-                          field.onChange(v);
-                          setValue('UsoCFDI', v, { shouldValidate: true, shouldDirty: true });
-                          console.log('[Select:UsoCFDI] onChange value:', v);
-                        }}
-                        placeholder="Selecciona uso CFDI"
-                        isLoading={loadingCatalogs}
-                        error={!!fieldState.error}
-                        helperText={fieldState.error?.message}
-                      />
-                    );
-                  }}
-                />
               </div>
 
-              {/* Botón de facturar */}
-              <div className="p-6 bg-green-50 border border-green-300 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold text-green-700 mb-4">¡Listo!</h3>
-                <p className="text-sm text-gray-600 mb-6">
-                  Verifica que tus datos sean correctos y haz clic en facturar
-                </p>
-                
+              {/* Si ya hay CFDI emitido, mostrar solo botones de descarga */}
+              {emittedUID ? (
+                <div className="p-8 bg-green-50 rounded-2xl shadow-lg border-2 border-green-300">
+                  <div className="text-center mb-6">
+                    <div className="text-6xl mb-4">✅</div>
+                    <h3 className="text-2xl font-bold text-green-700 mb-2">¡Factura generada exitosamente!</h3>
+                    <p className="text-green-600">UID: {emittedUID}</p>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button 
+                      type="button" 
+                      onClick={async () => {
+                        try {
+                          const res = await FacturaAPIService.getCFDIPDF(emittedUID);
+                          const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.setAttribute('download', `CFDI_${emittedUID}.pdf`);
+                          document.body.appendChild(link);
+                          link.click();
+                          link.remove();
+                        } catch (err) {
+                          setCfdiMessage('Error al descargar PDF: ' + (err.response?.data?.message || err.message));
+                        }
+                      }} 
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg shadow-lg flex items-center gap-3 justify-center text-lg font-semibold"
+                    >
+                      <span className="text-2xl">📄</span> Descargar PDF
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={async () => {
+                        try {
+                          const res = await FacturaAPIService.getCFDIXML(emittedUID);
+                          const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/xml' }));
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.setAttribute('download', `CFDI_${emittedUID}.xml`);
+                          document.body.appendChild(link);
+                          link.click();
+                          link.remove();
+                        } catch (err) {
+                          setCfdiMessage('Error al descargar XML: ' + (err.response?.data?.message || err.message));
+                        }
+                      }} 
+                      className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg shadow-lg flex items-center gap-3 justify-center text-lg font-semibold"
+                    >
+                      <span className="text-2xl">🗎</span> Descargar XML
+                    </Button>
+                  </div>
+                  
+                  {cfdiMessage && (
+                    <div className="mt-4 text-center text-green-700 font-medium">{cfdiMessage}</div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {/* Selección de Uso CFDI - solo si NO hay CFDI emitido */}
+                  <div className="p-6 bg-yellow-50 rounded-lg border border-yellow-300">
+                    <h3 className="text-lg font-semibold text-yellow-700 mb-3">Selecciona el uso de CFDI</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Selecciona para qué vas a usar este CFDI:
+                    </p>
+                    <Controller
+                      name="UsoCFDI"
+                      control={control}
+                      rules={{ required: 'Debes seleccionar un uso CFDI.' }}
+                      render={({ field, fieldState }) => {
+                        const safeValue = field.value == null ? '' : String(field.value);
+                        console.log('[Controller:UsoCFDI] value:', safeValue, 'options:', catalogs.UsoCFDI);
+                        return (
+                          <Select
+                            label="Selecciona uso CFDI*"
+                            options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
+                              value: String(opt.key || opt.value),
+                              label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
+                            })) : []}
+                            value={safeValue}
+                            onChange={val => {
+                              const v = val == null ? '' : String(val);
+                              field.onChange(v);
+                              setValue('UsoCFDI', v, { shouldValidate: true, shouldDirty: true });
+                              console.log('[Select:UsoCFDI] onChange value:', v);
+                            }}
+                            placeholder="Selecciona uso CFDI"
+                            isLoading={loadingCatalogs}
+                            error={!!fieldState.error}
+                            helperText={fieldState.error?.message}
+                          />
+                        );
+                      }}
+                    />
+                  </div>
 
+                  {/* Botón de facturar - solo si NO hay CFDI emitido */}
+                  <div className="p-6 bg-green-50 border border-green-300 rounded-lg shadow-sm">
+                    <h3 className="text-lg font-semibold text-green-700 mb-4">¡Listo!</h3>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Verifica que tus datos sean correctos y haz clic en facturar
+                    </p>
 
-                <Button 
-                  type="button" 
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg text-xl" 
-                  onClick={() => {
-                    console.log('🖱️ Click en botón Facturar automáticamente');
-                    handleFacturarStep3();
-                  }}
-                  disabled={!watch('UsoCFDI')}
-                >
-                  Facturar
-                </Button>
-              </div>
+                    <Button 
+                      type="button" 
+                      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg text-xl" 
+                      onClick={() => {
+                        console.log('🖱️ Click en botón Facturar automáticamente');
+                        handleFacturarStep3();
+                      }}
+                      disabled={!watch('UsoCFDI')}
+                    >
+                      Facturar
+                    </Button>
+                  </div>
+                </>
+              )}
 
-              {/* Botones de navegación */}
-              <div className="flex justify-between mt-6">
-                <Button 
-                  type="button" 
-                  onClick={prevStep}
-                  className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
-                >
-                  ← Anterior
-                </Button>
-              </div>
+              {/* Botones de navegación - solo si NO hay CFDI emitido */}
+              {!emittedUID && (
+                <div className="flex justify-between mt-6">
+                  <Button 
+                    type="button" 
+                    onClick={prevStep}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
+                  >
+                    ← Anterior
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
@@ -1019,49 +1083,7 @@ const CFDIGlobalForm = () => {
             </div>
           )}
 
-          {/* Resultado final - CFDI emitido */}
-          {emittedUID && (
-            <div className="mt-10 p-8 bg-green-50 rounded-2xl shadow-lg">
-              {cfdiMessage && (
-                <div className="mb-4 text-green-800 font-semibold">{cfdiMessage}</div>
-              )}
-              <div className="flex gap-4 mb-4">
-                <Button type="button" onClick={async () => {
-                  try {
-                    const res = await FacturaAPIService.getCFDIPDF(emittedUID);
-                    const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', `CFDI_${emittedUID}.pdf`);
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                  } catch (err) {
-                    setCfdiMessage('Error al descargar PDF: ' + (err.response?.data?.message || err.message));
-                  }
-                }} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
-                  <span>📄</span> Descargar PDF
-                </Button>
-                <Button type="button" onClick={async () => {
-                  try {
-                    const res = await FacturaAPIService.getCFDIXML(emittedUID);
-                    const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/xml' }));
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', `CFDI_${emittedUID}.xml`);
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                  } catch (err) {
-                    setCfdiMessage('Error al descargar XML: ' + (err.response?.data?.message || err.message));
-                  }
-                }} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
-                  <span>🗎</span> Descargar XML
-                </Button>
-              </div>
-              <div className="text-xs text-green-700">UID: {emittedUID}</div>
-            </div>
-          )}
+
         </form>
       </div>
       <CustomerModalForm open={showCustomerModal} onClose={() => setShowCustomerModal(false)} />
