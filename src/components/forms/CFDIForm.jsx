@@ -1299,94 +1299,168 @@ const CFDIForm = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            {/* Header de la tabla */}
+            <div className="bg-gray-100 px-3 py-2 border-b border-gray-200 grid grid-cols-12 gap-2 font-medium text-xs text-gray-700">
+              <div className="col-span-3">Producto/Servicio</div>
+              <div className="text-center">Cant.</div>
+              <div className="col-span-2">Descripción</div>
+              <div className="text-center">P. Unit.</div>
+              <div className="text-center">Desc.</div>
+              <div className="col-span-2">Unidad</div>
+              <div className="text-center">SKU</div>
+              <div className="text-center">Acción</div>
+            </div>
+            
+            {/* Filas de productos */}
             {fields.map((item, idx) => (
-              <div key={item.id} className="border border-gray-200 p-4 rounded-lg bg-white shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-end gap-2">
-                    <div className="flex-1">
-                      <Controller
-                        name={`items.${idx}.ClaveProdServ`}
-                        control={control}
-                        rules={{ required: 'Debes seleccionar un producto o servicio.' }}
-                        render={({ field, fieldState }) => (
-                          <Select
-                            {...field}
-                            label="Producto/Servicio"
-                            options={products.map((prod) => ({
-                              value: prod.claveprodserv || '',
-                              label: `${prod.name || 'Sin nombre'} (${prod.claveprodserv || 'Sin clave'})`,
-                              sku: prod.sku || '',
-                              claveunidad: prod.claveunidad || '',
-                              unidad: prod.unidad || '',
-                              price: prod.price || 0,
-                              descripcion: prod.name || '',
-                            }))}
-                            placeholder="Selecciona un producto"
-                            isLoading={loadingCatalogs}
-                            onChange={(value) => {
-                              field.onChange(value);
-                              const selected = products.find(p => p.claveprodserv === value);
-                              if (selected) {
-                                setValue(`items.${idx}.ClaveProdServ`, selected.claveprodserv || '');
-                                setValue(`items.${idx}.NoIdentificacion`, selected.sku || '');
-                                setValue(`items.${idx}.ClaveUnidad`, selected.claveunidad || '');
-                                setValue(`items.${idx}.Unidad`, selected.unidad || 'Pieza');
-                                setValue(`items.${idx}.ValorUnitario`, selected.price || 0);
-                                setValue(`items.${idx}.Descripcion`, selected.name || '');
-                              } else {
-                                setValue(`items.${idx}.ClaveProdServ`, '');
-                                setValue(`items.${idx}.NoIdentificacion`, '');
-                                setValue(`items.${idx}.ClaveUnidad`, '');
-                                setValue(`items.${idx}.Unidad`, '');
-                                setValue(`items.${idx}.ValorUnitario`, 0);
-                                setValue(`items.${idx}.Descripcion`, '');
-                              }
-                            }}
-                            value={field.value}
-                            error={!!fieldState.error || !field.value}
-                            helperText={fieldState.error?.message || (!field.value ? 'Debes seleccionar un producto.' : '')}
-                          />
-                        )}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      onClick={() => setShowProductModal(true)}
-                      className="bg-green-600 hover:bg-green-700 text-white rounded-full shadow flex items-center justify-center text-xl w-10 h-10 mb-6"
-                      title="Agregar producto"
+              <div key={item.id} className={`px-3 py-2 border-b border-gray-100 grid grid-cols-12 gap-2 text-xs items-center ${
+                idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+              } hover:bg-blue-50 transition-colors`}>
+                
+                {/* Producto/Servicio */}
+                <div className="col-span-3">
+                  <Controller
+                    name={`items.${idx}.ClaveProdServ`}
+                    control={control}
+                    rules={{ required: 'Requerido' }}
+                    render={({ field, fieldState }) => (
+                      <select
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e.target.value);
+                          const selected = products.find(p => p.claveprodserv === e.target.value);
+                          if (selected) {
+                            setValue(`items.${idx}.ClaveProdServ`, selected.claveprodserv || '');
+                            setValue(`items.${idx}.NoIdentificacion`, selected.sku || '');
+                            setValue(`items.${idx}.ClaveUnidad`, selected.claveunidad || '');
+                            setValue(`items.${idx}.Unidad`, selected.unidad || 'Pieza');
+                            setValue(`items.${idx}.ValorUnitario`, selected.price || 0);
+                            setValue(`items.${idx}.Descripcion`, selected.name || '');
+                          }
+                        }}
+                        className={`w-full border rounded p-1 text-xs ${fieldState.error ? 'border-red-300' : 'border-gray-300'}`}
+                      >
+                        <option value="">Seleccionar...</option>
+                        {products.map((prod) => (
+                          <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
+                            {prod.name || 'Sin nombre'} ({prod.claveprodserv || 'Sin clave'})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                </div>
+
+                {/* Cantidad */}
+                <div className="text-center">
+                  <input
+                    type="number"
+                    {...register(`items.${idx}.Cantidad`, { valueAsNumber: true, required: true })}
+                    className="w-full border border-gray-300 rounded p-1 text-xs text-center"
+                    placeholder="1"
+                    min="1"
+                    step="0.01"
+                  />
+                </div>
+
+                {/* Descripción */}
+                <div className="col-span-2">
+                  <input
+                    type="text"
+                    {...register(`items.${idx}.Descripcion`, { required: true })}
+                    className="w-full border border-gray-300 rounded p-1 text-xs"
+                    placeholder="Descripción del producto"
+                  />
+                </div>
+
+                {/* Valor Unitario */}
+                <div className="text-center">
+                  <input
+                    type="number"
+                    {...register(`items.${idx}.ValorUnitario`, { valueAsNumber: true, required: true })}
+                    className="w-full border border-gray-300 rounded p-1 text-xs text-center"
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+
+                {/* Descuento */}
+                <div className="text-center">
+                  <input
+                    type="number"
+                    {...register(`items.${idx}.Descuento`)}
+                    className="w-full border border-gray-300 rounded p-1 text-xs text-center"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+
+                {/* Unidad */}
+                <div className="col-span-2">
+                  <div className="flex gap-1">
+                    <select
+                      {...register(`items.${idx}.ClaveUnidad`, { required: true })}
+                      className="flex-1 border border-gray-300 rounded p-1 text-xs"
                     >
-                      +
-                    </Button>
-                  </div>
-                  <Input label="NoIdentificacion" {...register(`items.${idx}.NoIdentificacion`, { required: true })} />
-                  <Input label="Cantidad" type="number" {...register(`items.${idx}.quantity`, { valueAsNumber: true, required: true })} />
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">ClaveUnidad</label>
-                    <select {...register(`items.${idx}.ClaveUnidad`, { required: true })} className="w-full border rounded-lg p-2">
-                      <option value="">Selecciona</option>
+                      <option value="">Clave</option>
                       {catalogs.ClaveUnidad.map((opt, cidx) => (
-                        <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key} - {opt.name}</option>
+                        <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
                       ))}
                     </select>
-                    {!watch(`items.${idx}.ClaveUnidad`) && <span className="text-red-500 text-xs">Debes seleccionar una clave unidad.</span>}
+                    <input
+                      type="text"
+                      {...register(`items.${idx}.Unidad`, { required: true })}
+                      className="flex-1 border border-gray-300 rounded p-1 text-xs"
+                      placeholder="Unidad"
+                    />
                   </div>
-                  <Input label="Unidad" {...register(`items.${idx}.Unidad`, { required: true })} />
-                  <Input label="ValorUnitario" type="number" {...register(`items.${idx}.ValorUnitario`, { valueAsNumber: true, required: true })} />
-                  <Input label="Descripcion" {...register(`items.${idx}.Descripcion`, { required: true })} />
-                  <Input label="Descuento" type="number" {...register(`items.${idx}.Descuento`)} />
-                  <Input label="ObjetoImp" {...register(`items.${idx}.ObjetoImp`)} />
                 </div>
-                <div className="flex justify-end mt-4">
-                  <Button type="button" onClick={() => remove(idx)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow">
-                    <span>🗑️</span> Eliminar concepto
-                  </Button>
+
+                {/* SKU */}
+                <div className="text-center">
+                  <input
+                    type="text"
+                    {...register(`items.${idx}.NoIdentificacion`)}
+                    className="w-full border border-gray-300 rounded p-1 text-xs text-center"
+                    placeholder="SKU"
+                  />
+                </div>
+
+                {/* Acción */}
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => remove(idx)}
+                    className="bg-red-500 hover:bg-red-600 text-white rounded p-1 text-xs"
+                    title="Eliminar producto"
+                  >
+                    🗑️
+                  </button>
                 </div>
               </div>
             ))}
-            <Button type="button" onClick={() => append(defaultConcepto)} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow flex items-center gap-2">
-              <span>➕</span> Agregar concepto
-            </Button>
+            
+            {/* Footer con botones */}
+            <div className="bg-gray-50 px-3 py-3 border-t border-gray-200 flex gap-2">
+              <Button 
+                type="button" 
+                onClick={() => append(defaultConcepto)} 
+                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
+              >
+                <span>➕</span> Agregar producto
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setShowProductModal(true)}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
+                title="Crear nuevo producto"
+              >
+                <span>➕</span> Nuevo producto
+              </Button>
+            </div>
           </div>
         )}
       </div>
