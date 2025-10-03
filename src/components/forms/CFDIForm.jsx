@@ -1299,173 +1299,159 @@ const CFDIForm = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
             {/* Botones en la parte superior */}
-            <div className="flex gap-4 mb-6">
+            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex gap-3">
               <Button 
                 type="button" 
                 onClick={() => append(defaultConcepto)} 
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-medium"
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
               >
-                <span>➕</span> Agregar producto
+                <span>➕</span> Agregar
               </Button>
               <Button
                 type="button"
                 onClick={() => setShowProductModal(true)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-medium"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
                 title="Crear nuevo producto"
               >
-                <span>➕</span> Nuevo producto
+                <span>➕</span> Nuevo
               </Button>
             </div>
 
-            {/* Lista de productos como tarjetas */}
+            {/* Header de la tabla */}
+            <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-gray-700">
+              <div className="col-span-3">Producto/Servicio</div>
+              <div className="text-center">Cant.</div>
+              <div className="col-span-2">Descripción</div>
+              <div className="text-center">Precio</div>
+              <div className="text-center">Desc.</div>
+              <div className="col-span-2">Unidad</div>
+              <div className="text-center">Acción</div>
+            </div>
+
+            {/* Filas de la tabla */}
             {fields.length > 0 ? (
               fields.map((item, idx) => (
-                <div key={item.id} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-lg font-medium text-gray-800">Producto #{idx + 1}</h4>
+                <div key={item.id} className={`grid grid-cols-12 gap-2 px-3 py-2 border-b border-gray-100 text-sm items-center ${
+                  idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                } hover:bg-blue-50 transition-colors`}>
+                  
+                  {/* Producto/Servicio */}
+                  <div className="col-span-3">
+                    <Controller
+                      name={`items.${idx}.ClaveProdServ`}
+                      control={control}
+                      rules={{ required: 'Requerido' }}
+                      render={({ field, fieldState }) => (
+                        <select
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e.target.value);
+                            const selected = products.find(p => p.claveprodserv === e.target.value);
+                            if (selected) {
+                              setValue(`items.${idx}.ClaveProdServ`, selected.claveprodserv || '');
+                              setValue(`items.${idx}.NoIdentificacion`, selected.sku || '');
+                              setValue(`items.${idx}.ClaveUnidad`, selected.claveunidad || '');
+                              setValue(`items.${idx}.Unidad`, selected.unidad || 'Pieza');
+                              setValue(`items.${idx}.ValorUnitario`, selected.price || 0);
+                              setValue(`items.${idx}.Descripcion`, selected.name || '');
+                            }
+                          }}
+                          className={`w-full border rounded px-2 py-1 text-xs ${fieldState.error ? 'border-red-300' : 'border-gray-300'} focus:border-blue-400`}
+                        >
+                          <option value="">Seleccionar...</option>
+                          {products.map((prod) => (
+                            <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
+                              {prod.name || 'Sin nombre'}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                  </div>
+
+                  {/* Cantidad */}
+                  <div>
+                    <input
+                      type="number"
+                      {...register(`items.${idx}.Cantidad`, { valueAsNumber: true, required: true })}
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400"
+                      placeholder="1"
+                      min="1"
+                      step="0.01"
+                    />
+                  </div>
+
+                  {/* Descripción */}
+                  <div className="col-span-2">
+                    <input
+                      type="text"
+                      {...register(`items.${idx}.Descripcion`, { required: true })}
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400"
+                      placeholder="Descripción..."
+                    />
+                  </div>
+
+                  {/* Precio Unitario */}
+                  <div>
+                    <input
+                      type="number"
+                      {...register(`items.${idx}.ValorUnitario`, { valueAsNumber: true, required: true })}
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  {/* Descuento */}
+                  <div>
+                    <input
+                      type="number"
+                      {...register(`items.${idx}.Descuento`)}
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400"
+                      placeholder="0"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  {/* Unidades (Clave + Unidad) */}
+                  <div className="col-span-2 flex gap-1">
+                    <select
+                      {...register(`items.${idx}.ClaveUnidad`, { required: true })}
+                      className="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400"
+                    >
+                      <option value="">Clave</option>
+                      {catalogs.ClaveUnidad.map((opt, cidx) => (
+                        <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      {...register(`items.${idx}.Unidad`, { required: true })}
+                      className="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400"
+                      placeholder="Unidad"
+                    />
+                  </div>
+
+                  {/* Acción */}
+                  <div className="text-center">
                     <button
                       type="button"
                       onClick={() => remove(idx)}
-                      className="bg-red-500 hover:bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2 transition-colors"
-                      title="Eliminar producto"
+                      className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs"
+                      title="Eliminar"
                     >
-                      🗑️ Eliminar
+                      ✕
                     </button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Producto/Servicio */}
-                    <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Producto/Servicio *
-                      </label>
-                      <Controller
-                        name={`items.${idx}.ClaveProdServ`}
-                        control={control}
-                        rules={{ required: 'Requerido' }}
-                        render={({ field, fieldState }) => (
-                          <select
-                            {...field}
-                            onChange={(e) => {
-                              field.onChange(e.target.value);
-                              const selected = products.find(p => p.claveprodserv === e.target.value);
-                              if (selected) {
-                                setValue(`items.${idx}.ClaveProdServ`, selected.claveprodserv || '');
-                                setValue(`items.${idx}.NoIdentificacion`, selected.sku || '');
-                                setValue(`items.${idx}.ClaveUnidad`, selected.claveunidad || '');
-                                setValue(`items.${idx}.Unidad`, selected.unidad || 'Pieza');
-                                setValue(`items.${idx}.ValorUnitario`, selected.price || 0);
-                                setValue(`items.${idx}.Descripcion`, selected.name || '');
-                              }
-                            }}
-                            className={`w-full border rounded-lg px-4 py-3 text-base ${fieldState.error ? 'border-red-300' : 'border-gray-300'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-                          >
-                            <option value="">Seleccionar producto...</option>
-                            {products.map((prod) => (
-                              <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
-                                {prod.name || 'Sin nombre'} ({prod.claveprodserv || 'Sin clave'})
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                      />
-                    </div>
-
-                    {/* Cantidad */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Cantidad *
-                      </label>
-                      <input
-                        type="number"
-                        {...register(`items.${idx}.Cantidad`, { valueAsNumber: true, required: true })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                        placeholder="1"
-                        min="1"
-                        step="0.01"
-                      />
-                    </div>
-
-                    {/* Descripción */}
-                    <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Descripción *
-                      </label>
-                      <input
-                        type="text"
-                        {...register(`items.${idx}.Descripcion`, { required: true })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                        placeholder="Descripción del producto"
-                      />
-                    </div>
-
-                    {/* Valor Unitario */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Precio Unitario *
-                      </label>
-                      <input
-                        type="number"
-                        {...register(`items.${idx}.ValorUnitario`, { valueAsNumber: true, required: true })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                        placeholder="0.00"
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-
-                    {/* Descuento */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Descuento
-                      </label>
-                      <input
-                        type="number"
-                        {...register(`items.${idx}.Descuento`)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                        placeholder="0"
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-
-                    {/* Clave Unidad */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Clave Unidad *
-                      </label>
-                      <select
-                        {...register(`items.${idx}.ClaveUnidad`, { required: true })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                      >
-                        <option value="">Seleccionar clave...</option>
-                        {catalogs.ClaveUnidad.map((opt, cidx) => (
-                          <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Unidad */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Unidad *
-                      </label>
-                      <input
-                        type="text"
-                        {...register(`items.${idx}.Unidad`, { required: true })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                        placeholder="Ej: Pieza, Kilogramo, etc."
-                      />
-                    </div>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <div className="text-gray-500 text-lg mb-2">No hay productos agregados</div>
-                <div className="text-gray-400 text-sm">Haz clic en "Agregar producto" para comenzar</div>
+              <div className="text-center py-8 text-gray-500 text-sm">
+                No hay productos. Haz clic en "Agregar" para empezar.
               </div>
             )}
           </div>
