@@ -685,12 +685,11 @@ const CFDIGlobalForm = () => {
               {/* Resumen de progreso - solo si hay datos completados */}
               {(clienteData || productosImportados.length > 0 || validadoCorreo) && (
                 <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Progreso:</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Datos:</h4>
                   <div className="space-y-2">
                     {clienteData && (
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="text-green-600">✅</span>
                           <span>Cliente: <strong>{clienteData.RazonSocial}</strong></span>
                         </div>
                         <Button 
@@ -705,7 +704,6 @@ const CFDIGlobalForm = () => {
                     {productosImportados.length > 0 && (
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="text-green-600">✅</span>
                           <span>Pedido: <strong>#{pedidoInput}</strong> ({productosImportados.length} productos)</span>
                         </div>
                         <Button 
@@ -1814,7 +1812,7 @@ function PreviewClienteStep2({ clienteData, onClienteUpdate }) {
           onClick={() => setEditMode(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow text-sm"
         >
-          ✏️ Editar datos
+           Editar datos
         </Button>
       </div>
       
