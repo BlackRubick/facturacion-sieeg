@@ -1308,7 +1308,6 @@ const CFDIForm = () => {
               <div className="text-center">P. Unitario</div>
               <div className="text-center">Descuento</div>
               <div className="col-span-2">Unidad</div>
-              <div className="text-center">SKU</div>
               <div className="text-center">Eliminar</div>
             </div>
             
@@ -1419,15 +1418,6 @@ const CFDIForm = () => {
                   </div>
                 </div>
 
-                {/* SKU */}
-                <div className="text-center">
-                  <input
-                    type="text"
-                    {...register(`items.${idx}.NoIdentificacion`)}
-                    className="w-full border border-gray-300 rounded p-2 text-sm text-center"
-                    placeholder="SKU"
-                  />
-                </div>
 
                 {/* Acción */}
                 <div className="text-center">
