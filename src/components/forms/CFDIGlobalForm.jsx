@@ -655,62 +655,27 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
         {validado && <div className="text-green-600 mt-3 font-medium">✅ Correo validado correctamente</div>}
       </div>
 
-      {/* Preview de datos del cliente y selección de Uso CFDI - solo aparece si el correo está validado */}
+      {/* Preview de datos del cliente - solo aparece si el correo está validado */}
       {validado && (
-        <>
-          <PreviewCliente 
-            clienteData={clienteData}
-            watch={watch}
-            fields={fields}
-            setEmittedUID={setEmittedUID}
-            setCfdiMessage={setCfdiMessage}
-            onClienteUpdate={onClienteUpdate}
-          />
-          
-          {/* PASO 3.5: Seleccionar Uso CFDI - después de ver los datos del cliente */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-300">
-            <h3 className="text-lg font-semibold text-gray-700 mb-3">Paso final: Selecciona el uso de CFDI</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Ahora que has revisado tus datos, selecciona para qué vas a usar este CFDI:
-            </p>
-            <Controller
-              name="UsoCFDI"
-              control={control}
-              rules={{ required: 'Debes seleccionar un uso CFDI.' }}
-              render={({ field, fieldState }) => {
-                const safeValue = field.value == null ? '' : String(field.value);
-                console.log('[Controller:UsoCFDI] value:', safeValue, 'options:', catalogs.UsoCFDI);
-                return (
-                  <Select
-                    label="Selecciona uso CFDI*"
-                    options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
-                      value: String(opt.key || opt.value),
-                      label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
-                    })) : []}
-                    value={safeValue}
-                    onChange={val => {
-                      const v = val == null ? '' : String(val);
-                      field.onChange(v);
-                      setValue('UsoCFDI', v, { shouldValidate: true, shouldDirty: true });
-                      console.log('[Select:UsoCFDI] onChange value:', v);
-                    }}
-                    placeholder="Selecciona uso CFDI"
-                    isLoading={loadingCatalogs}
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
-                  />
-                );
-              }}
-            />
-          </div>
-        </>
+        <PreviewCliente 
+          clienteData={clienteData}
+          watch={watch}
+          fields={fields}
+          setEmittedUID={setEmittedUID}
+          setCfdiMessage={setCfdiMessage}
+          onClienteUpdate={onClienteUpdate}
+          control={control}
+          setValue={setValue}
+          catalogs={catalogs}
+          loadingCatalogs={loadingCatalogs}
+        />
       )}
     </div>
   );
 }
 
 // Componente Preview del Cliente
-function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMessage, onClienteUpdate }) {
+function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMessage, onClienteUpdate, control, setValue, catalogs, loadingCatalogs }) {
   const [editMode, setEditMode] = useState(false);
   const [editingData, setEditingData] = useState(null);
   const [loadingUpdate, setLoadingUpdate] = useState(false);
@@ -1097,6 +1062,43 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
             </>
           )}
         </div>
+      </div>
+
+      {/* Selección de Uso CFDI */}
+      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-300">
+        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Paso final: Selecciona el uso de CFDI</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Ahora que has revisado tus datos, selecciona para qué vas a usar este CFDI:
+        </p>
+        <Controller
+          name="UsoCFDI"
+          control={control}
+          rules={{ required: 'Debes seleccionar un uso CFDI.' }}
+          render={({ field, fieldState }) => {
+            const safeValue = field.value == null ? '' : String(field.value);
+            console.log('[Controller:UsoCFDI] value:', safeValue, 'options:', catalogs.UsoCFDI);
+            return (
+              <Select
+                label="Selecciona uso CFDI*"
+                options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
+                  value: String(opt.key || opt.value),
+                  label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
+                })) : []}
+                value={safeValue}
+                onChange={val => {
+                  const v = val == null ? '' : String(val);
+                  field.onChange(v);
+                  setValue('UsoCFDI', v, { shouldValidate: true, shouldDirty: true });
+                  console.log('[Select:UsoCFDI] onChange value:', v);
+                }}
+                placeholder="Selecciona uso CFDI"
+                isLoading={loadingCatalogs}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              />
+            );
+          }}
+        />
       </div>
 
       {/* Botón de facturar */}
