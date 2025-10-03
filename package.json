@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server-proxy.js",
+    "build:prod": "vite build && npm run start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
