@@ -755,7 +755,33 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
   };
 
   const handleFacturar = async () => {
+    console.log('🎯 Iniciando proceso de facturación automática...');
+    
     try {
+      // Validar que tengamos los datos necesarios
+      if (!clienteData?.UID) {
+        console.error('❌ No hay UID del cliente');
+        setCfdiMessage('Error: No se encontró el UID del cliente');
+        alert('Error: No se encontró el UID del cliente');
+        return;
+      }
+
+      if (!fields || fields.length === 0) {
+        console.error('❌ No hay productos/conceptos para facturar');
+        setCfdiMessage('Error: No hay productos para facturar');
+        alert('Error: No hay productos para facturar');
+        return;
+      }
+
+      const usoCFDI = watch('UsoCFDI') || clienteData.UsoCFDI || 'G03';
+      console.log('📋 Datos para facturar:', {
+        clienteUID: clienteData.UID,
+        usoCFDI: usoCFDI,
+        numConceptos: fields.length,
+        formaPago: clienteData.FormaPago || '03',
+        metodoPago: clienteData.MetodoPago || 'PUE'
+      });
+
       // Construir el objeto CFDI con los datos del cliente y productos importados
       const cfdiData = {
         Receptor: {
@@ -768,7 +794,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
         FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
         MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
         Moneda: 'MXN',
-        UsoCFDI: watch('UsoCFDI') || clienteData.UsoCFDI || 'G03',
+        UsoCFDI: usoCFDI,
         Conceptos: fields.map(item => ({
           ClaveProdServ: item.ClaveProdServ,
           NoIdentificacion: item.NoIdentificacion,
@@ -782,12 +808,30 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
           Impuestos: item.Impuestos,
         })),
       };
+
+      console.log('📤 Enviando CFDI con datos:', cfdiData);
+      setCfdiMessage('Generando factura...');
+
       const response = await FacturaAPIService.createCFDI40(cfdiData);
+      console.log('✅ Respuesta de la API:', response);
+
       const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
-      setEmittedUID(uid);
-      setCfdiMessage('CFDI creado correctamente.');
+      
+      if (uid) {
+        setEmittedUID(uid);
+        setCfdiMessage('CFDI creado correctamente.');
+        console.log('✅ CFDI creado con UID:', uid);
+        alert('¡Factura generada exitosamente! UID: ' + uid);
+      } else {
+        console.error('❌ No se recibió UID en la respuesta:', response.data);
+        setCfdiMessage('Error: No se recibió el UID del CFDI');
+        alert('Error: La factura se procesó pero no se recibió el UID');
+      }
     } catch (err) {
-      setCfdiMessage('Error al crear CFDI: ' + (err.response?.data?.message || err.message));
+      console.error('❌ Error al crear CFDI:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Error desconocido';
+      setCfdiMessage('Error al crear CFDI: ' + errorMessage);
+      alert('Error al generar la factura: ' + errorMessage);
     }
   };
 
@@ -990,7 +1034,10 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
         <Button 
           type="button" 
           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg text-lg" 
-          onClick={handleFacturar}
+          onClick={() => {
+            console.log('🖱️ Click en botón Facturar automáticamente');
+            handleFacturar();
+          }}
         >
           🧾 Facturar automáticamente
         </Button>
