@@ -51,7 +51,11 @@ const mapearMetodoPago = (wooPaymentMethod) => {
     'spei': { FormaPago: '03', MetodoPago: 'PUE' }, // SPEI -> Transferencia electrónica de fondos
     'wire_transfer': { FormaPago: '03', MetodoPago: 'PUE' }, // Transferencia -> Transferencia electrónica de fondos
     
-    // Tarjetas de crédito/débito
+    // 🔥 MÉTODOS ESPECÍFICOS DE TU WOOCOMMERCE
+    'TarjetaCredito': { FormaPago: '04', MetodoPago: 'PUE' }, // Tarjeta de crédito específica
+    'TarjetaDebito': { FormaPago: '28', MetodoPago: 'PUE' }, // Tarjeta de débito específica
+    
+    // Tarjetas de crédito/débito genéricas
     'stripe': { FormaPago: '04', MetodoPago: 'PUE' }, // Stripe -> Tarjeta de crédito
     'paypal': { FormaPago: '04', MetodoPago: 'PUE' }, // PayPal -> Tarjeta de crédito  
     'mercadopago': { FormaPago: '04', MetodoPago: 'PUE' }, // MercadoPago -> Tarjeta de crédito
@@ -73,18 +77,28 @@ const mapearMetodoPago = (wooPaymentMethod) => {
     'installments': { FormaPago: '04', MetodoPago: 'PPD' }, // Pagos a plazos -> Pago diferido
   };
   
-  // Si no encuentra mapeo exacto, intentar mapeo por patrones
-  if (!mapeos[wooPaymentMethod]) {
-    const metodoBajo = wooPaymentMethod.toLowerCase();
-    
-    if (metodoBajo.includes('paypal')) return { FormaPago: '04', MetodoPago: 'PUE' };
-    if (metodoBajo.includes('stripe') || metodoBajo.includes('card') || metodoBajo.includes('tarjeta')) return { FormaPago: '04', MetodoPago: 'PUE' };
-    if (metodoBajo.includes('transfer') || metodoBajo.includes('spei') || metodoBajo.includes('bancari')) return { FormaPago: '03', MetodoPago: 'PUE' };
-    if (metodoBajo.includes('oxxo') || metodoBajo.includes('cash') || metodoBajo.includes('efectivo')) return { FormaPago: '01', MetodoPago: 'PUE' };
-    if (metodoBajo.includes('cheque')) return { FormaPago: '02', MetodoPago: 'PUE' };
+  console.log('🔍 Mapeando payment_method:', wooPaymentMethod);
+  
+  // Buscar mapeo exacto primero (case-sensitive)
+  if (mapeos[wooPaymentMethod]) {
+    console.log('✅ Mapeo exacto encontrado:', mapeos[wooPaymentMethod]);
+    return mapeos[wooPaymentMethod];
   }
   
-  return mapeos[wooPaymentMethod] || { FormaPago: '99', MetodoPago: 'PUE' }; // Por defecto: Otros
+  // Si no encuentra mapeo exacto, intentar mapeo por patrones
+  const metodoBajo = wooPaymentMethod.toLowerCase();
+  console.log('🔍 Intentando mapeo por patrones para:', metodoBajo);
+  
+  if (metodoBajo.includes('paypal')) return { FormaPago: '04', MetodoPago: 'PUE' };
+  if (metodoBajo.includes('debito') || metodoBajo.includes('debit')) return { FormaPago: '28', MetodoPago: 'PUE' };
+  if (metodoBajo.includes('credito') || metodoBajo.includes('credit') || metodoBajo.includes('tarjeta')) return { FormaPago: '04', MetodoPago: 'PUE' };
+  if (metodoBajo.includes('stripe') || metodoBajo.includes('card')) return { FormaPago: '04', MetodoPago: 'PUE' };
+  if (metodoBajo.includes('transfer') || metodoBajo.includes('spei') || metodoBajo.includes('bancari')) return { FormaPago: '03', MetodoPago: 'PUE' };
+  if (metodoBajo.includes('oxxo') || metodoBajo.includes('cash') || metodoBajo.includes('efectivo')) return { FormaPago: '01', MetodoPago: 'PUE' };
+  if (metodoBajo.includes('cheque')) return { FormaPago: '02', MetodoPago: 'PUE' };
+  
+  console.log('⚠️ No se encontró mapeo específico, usando valores por defecto');
+  return { FormaPago: '99', MetodoPago: 'PUE' }; // Por defecto: Otros
 };
 
 const CFDIGlobalForm = () => {
