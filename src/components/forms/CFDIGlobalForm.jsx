@@ -620,7 +620,7 @@ const CFDIGlobalForm = () => {
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 1: Información del pedido</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Información del pedido</h2>
                 <p className="text-gray-600">Ingresa el RFC del cliente, número de pedido y valida tu correo</p>
               </div>
               
@@ -732,7 +732,7 @@ const CFDIGlobalForm = () => {
           {currentStep === 2 && (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 2: Revisar datos</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Revisar datos</h2>
                 <p className="text-gray-600">Revisa tu pedido y los datos del cliente</p>
               </div>
 
@@ -867,7 +867,7 @@ const CFDIGlobalForm = () => {
           {currentStep === 3 && (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 3: Finalizar factura</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Finalizar factura</h2>
                 <p className="text-gray-600">Selecciona el uso CFDI y genera tu factura</p>
               </div>
 
