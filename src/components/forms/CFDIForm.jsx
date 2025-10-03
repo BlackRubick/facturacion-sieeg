@@ -1301,18 +1301,19 @@ const CFDIForm = () => {
         ) : (
           <div className="border border-gray-200 rounded-lg overflow-hidden">
             {/* Header de la tabla */}
-            <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 grid grid-cols-12 gap-3 font-medium text-sm text-gray-700">
+            <div className="bg-gray-100 px-6 py-4 border-b border-gray-200 grid grid-cols-12 gap-4 font-medium text-base text-gray-700">
               <div className="col-span-3">Producto/Servicio</div>
               <div className="text-center">Cantidad</div>
               <div className="col-span-2">Descripción</div>
               <div className="text-center">P. Unitario</div>
               <div className="text-center">Descuento</div>
               <div className="col-span-2">Unidad</div>
+              <div className="text-center">Acción</div>
             </div>
             
             {/* Filas de productos */}
             {fields.map((item, idx) => (
-              <div key={item.id} className={`px-4 py-3 border-b border-gray-100 grid grid-cols-12 gap-3 text-sm items-center ${
+              <div key={item.id} className={`px-6 py-5 border-b border-gray-100 grid grid-cols-12 gap-4 text-base items-center ${
                 idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
               } hover:bg-blue-50 transition-colors`}>
                 
@@ -1337,7 +1338,7 @@ const CFDIForm = () => {
                             setValue(`items.${idx}.Descripcion`, selected.name || '');
                           }
                         }}
-                        className={`w-full border rounded p-2 text-sm ${fieldState.error ? 'border-red-300' : 'border-gray-300'}`}
+                        className={`w-full border rounded px-3 py-2 text-base ${fieldState.error ? 'border-red-300' : 'border-gray-300'}`}
                       >
                         <option value="">Seleccionar...</option>
                         {products.map((prod) => (
@@ -1355,7 +1356,7 @@ const CFDIForm = () => {
                   <input
                     type="number"
                     {...register(`items.${idx}.Cantidad`, { valueAsNumber: true, required: true })}
-                    className="w-full border border-gray-300 rounded p-2 text-sm text-center"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-base text-center"
                     placeholder="1"
                     min="1"
                     step="0.01"
@@ -1367,7 +1368,7 @@ const CFDIForm = () => {
                   <input
                     type="text"
                     {...register(`items.${idx}.Descripcion`, { required: true })}
-                    className="w-full border border-gray-300 rounded p-2 text-sm"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-base"
                     placeholder="Descripción del producto"
                   />
                 </div>
@@ -1377,7 +1378,7 @@ const CFDIForm = () => {
                   <input
                     type="number"
                     {...register(`items.${idx}.ValorUnitario`, { valueAsNumber: true, required: true })}
-                    className="w-full border border-gray-300 rounded p-2 text-sm text-center"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-base text-center"
                     placeholder="0.00"
                     min="0"
                     step="0.01"
@@ -1389,7 +1390,7 @@ const CFDIForm = () => {
                   <input
                     type="number"
                     {...register(`items.${idx}.Descuento`)}
-                    className="w-full border border-gray-300 rounded p-2 text-sm text-center"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-base text-center"
                     placeholder="0"
                     min="0"
                     step="0.01"
@@ -1401,7 +1402,7 @@ const CFDIForm = () => {
                   <div className="flex gap-2">
                     <select
                       {...register(`items.${idx}.ClaveUnidad`, { required: true })}
-                      className="flex-1 border border-gray-300 rounded p-2 text-sm"
+                      className="flex-1 border border-gray-300 rounded px-3 py-2 text-base"
                     >
                       <option value="">Clave</option>
                       {catalogs.ClaveUnidad.map((opt, cidx) => (
@@ -1411,7 +1412,7 @@ const CFDIForm = () => {
                     <input
                       type="text"
                       {...register(`items.${idx}.Unidad`, { required: true })}
-                      className="flex-1 border border-gray-300 rounded p-2 text-sm"
+                      className="flex-1 border border-gray-300 rounded px-3 py-2 text-base"
                       placeholder="Unidad"
                     />
                   </div>
@@ -1423,7 +1424,7 @@ const CFDIForm = () => {
                   <button
                     type="button"
                     onClick={() => remove(idx)}
-                    className="bg-red-500 hover:bg-red-600 text-white rounded p-2 text-sm w-8 h-8 flex items-center justify-center"
+                    className="bg-red-500 hover:bg-red-600 text-white rounded px-3 py-2 text-base w-10 h-10 flex items-center justify-center"
                     title="Eliminar producto"
                   >
                     🗑️
@@ -1433,18 +1434,18 @@ const CFDIForm = () => {
             ))}
             
             {/* Footer con botones */}
-            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex gap-3">
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex gap-4">
               <Button 
                 type="button" 
                 onClick={() => append(defaultConcepto)} 
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded text-base flex items-center gap-2"
               >
                 <span>➕</span> Agregar producto
               </Button>
               <Button
                 type="button"
                 onClick={() => setShowProductModal(true)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded text-base flex items-center gap-2"
                 title="Crear nuevo producto"
               >
                 <span>➕</span> Nuevo producto
