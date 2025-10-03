@@ -386,6 +386,20 @@ const CFDIGlobalForm = () => {
     }
   };
 
+  // Función para recargar los datos del cliente después de actualizarlo
+  const handleClienteUpdate = async (rfc) => {
+    try {
+      const res = await FacturaAPIService.getClientByRFC(rfc);
+      const data = res.data;
+      if (data.status === 'success' && data.Data) {
+        setClienteData(data.Data);
+        console.log('✅ Datos del cliente recargados después de la actualización');
+      }
+    } catch (err) {
+      console.error('Error al recargar datos del cliente:', err);
+    }
+  };
+
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
@@ -645,6 +659,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
           fields={fields}
           setEmittedUID={setEmittedUID}
           setCfdiMessage={setCfdiMessage}
+          onClienteUpdate={handleClienteUpdate}
         />
       )}
     </div>
@@ -652,7 +667,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
 }
 
 // Componente Preview del Cliente
-function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMessage }) {
+function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMessage, onClienteUpdate }) {
   const [editMode, setEditMode] = useState(false);
   const [editingData, setEditingData] = useState(null);
   const [loadingUpdate, setLoadingUpdate] = useState(false);
@@ -724,7 +739,11 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
         alert('Datos del cliente actualizados correctamente');
         setEditMode(false);
         setEditingData(null);
-        // Aquí podrías actualizar el clienteData con los nuevos datos si quisieras
+        
+        // Recargar los datos del cliente para mostrar la información actualizada
+        if (onClienteUpdate && clienteData?.RFC) {
+          await onClienteUpdate(clienteData.RFC);
+        }
       } else {
         throw new Error(response.data?.message || 'Error al actualizar');
       }
