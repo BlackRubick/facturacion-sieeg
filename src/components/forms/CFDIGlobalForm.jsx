@@ -242,6 +242,7 @@ const CFDIGlobalForm = () => {
   const handleImportPedido = async () => {
     if (!pedidoInput) return;
     setLoadingPedido(true);
+    setValidadoCorreo(false); // Reset validación de correo al importar nuevo pedido
     try {
       const url = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${pedidoInput}?consumer_key=${WOOCOMMERCE_CONSUMER_KEY}&consumer_secret=${WOOCOMMERCE_CONSUMER_SECRET}`;
       const res = await fetch(url);
@@ -387,21 +388,61 @@ const CFDIGlobalForm = () => {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto p-6 bg-white rounded shadow">
-        <h2 className="text-xl font-bold mb-4">DATOS DE FACTURA</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-blue-700 mb-2">Facturación Automática</h2>
+          <p className="text-gray-600">Sigue los pasos para generar tu factura automáticamente</p>
+        </div>
+
+        {/* Indicador de progreso */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className={`text-sm font-semibold ${clienteData ? 'text-green-600' : 'text-blue-600'}`}>
+              1. RFC del Cliente
+            </span>
+            <span className={`text-sm font-semibold ${productosImportados.length > 0 ? 'text-green-600' : clienteData ? 'text-blue-600' : 'text-gray-400'}`}>
+              2. Número de Pedido
+            </span>
+            <span className={`text-sm font-semibold ${validadoCorreo ? 'text-green-600' : productosImportados.length > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
+              3. Validar Correo
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className={`h-2 rounded-full transition-all duration-500 ${
+                validadoCorreo ? 'bg-green-500 w-full' : 
+                productosImportados.length > 0 ? 'bg-blue-500 w-2/3' : 
+                clienteData ? 'bg-blue-500 w-1/3' : 'bg-gray-400 w-0'
+              }`}
+            ></div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 gap-6">
-          <div>
-            <Input label="RFC*" {...register('RFC', { required: true })}
+          {/* PASO 1: RFC del Cliente */}
+          <div className="p-4 bg-blue-50 rounded-lg">
+            <h3 className="text-lg font-semibold text-blue-700 mb-3">Paso 1: Ingresa el RFC del cliente</h3>
+            <Input 
+              label="RFC*" 
+              {...register('RFC', { required: true })}
               onBlur={e => handleBuscarCliente(e.target.value)}
+              className="text-lg"
             />
+            {clienteData && (
+              <div className="mt-2 p-2 bg-green-100 text-green-800 rounded text-sm">
+                ✅ Cliente encontrado: <strong>{clienteData.RazonSocial}</strong>
+              </div>
+            )}
           </div>
 
           {clienteError && (
             <div className="p-2 bg-red-100 text-red-700 rounded mt-2">{clienteError}</div>
           )}
           
+          {/* PASO 1.5: Seleccionar Uso CFDI - solo si hay cliente válido */}
           {clienteData && (
-            <div className="mb-4">
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-700 mb-3">Paso 1.5: Selecciona el uso de CFDI</h3>
               <Controller
                 name="UsoCFDI"
                 control={control}
@@ -434,89 +475,59 @@ const CFDIGlobalForm = () => {
             </div>
           )}
           
+          
+          {/* PASO 2: Input para número de pedido - solo si hay cliente válido */}
           {clienteData && (
+            <div className="mb-6">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h3 className="text-lg font-semibold text-blue-700 mb-3">Paso 2: Ingresa el número de pedido</h3>
+                <div className="flex flex-col md:flex-row gap-4 items-center">
+                  <input
+                    type="text"
+                    placeholder="Número de pedido de WooCommerce"
+                    value={pedidoInput}
+                    onChange={e => setPedidoInput(e.target.value)}
+                    className="border border-blue-300 rounded-lg p-3 w-full md:w-64 text-lg"
+                  />
+                  <Button type="button" onClick={handleImportPedido} disabled={loadingPedido || !pedidoInput} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow">
+                    {loadingPedido ? 'Cargando...' : 'Importar pedido'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PASO 3: Mostrar productos importados */}
+          {clienteData && productosImportados.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-700 mb-3">Productos del pedido #{pedidoInput}:</h3>
+              <div className="space-y-3">
+                {productosImportados.map((prod, idx) => (
+                  <div key={idx} className="border border-green-200 bg-green-50 p-4 rounded-lg shadow flex flex-col md:flex-row md:items-center md:gap-6">
+                    <div className="font-bold text-green-700 text-lg">{prod.name || 'Sin nombre'}</div>
+                    <div className="text-sm text-gray-700">SKU: <span className="font-mono">{prod.sku}</span></div>
+                    <div className="text-sm text-gray-700">Cantidad: <span className="font-mono">{prod.quantity}</span></div>
+                    <div className="text-sm text-gray-700">Precio: <span className="font-mono">${prod.price || prod.total}</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* PASO 4: Validar correo - solo si hay productos importados */}
+          {clienteData && productosImportados.length > 0 && emailFromWooCommerce && (
             <CorreoValidador
-              clienteCorreo={emailFromWooCommerce || clienteData.Contacto?.Email}
+              clienteCorreo={emailFromWooCommerce}
               clienteData={clienteData}
               fields={fields}
               setEmittedUID={setEmittedUID}
               setCfdiMessage={setCfdiMessage}
               setValidadoCorreo={setValidadoCorreo}
               emailFromWooCommerce={emailFromWooCommerce}
+              productosImportados={productosImportados}
+              pedidoInput={pedidoInput}
+              watch={watch}
             />
-          )}
-          {clienteData && validadoCorreo && (
-            <div className="mb-8">
-              {/* Mostrar productos importados primero */}
-              {productosImportados.length > 0 && (
-                <div className="space-y-4 mb-4">
-                  {productosImportados.map((prod, idx) => (
-                    <div key={idx} className="border border-blue-200 bg-blue-50 p-4 rounded-lg shadow flex flex-col md:flex-row md:items-center md:gap-6">
-                      <div className="font-bold text-blue-700 text-lg">{prod.name || 'Sin nombre'}</div>
-                      <div className="text-sm text-gray-700">SKU: <span className="font-mono">{prod.sku}</span></div>
-                      <div className="text-sm text-gray-700">Cantidad: <span className="font-mono">{prod.quantity}</span></div>
-                      <div className="text-sm text-gray-700">Precio: <span className="font-mono">${prod.price || prod.total}</span></div>
-                      <div className="text-sm text-gray-700">Descripción: <span className="font-mono">{prod.name}</span></div>
-                    </div>
-                  ))}
-                  <div className="text-xs text-gray-500 mt-2">Estos productos fueron importados del pedido #{pedidoInput}.</div>
-                </div>
-              )}
-              {/* Input para importar pedido */}
-              <div className="p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
-                <input
-                  type="text"
-                  placeholder="Número de pedido"
-                  value={pedidoInput}
-                  onChange={e => setPedidoInput(e.target.value)}
-                  className="border border-blue-300 rounded-lg p-2 w-full md:w-64"
-                />
-                <Button type="button" onClick={handleImportPedido} disabled={loadingPedido || !pedidoInput} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow">
-                  {loadingPedido ? 'Cargando...' : 'Importar pedido'}
-                </Button>
-              </div>
-              {/* Botón de facturar solo si hay productos importados */}
-              {productosImportados.length > 0 && (
-                <Button type="button" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow text-lg mt-4" onClick={async () => {
-                  // Construir el objeto CFDI con los datos del cliente y productos importados
-                  const cfdiData = {
-                    Receptor: {
-                      UID: clienteData.UID,
-                      ResidenciaFiscal: clienteData.ResidenciaFiscal || '',
-                      RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
-                    },
-                    TipoDocumento: 'factura',
-                    Serie: 5483035, // Serie C, asignada automáticamente
-                    FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
-                    MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
-                    Moneda: 'MXN',
-                    UsoCFDI: watch('UsoCFDI') || clienteData.UsoCFDI || 'G03',
-                    Conceptos: fields.map(item => ({
-                      ClaveProdServ: item.ClaveProdServ,
-                      NoIdentificacion: item.NoIdentificacion,
-                      Cantidad: item.Cantidad,
-                      ClaveUnidad: item.ClaveUnidad,
-                      Unidad: item.Unidad,
-                      ValorUnitario: item.ValorUnitario,
-                      Descripcion: item.Descripcion,
-                      Descuento: item.Descuento,
-                      ObjetoImp: item.ObjetoImp,
-                      Impuestos: item.Impuestos,
-                    })),
-                  };
-                  try {
-                    const response = await FacturaAPIService.createCFDI40(cfdiData);
-                    const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
-                    setEmittedUID(uid);
-                    setCfdiMessage('CFDI creado correctamente.');
-                  } catch (err) {
-                    setCfdiMessage('Error al crear CFDI: ' + (err.response?.data?.message || err.message));
-                  }
-                }}>
-                  Facturar automáticamente
-                </Button>
-              )}
-            </div>
           )}
         </div>
         {Object.keys(errors).length > 0 && (
@@ -572,7 +583,7 @@ const CFDIGlobalForm = () => {
 };
 
 // Validador de correo
-function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage, setValidadoCorreo, emailFromWooCommerce }) {
+function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage, setValidadoCorreo, emailFromWooCommerce, productosImportados, pedidoInput, watch }) {
   const [correoInput, setCorreoInput] = useState('');
   const [validado, setValidado] = useState(false);
   const [error, setError] = useState('');
@@ -602,29 +613,87 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
   };
 
   return (
-    <div className="mb-4 p-6 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm">
-      <div className="flex items-center gap-2 mb-3">
-        <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" /></svg>
-        <label className="font-semibold text-gray-700 text-base">Valida tu correo para facturar</label>
-      </div>
-      {emailFromWooCommerce && (
-        <div className="mb-2 p-2 bg-blue-100 text-blue-800 rounded text-sm">
+    <div className="mb-6">
+      {/* Validación de correo */}
+      <div className="p-6 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm mb-4">
+        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Paso 3: Valida tu correo electrónico</h3>
+        <div className="mb-3 p-3 bg-blue-100 text-blue-800 rounded-lg text-sm">
           📧 Email del pedido WooCommerce: <strong>{emailFromWooCommerce}</strong>
         </div>
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Confirma que este es tu correo electrónico:
+          </label>
+          <input
+            type="email"
+            value={correoInput}
+            onChange={e => setCorreoInput(e.target.value)}
+            className="border border-yellow-400 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-300 focus:outline-none transition text-lg"
+            placeholder="Ingresa tu correo electrónico"
+          />
+        </div>
+        <Button 
+          type="button" 
+          onClick={handleValidar} 
+          className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow"
+        >
+          Validar correo
+        </Button>
+        {error && <div className="text-red-600 mt-3 font-medium">{error}</div>}
+        {validado && <div className="text-green-600 mt-3 font-medium">✅ Correo validado correctamente</div>}
+      </div>
+
+      {/* Botón de facturar - solo aparece si el correo está validado */}
+      {validado && (
+        <div className="p-6 bg-green-50 border border-green-300 rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold text-green-700 mb-4">¡Listo para facturar!</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            El correo ha sido validado y los productos están listos. Haz clic para generar la factura automáticamente.
+          </p>
+          <Button 
+            type="button" 
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg text-lg" 
+            onClick={async () => {
+              try {
+                // Construir el objeto CFDI con los datos del cliente y productos importados
+                const cfdiData = {
+                  Receptor: {
+                    UID: clienteData.UID,
+                    ResidenciaFiscal: clienteData.ResidenciaFiscal || '',
+                    RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
+                  },
+                  TipoDocumento: 'factura',
+                  Serie: 5483035, // Serie C, asignada automáticamente
+                  FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
+                  MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
+                  Moneda: 'MXN',
+                  UsoCFDI: watch('UsoCFDI') || clienteData.UsoCFDI || 'G03',
+                  Conceptos: fields.map(item => ({
+                    ClaveProdServ: item.ClaveProdServ,
+                    NoIdentificacion: item.NoIdentificacion,
+                    Cantidad: item.Cantidad,
+                    ClaveUnidad: item.ClaveUnidad,
+                    Unidad: item.Unidad,
+                    ValorUnitario: item.ValorUnitario,
+                    Descripcion: item.Descripcion,
+                    Descuento: item.Descuento,
+                    ObjetoImp: item.ObjetoImp,
+                    Impuestos: item.Impuestos,
+                  })),
+                };
+                const response = await FacturaAPIService.createCFDI40(cfdiData);
+                const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
+                setEmittedUID(uid);
+                setCfdiMessage('CFDI creado correctamente.');
+              } catch (err) {
+                setCfdiMessage('Error al crear CFDI: ' + (err.response?.data?.message || err.message));
+              }
+            }}
+          >
+            🧾 Facturar automáticamente
+          </Button>
+        </div>
       )}
-      <input
-        type="email"
-        value={correoInput}
-        onChange={e => setCorreoInput(e.target.value)}
-        className="border border-yellow-400 rounded-lg p-2 w-full mb-2 focus:ring-2 focus:ring-yellow-300 focus:outline-none transition"
-        placeholder={emailFromWooCommerce ? 
-          `Confirma el email del pedido: ${emailFromWooCommerce}` : 
-          "Escribe el correo con el que facturas"
-        }
-      />
-      <Button type="button" onClick={handleValidar} className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-6 rounded-lg shadow mt-1">Validar correo</Button>
-      {error && <div className="text-red-600 mt-2 font-medium">{error}</div>}
-      {/* Eliminar el botón de facturar aquí, solo debe aparecer después de importar pedido */}
     </div>
   );
 }
