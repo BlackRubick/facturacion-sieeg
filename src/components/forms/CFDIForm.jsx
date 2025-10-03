@@ -1326,14 +1326,15 @@ const CFDIForm = () => {
               <div className="col-span-2">Descripción</div>
               <div className="text-center">Precio</div>
               <div className="text-center">Desc.</div>
-              <div className="col-span-2">Unidad</div>
-              <div className="text-center">Acción</div>
+              <div className="col-span-1">Unidad</div>
+              <div className="text-center">Clave</div>
+              <div className="text-center">Borrar</div>
             </div>
 
             {/* Filas de la tabla */}
             {fields.length > 0 ? (
               fields.map((item, idx) => (
-                <div key={item.id} className={`grid grid-cols-12 gap-2 px-3 py-2 border-b border-gray-100 text-sm items-center ${
+                <div key={item.id} className={`grid grid-cols-12 gap-2 px-3 py-3 border-b border-gray-100 text-sm items-center ${
                   idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                 } hover:bg-blue-50 transition-colors`}>
                   
@@ -1417,32 +1418,36 @@ const CFDIForm = () => {
                     />
                   </div>
 
-                  {/* Unidades (Clave + Unidad) */}
-                  <div className="col-span-2 flex gap-1">
+                  {/* Unidad */}
+                  <div>
+                    <input
+                      type="text"
+                      {...register(`items.${idx}.Unidad`, { required: true })}
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400"
+                      placeholder="Unidad"
+                    />
+                  </div>
+
+                  {/* Clave Unidad */}
+                  <div>
                     <select
                       {...register(`items.${idx}.ClaveUnidad`, { required: true })}
-                      className="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400"
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400"
                     >
                       <option value="">Clave</option>
                       {catalogs.ClaveUnidad.map((opt, cidx) => (
                         <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
                       ))}
                     </select>
-                    <input
-                      type="text"
-                      {...register(`items.${idx}.Unidad`, { required: true })}
-                      className="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400"
-                      placeholder="Unidad"
-                    />
                   </div>
 
                   {/* Acción */}
-                  <div className="text-center">
+                  <div className="flex justify-center">
                     <button
                       type="button"
                       onClick={() => remove(idx)}
-                      className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs"
-                      title="Eliminar"
+                      className="bg-red-500 hover:bg-red-600 text-white rounded w-7 h-7 flex items-center justify-center text-xs font-bold"
+                      title="Eliminar producto"
                     >
                       ✕
                     </button>
