@@ -1,32 +1,43 @@
 import httpClient from './httpClient';
 
 class FacturaAPIService {
+  // NOTA: Estas rutas son para APIs genéricas, no son específicas de Factura.com
+  // Si las necesitas, cambia por los endpoints correctos de Factura.com
   async getInvoices(params) {
-    return httpClient.get('/api/invoices', { params });
+    // Usar endpoint correcto de Factura.com para listar facturas
+    return this.listCFDI(params);
   }
   async createInvoice(invoiceData) {
-    return httpClient.post('/api/invoices', invoiceData);
+    // Usar endpoint correcto de Factura.com para crear CFDI
+    return this.createCFDI40(invoiceData);
   }
   async updateInvoice(id, invoiceData) {
-    return httpClient.put(`/api/invoices/${id}`, invoiceData);
+    // Factura.com no permite modificar CFDIs timbrados, solo borradores
+    return this.updateDraft(id, invoiceData);
   }
   async deleteInvoice(id) {
-    return httpClient.delete(`/api/invoices/${id}`);
+    // Factura.com no permite eliminar CFDIs timbrados, solo borradores
+    return this.deleteDraft(id);
   }
   async getInvoicePDF(id) {
-    return httpClient.get(`/api/invoices/${id}/pdf`, { responseType: 'blob' });
+    // Usar endpoint correcto de Factura.com para obtener PDF
+    return this.getCFDIPDF(id);
   }
   async getCustomers(params) {
-    return httpClient.get('/api/customers', { params });
+    // Usar endpoint correcto de Factura.com para listar clientes
+    return this.listClients(params);
   }
   async createCustomer(customerData) {
-    return httpClient.post('/api/customers', customerData);
+    // Usar endpoint correcto de Factura.com para crear cliente
+    return this.createClient(customerData);
   }
   async updateCustomer(id, customerData) {
-    return httpClient.put(`/api/customers/${id}`, customerData);
+    // Usar endpoint correcto de Factura.com para actualizar cliente
+    return this.updateClient(id, customerData);
   }
   async deleteCustomer(id) {
-    return httpClient.delete(`/api/customers/${id}`);
+    // Usar endpoint correcto de Factura.com para eliminar cliente
+    return this.deleteClient(id);
   }
   async createCFDI40(cfdiData) {
     // Endpoint para crear CFDI 4.0 o borrador
