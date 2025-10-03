@@ -591,12 +591,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
   useEffect(() => {
     setValidado(false);
     setError('');
-    // Si hay email de WooCommerce, auto-llenarlo para facilitar la validación
-    if (emailFromWooCommerce) {
-      setCorreoInput(emailFromWooCommerce);
-    } else {
-      setCorreoInput('');
-    }
+    setCorreoInput(''); // Campo vacío para que el usuario ingrese su correo
   }, [clienteCorreo, emailFromWooCommerce]);
 
   const handleValidar = () => {
@@ -606,8 +601,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
       setValidadoCorreo(true);
     } else {
       setValidado(false);
-      const tipoEmail = emailFromWooCommerce ? 'del pedido de WooCommerce' : 'registrado para este RFC';
-      setError(`El correo no coincide con el ${tipoEmail}.`);
+      setError('El correo no coincide con el usado en la compra. Verifica e intenta nuevamente.');
       setValidadoCorreo(false);
     }
   };
@@ -617,19 +611,19 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
       {/* Validación de correo */}
       <div className="p-6 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm mb-4">
         <h3 className="text-lg font-semibold text-yellow-700 mb-3">Paso 3: Valida tu correo electrónico</h3>
-        <div className="mb-3 p-3 bg-blue-100 text-blue-800 rounded-lg text-sm">
-          📧 Email del pedido WooCommerce: <strong>{emailFromWooCommerce}</strong>
-        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Para confirmar que eres el propietario de este pedido, ingresa el correo electrónico que usaste al realizar la compra:
+        </p>
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Confirma que este es tu correo electrónico:
+            Correo electrónico de la compra:
           </label>
           <input
             type="email"
             value={correoInput}
             onChange={e => setCorreoInput(e.target.value)}
             className="border border-yellow-400 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-300 focus:outline-none transition text-lg"
-            placeholder="Ingresa tu correo electrónico"
+            placeholder="ejemplo@correo.com"
           />
         </div>
         <Button 
