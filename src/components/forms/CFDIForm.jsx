@@ -1270,7 +1270,6 @@ const CFDIForm = () => {
             {productosImportados.map((prod, idx) => (
               <div key={idx} className="border border-blue-200 bg-blue-50 p-4 rounded-lg shadow flex flex-col md:flex-row md:items-center md:gap-6">
                 <div className="font-bold text-blue-700 text-lg">{prod.name || 'Sin nombre'}</div>
-                <div className="text-sm text-gray-700">SKU: <span className="font-mono">{prod.sku}</span></div>
                 <div className="text-sm text-gray-700">Cantidad: <span className="font-mono">{prod.quantity}</span></div>
                 <div className="text-sm text-gray-700">Precio: <span className="font-mono">${prod.price || prod.total}</span></div>
               </div>
