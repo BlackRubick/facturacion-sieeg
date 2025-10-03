@@ -149,7 +149,7 @@ const CFDIGlobalForm = () => {
   
   // Estado para controlar los pasos del wizard
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   const {
     register,
@@ -447,9 +447,8 @@ const CFDIGlobalForm = () => {
   const canGoToStep = (step) => {
     switch (step) {
       case 1: return true; // Siempre se puede ir al paso 1
-      case 2: return clienteData !== null; // Necesita cliente válido
-      case 3: return clienteData && productosImportados.length > 0; // Necesita productos
-      case 4: return clienteData && productosImportados.length > 0 && validadoCorreo; // Necesita validación
+      case 2: return clienteData && productosImportados.length > 0 && validadoCorreo; // Necesita todo completo del paso 1
+      case 3: return clienteData && productosImportados.length > 0 && validadoCorreo; // Necesita todo completo
       default: return false;
     }
   };
@@ -468,15 +467,129 @@ const CFDIGlobalForm = () => {
     }
   };
 
+  // Función para facturar desde el paso 3
+  const handleFacturarStep3 = async () => {
+    console.log('🎯 Iniciando proceso de facturación desde paso 3...');
+    
+    try {
+      // Validar que tengamos los datos necesarios
+      if (!clienteData?.UID) {
+        console.error('❌ No hay UID del cliente');
+        setCfdiMessage('Error: No se encontró el UID del cliente');
+        alert('Error: No se encontró el UID del cliente');
+        return;
+      }
+
+      if (!fields || fields.length === 0) {
+        console.error('❌ No hay productos/conceptos para facturar');
+        setCfdiMessage('Error: No hay productos para facturar');
+        alert('Error: No hay productos para facturar');
+        return;
+      }
+
+      const usoCFDI = watch('UsoCFDI') || clienteData.UsoCFDI || 'G03';
+      console.log('📋 Datos para facturar:', {
+        clienteUID: clienteData.UID,
+        usoCFDI: usoCFDI,
+        numConceptos: fields.length,
+        formaPago: clienteData.FormaPago || '03',
+        metodoPago: clienteData.MetodoPago || 'PUE'
+      });
+
+      // Construir el objeto CFDI con los datos del cliente y productos importados
+      const cfdiData = {
+        Receptor: {
+          UID: clienteData.UID,
+          ResidenciaFiscal: clienteData.ResidenciaFiscal || '',
+          RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
+        },
+        TipoDocumento: 'factura',
+        Serie: 5483035, // Serie C, asignada automáticamente
+        FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
+        MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
+        Moneda: 'MXN',
+        UsoCFDI: usoCFDI,
+        Conceptos: fields.map(item => ({
+          ClaveProdServ: item.ClaveProdServ,
+          NoIdentificacion: item.NoIdentificacion,
+          Cantidad: item.Cantidad,
+          ClaveUnidad: item.ClaveUnidad,
+          Unidad: item.Unidad,
+          ValorUnitario: item.ValorUnitario,
+          Descripcion: item.Descripcion,
+          Descuento: item.Descuento,
+          ObjetoImp: item.ObjetoImp,
+          Impuestos: item.Impuestos,
+        })),
+      };
+
+      console.log('📤 Enviando CFDI con datos:', cfdiData);
+      setCfdiMessage('Generando factura...');
+
+      const response = await FacturaAPIService.createCFDI40(cfdiData);
+      console.log('✅ Respuesta completa de la API:', response);
+      console.log('📋 Estructura de response.data:', JSON.stringify(response.data, null, 2));
+
+      // Intentar extraer el UID de diferentes ubicaciones posibles
+      let uid = null;
+      
+      // Verificar todas las posibles ubicaciones del UID
+      const possiblePaths = [
+        response.data?.UID,
+        response.data?.UUID, 
+        response.data?.uid,
+        response.data?.invoice_uid,
+        response.data?.data?.UID,
+        response.data?.data?.UUID,
+        response.data?.data?.uid,
+        response.data?.Data?.UID,
+        response.data?.Data?.UUID,
+        response.data?.response?.UID,
+        response.data?.invoice?.UID,
+        response.data?.cfdi?.UID,
+        response.UID,
+        response.UUID,
+        response.uid
+      ];
+
+      console.log('🔍 Buscando UID en todas las ubicaciones posibles:', possiblePaths);
+
+      for (const path of possiblePaths) {
+        if (path && path !== '') {
+          uid = path;
+          console.log('✅ UID encontrado:', uid, 'en ubicación:', path);
+          break;
+        }
+      }
+      
+      if (uid) {
+        setEmittedUID(uid);
+        setCfdiMessage('CFDI creado correctamente.');
+        console.log('✅ CFDI creado con UID:', uid);
+        alert('¡Factura generada exitosamente! UID: ' + uid);
+      } else {
+        console.error('❌ No se encontró UID en ninguna ubicación');
+        console.error('📋 Respuesta completa:', JSON.stringify(response, null, 2));
+        setCfdiMessage('Error: No se recibió el UID del CFDI');
+        alert('Error: La factura se procesó pero no se recibió el UID. Revisa la consola para más detalles.');
+      }
+    } catch (err) {
+      console.error('❌ Error al crear CFDI:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Error desconocido';
+      setCfdiMessage('Error al crear CFDI: ' + errorMessage);
+      alert('Error al generar la factura: ' + errorMessage);
+    }
+  };
+
   return (
     <>
       <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
         {/* Indicador de pasos */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
                   step === currentStep 
                     ? 'bg-blue-600 text-white' 
                     : step < currentStep || canGoToStep(step)
@@ -488,31 +601,32 @@ const CFDIGlobalForm = () => {
                   {step < currentStep ? '✓' : step}
                 </div>
                 {step < totalSteps && (
-                  <div className={`w-16 h-1 mx-2 ${
+                  <div className={`w-24 h-1 mx-3 ${
                     step < currentStep ? 'bg-green-500' : 'bg-gray-300'
                   }`} />
                 )}
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-2 text-xs text-gray-600">
-            <span>RFC Cliente</span>
-            <span>Pedido</span>
-            <span>Validar</span>
-            <span>Facturar</span>
+          <div className="flex justify-between mt-3 text-sm text-gray-600">
+            <span className="text-center">RFC + Pedido + Validar</span>
+            <span className="text-center">Revisar Datos</span>
+            <span className="text-center">Uso CFDI + Facturar</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* PASO 1: RFC del Cliente */}
+          {/* PASO 1: RFC + Pedido + Validar Correo */}
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 1: Ingresa el RFC del cliente</h2>
-                <p className="text-gray-600">Ingresa el RFC para buscar los datos del cliente registrado</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 1: Información del pedido</h2>
+                <p className="text-gray-600">Ingresa el RFC del cliente, número de pedido y valida tu correo</p>
               </div>
               
+              {/* RFC del Cliente */}
               <div className="p-6 bg-blue-50 rounded-lg">
+                <h3 className="text-lg font-semibold text-blue-700 mb-3">RFC del cliente</h3>
                 <Input 
                   label="RFC del cliente*" 
                   {...register('RFC', { required: true })}
@@ -544,12 +658,84 @@ const CFDIGlobalForm = () => {
                 )}
               </div>
 
+              {/* Número de Pedido */}
+              {clienteData && (
+                <div className="p-6 bg-green-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-green-700 mb-3">Número de pedido</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Número de pedido de WooCommerce
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ejemplo: 12345"
+                        value={pedidoInput}
+                        onChange={e => setPedidoInput(e.target.value)}
+                        className="border border-green-300 rounded-lg p-4 w-full text-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      />
+                    </div>
+                    
+                    <Button 
+                      type="button" 
+                      onClick={handleImportPedido} 
+                      disabled={loadingPedido || !pedidoInput} 
+                      className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg text-lg"
+                    >
+                      {loadingPedido ? 'Importando productos...' : 'Importar pedido'}
+                    </Button>
+                  </div>
+
+                  {productosImportados.length > 0 && (
+                    <div className="mt-6 p-4 bg-green-100 rounded-lg">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xl">✅</span>
+                        <span className="font-semibold text-green-800">
+                          Pedido #{pedidoInput} importado correctamente
+                        </span>
+                      </div>
+                      <div className="text-sm text-green-700">
+                        Se importaron {productosImportados.length} productos del pedido
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Validador de correo */}
+              {emailFromWooCommerce && productosImportados.length > 0 && (
+                <div className="p-6 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm">
+                  <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Para confirmar que eres el propietario de este pedido, ingresa el correo que usaste al realizar la compra:
+                  </p>
+                  <CorreoValidador
+                    clienteCorreo={emailFromWooCommerce}
+                    clienteData={clienteData}
+                    fields={fields}
+                    setEmittedUID={setEmittedUID}
+                    setCfdiMessage={setCfdiMessage}
+                    setValidadoCorreo={setValidadoCorreo}
+                    emailFromWooCommerce={emailFromWooCommerce}
+                    productosImportados={productosImportados}
+                    pedidoInput={pedidoInput}
+                    watch={watch}
+                    control={control}
+                    setValue={setValue}
+                    catalogs={catalogs}
+                    loadingCatalogs={loadingCatalogs}
+                    onClienteUpdate={handleClienteUpdate}
+                    isStepOne={true}
+                  />
+                </div>
+              )}
+
               {/* Botones de navegación */}
               <div className="flex justify-end mt-6">
                 <Button 
                   type="button" 
                   onClick={nextStep}
-                  disabled={!clienteData}
+                  disabled={!clienteData || productosImportados.length === 0 || !validadoCorreo}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
                 >
                   Siguiente →
@@ -558,87 +744,20 @@ const CFDIGlobalForm = () => {
             </div>
           )}
 
-          {/* PASO 2: Número de pedido */}
+          {/* PASO 2: Revisar pedido y datos del cliente */}
           {currentStep === 2 && (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 2: Importar pedido</h2>
-                <p className="text-gray-600">Ingresa el número de pedido de WooCommerce para importar los productos</p>
-              </div>
-
-              <div className="p-6 bg-blue-50 rounded-lg">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Número de pedido de WooCommerce
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Ejemplo: 12345"
-                      value={pedidoInput}
-                      onChange={e => setPedidoInput(e.target.value)}
-                      className="border border-blue-300 rounded-lg p-4 w-full text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="button" 
-                    onClick={handleImportPedido} 
-                    disabled={loadingPedido || !pedidoInput} 
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg text-lg"
-                  >
-                    {loadingPedido ? 'Importando productos...' : 'Importar pedido'}
-                  </Button>
-                </div>
-
-                {productosImportados.length > 0 && (
-                  <div className="mt-6 p-4 bg-green-100 rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-xl">✅</span>
-                      <span className="font-semibold text-green-800">
-                        Pedido #{pedidoInput} importado correctamente
-                      </span>
-                    </div>
-                    <div className="text-sm text-green-700">
-                      Se importaron {productosImportados.length} productos del pedido
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Botones de navegación */}
-              <div className="flex justify-between mt-6">
-                <Button 
-                  type="button" 
-                  onClick={prevStep}
-                  className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
-                >
-                  ← Anterior
-                </Button>
-                <Button 
-                  type="button" 
-                  onClick={nextStep}
-                  disabled={productosImportados.length === 0}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
-                >
-                  Siguiente →
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* PASO 3: Mostrar productos y validar correo */}
-          {currentStep === 3 && (
-            <div className="space-y-6">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 3: Validar correo</h2>
-                <p className="text-gray-600">Revisa los productos importados y valida tu correo electrónico</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 2: Revisar datos</h2>
+                <p className="text-gray-600">Revisa tu pedido y los datos del cliente</p>
               </div>
 
               {/* Mostrar productos importados */}
               {productosImportados.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Productos del pedido #{pedidoInput}:</h3>
+                  <div className="p-4 bg-blue-50 rounded-lg mb-4">
+                    <h3 className="text-lg font-semibold text-blue-700 mb-3">Tu pedido #{pedidoInput}</h3>
+                  </div>
                   <div className="border border-gray-200 rounded-lg overflow-hidden">
                     {/* Header de la tabla */}
                     <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 font-medium text-sm text-gray-700">
@@ -668,32 +787,77 @@ const CFDIGlobalForm = () => {
                     
                     {/* Footer */}
                     <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
-                      Total de {productosImportados.length} productos importados
+                      Total de {productosImportados.length} productos • Pedido #{pedidoInput}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Validador de correo */}
-              {emailFromWooCommerce && (
-                <CorreoValidador
-                  clienteCorreo={emailFromWooCommerce}
-                  clienteData={clienteData}
-                  fields={fields}
-                  setEmittedUID={setEmittedUID}
-                  setCfdiMessage={setCfdiMessage}
-                  setValidadoCorreo={setValidadoCorreo}
-                  emailFromWooCommerce={emailFromWooCommerce}
-                  productosImportados={productosImportados}
-                  pedidoInput={pedidoInput}
-                  watch={watch}
-                  control={control}
-                  setValue={setValue}
-                  catalogs={catalogs}
-                  loadingCatalogs={loadingCatalogs}
-                  onClienteUpdate={handleClienteUpdate}
-                />
-              )}
+              {/* Datos del cliente con opción de editar */}
+              <div className="p-6 bg-gray-50 border border-gray-300 rounded-lg shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-700">Datos del cliente</h3>
+                  <Button 
+                    type="button" 
+                    onClick={() => {
+                      // Aquí podrías abrir un modal de edición o cambiar a modo edición
+                      // Por ahora, vamos a usar un estado para mostrar la edición inline
+                      // Implementaremos esto en el PreviewCliente component
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow text-sm"
+                  >
+                    ✏️ Editar datos
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <strong>RFC:</strong> {clienteData.RFC}
+                  </div>
+                  <div>
+                    <strong>Razón Social:</strong> {clienteData.RazonSocial}
+                  </div>
+                  <div>
+                    <strong>Código Postal:</strong> {clienteData.CodigoPostal}
+                  </div>
+                  <div>
+                    <strong>Email:</strong> {clienteData.Contacto?.Email}
+                  </div>
+                  <div>
+                    <strong>Régimen:</strong> {clienteData.Regimen}
+                  </div>
+                  <div>
+                    <strong>Uso CFDI:</strong> {clienteData.UsoCFDI}
+                  </div>
+                  {clienteData.Calle && (
+                    <div className="md:col-span-2">
+                      <strong>Dirección:</strong> {[
+                        clienteData.Calle,
+                        clienteData.Numero,
+                        clienteData.Interior,
+                        clienteData.Colonia,
+                        clienteData.Ciudad,
+                        clienteData.Estado,
+                        clienteData.CodigoPostal
+                      ].filter(Boolean).join(', ')}
+                    </div>
+                  )}
+                  {(clienteData.Contacto?.Nombre || clienteData.Contacto?.Telefono) && (
+                    <>
+                      {clienteData.Contacto?.Nombre && (
+                        <div>
+                          <strong>Contacto:</strong> {[clienteData.Contacto.Nombre, clienteData.Contacto.Apellidos].filter(Boolean).join(' ')}
+                        </div>
+                      )}
+                      {clienteData.Contacto?.Telefono && (
+                        <div>
+                          <strong>Teléfono:</strong> {clienteData.Contacto.Telefono}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
 
               {/* Botones de navegación */}
               <div className="flex justify-between mt-6">
@@ -707,7 +871,6 @@ const CFDIGlobalForm = () => {
                 <Button 
                   type="button" 
                   onClick={nextStep}
-                  disabled={!validadoCorreo}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
                 >
                   Siguiente →
@@ -716,26 +879,81 @@ const CFDIGlobalForm = () => {
             </div>
           )}
 
-          {/* PASO 4: Revisar datos y facturar */}
-          {currentStep === 4 && validadoCorreo && (
+          {/* PASO 3: Uso CFDI y facturar */}
+          {currentStep === 3 && (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 4: Revisar y facturar</h2>
-                <p className="text-gray-600">Revisa todos los datos y genera tu factura</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 3: Finalizar factura</h2>
+                <p className="text-gray-600">Selecciona el uso CFDI y genera tu factura</p>
               </div>
 
-              <PreviewCliente 
-                clienteData={clienteData}
-                watch={watch}
-                fields={fields}
-                setEmittedUID={setEmittedUID}
-                setCfdiMessage={setCfdiMessage}
-                onClienteUpdate={handleClienteUpdate}
-                control={control}
-                setValue={setValue}
-                catalogs={catalogs}
-                loadingCatalogs={loadingCatalogs}
-              />
+              {/* Selección de Uso CFDI */}
+              <div className="p-6 bg-yellow-50 rounded-lg border border-yellow-300">
+                <h3 className="text-lg font-semibold text-yellow-700 mb-3">Selecciona el uso de CFDI</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Selecciona para qué vas a usar este CFDI:
+                </p>
+                <Controller
+                  name="UsoCFDI"
+                  control={control}
+                  rules={{ required: 'Debes seleccionar un uso CFDI.' }}
+                  render={({ field, fieldState }) => {
+                    const safeValue = field.value == null ? '' : String(field.value);
+                    console.log('[Controller:UsoCFDI] value:', safeValue, 'options:', catalogs.UsoCFDI);
+                    return (
+                      <Select
+                        label="Selecciona uso CFDI*"
+                        options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map((opt, idx) => ({
+                          value: String(opt.key || opt.value),
+                          label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}`,
+                        })) : []}
+                        value={safeValue}
+                        onChange={val => {
+                          const v = val == null ? '' : String(val);
+                          field.onChange(v);
+                          setValue('UsoCFDI', v, { shouldValidate: true, shouldDirty: true });
+                          console.log('[Select:UsoCFDI] onChange value:', v);
+                        }}
+                        placeholder="Selecciona uso CFDI"
+                        isLoading={loadingCatalogs}
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message}
+                      />
+                    );
+                  }}
+                />
+              </div>
+
+              {/* Botón de facturar */}
+              <div className="p-6 bg-green-50 border border-green-300 rounded-lg shadow-sm">
+                <h3 className="text-lg font-semibold text-green-700 mb-4">¡Listo para facturar! 🎉</h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Todo está configurado correctamente. Haz clic en el botón para generar tu factura CFDI.
+                </p>
+                
+                {/* Resumen final */}
+                <div className="bg-white p-4 rounded-lg border border-green-200 mb-6">
+                  <h4 className="font-semibold text-gray-700 mb-2">Resumen:</h4>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div>• <strong>Cliente:</strong> {clienteData?.RazonSocial} ({clienteData?.RFC})</div>
+                    <div>• <strong>Pedido:</strong> #{pedidoInput} ({productosImportados.length} productos)</div>
+                    <div>• <strong>Uso CFDI:</strong> {watch('UsoCFDI')}</div>
+                    <div>• <strong>Total productos:</strong> ${productosImportados.reduce((sum, prod) => sum + ((prod.price || prod.total) * prod.quantity), 0).toFixed(2)}</div>
+                  </div>
+                </div>
+
+                <Button 
+                  type="button" 
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg text-xl" 
+                  onClick={() => {
+                    console.log('🖱️ Click en botón Facturar automáticamente');
+                    handleFacturarStep3();
+                  }}
+                  disabled={!watch('UsoCFDI')}
+                >
+                  🧾 Generar Factura CFDI
+                </Button>
+              </div>
 
               {/* Botones de navegación */}
               <div className="flex justify-between mt-6">
@@ -749,6 +967,8 @@ const CFDIGlobalForm = () => {
               </div>
             </div>
           )}
+
+
 
           {/* Mostrar errores */}
           {Object.keys(errors).length > 0 && (
@@ -809,7 +1029,7 @@ const CFDIGlobalForm = () => {
 };
 
 // Validador de correo
-function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage, setValidadoCorreo, emailFromWooCommerce, productosImportados, pedidoInput, watch, control, setValue, catalogs, loadingCatalogs, onClienteUpdate }) {
+function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage, setValidadoCorreo, emailFromWooCommerce, productosImportados, pedidoInput, watch, control, setValue, catalogs, loadingCatalogs, onClienteUpdate, isStepOne = false }) {
   const [correoInput, setCorreoInput] = useState('');
   const [validado, setValidado] = useState(false);
   const [error, setError] = useState('');
@@ -818,7 +1038,8 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
     setValidado(false);
     setError('');
     setCorreoInput(''); // Campo vacío para que el usuario ingrese su correo
-  }, [clienteCorreo, emailFromWooCommerce]);
+    setValidadoCorreo(false);
+  }, [clienteCorreo, emailFromWooCommerce, setValidadoCorreo]);
 
   const handleValidar = () => {
     if (correoInput.trim().toLowerCase() === (clienteCorreo || '').trim().toLowerCase()) {
@@ -833,12 +1054,12 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
   };
 
   return (
-    <div className="mb-6">
+    <div className={isStepOne ? "" : "mb-6"}>
       {/* Validación de correo */}
-      <div className="p-6 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm mb-4">
-        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo</h3>
+      <div className={`${isStepOne ? '' : 'p-6'} ${isStepOne ? '' : 'border border-yellow-300'} rounded-lg shadow-sm ${isStepOne ? '' : 'mb-4'}`}>
+        {!isStepOne && <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo</h3>}
         <p className="text-sm text-gray-600 mb-4">
-          Para confirmar que eres el propietario de este pedido, ingresa el correo  que usaste al realizar la compra:
+          {isStepOne ? 'Para confirmar que eres el propietario de este pedido, ingresa el correo que usaste al realizar la compra:' : 'Para confirmar que eres el propietario de este pedido, ingresa el correo que usaste al realizar la compra:'}
         </p>
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -848,7 +1069,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
             type="email"
             value={correoInput}
             onChange={e => setCorreoInput(e.target.value)}
-            className="border border-yellow-400 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-300 focus:outline-none transition text-lg"
+            className={`border ${isStepOne ? 'border-yellow-400' : 'border-yellow-400'} rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-300 focus:outline-none transition text-lg`}
             placeholder="ejemplo@correo.com"
           />
         </div>
@@ -857,14 +1078,14 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
           onClick={handleValidar} 
           className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow"
         >
-          Correo
+          Validar Correo
         </Button>
         {error && <div className="text-red-600 mt-3 font-medium">{error}</div>}
         {validado && <div className="text-green-600 mt-3 font-medium">✅ Correo validado correctamente</div>}
       </div>
 
-      {/* Preview de datos del cliente - solo aparece si el correo está validado */}
-      {validado && (
+      {/* Preview de datos del cliente - solo aparece si el correo está validado Y no es step one */}
+      {validado && !isStepOne && (
         <PreviewCliente 
           clienteData={clienteData}
           watch={watch}
