@@ -679,7 +679,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
   const [editMode, setEditMode] = useState(false);
   const [editingData, setEditingData] = useState(null);
   const [loadingUpdate, setLoadingUpdate] = useState(false);
-  const [catalogs, setCatalogs] = useState({ UsoCFDI: [], RegimenFiscal: [] });
+  const [editCatalogs, setEditCatalogs] = useState({ UsoCFDI: [], RegimenFiscal: [] });
   const [catalogLoading, setCatalogLoading] = useState(false);
 
   useEffect(() => {
@@ -717,7 +717,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
             FacturaAPIService.getUsoCFDI(),
             FacturaAPIService.getCatalog('RegimenFiscal'),
           ]);
-          setCatalogs({
+          setEditCatalogs({
             UsoCFDI: uso.data?.data || uso.data || [],
             RegimenFiscal: regimen.data?.data || regimen.data || [],
           });
@@ -928,7 +928,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
                 label="Uso CFDI" 
                 value={editingData?.usocfdi || ''} 
                 onChange={val => handleEditChange('usocfdi', val)} 
-                options={Array.isArray(catalogs.UsoCFDI) ? catalogs.UsoCFDI.map(opt => ({ 
+                options={Array.isArray(editCatalogs.UsoCFDI) ? editCatalogs.UsoCFDI.map(opt => ({ 
                   value: opt.key || opt.value, 
                   label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}` 
                 })) : []} 
@@ -939,7 +939,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
                 label="Régimen Fiscal*" 
                 value={editingData?.regimen || ''} 
                 onChange={val => handleEditChange('regimen', val)} 
-                options={Array.isArray(catalogs.RegimenFiscal) ? catalogs.RegimenFiscal.map(opt => ({ 
+                options={Array.isArray(editCatalogs.RegimenFiscal) ? editCatalogs.RegimenFiscal.map(opt => ({ 
                   value: opt.key || opt.value, 
                   label: `${opt.key || opt.value} - ${opt.name || opt.label || opt.descripcion || ''}` 
                 })) : []} 
