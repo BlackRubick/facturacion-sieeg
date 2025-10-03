@@ -813,9 +813,40 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
       setCfdiMessage('Generando factura...');
 
       const response = await FacturaAPIService.createCFDI40(cfdiData);
-      console.log('✅ Respuesta de la API:', response);
+      console.log('✅ Respuesta completa de la API:', response);
+      console.log('📋 Estructura de response.data:', JSON.stringify(response.data, null, 2));
 
-      const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
+      // Intentar extraer el UID de diferentes ubicaciones posibles
+      let uid = null;
+      
+      // Verificar todas las posibles ubicaciones del UID
+      const possiblePaths = [
+        response.data?.UID,
+        response.data?.UUID, 
+        response.data?.uid,
+        response.data?.invoice_uid,
+        response.data?.data?.UID,
+        response.data?.data?.UUID,
+        response.data?.data?.uid,
+        response.data?.Data?.UID,
+        response.data?.Data?.UUID,
+        response.data?.response?.UID,
+        response.data?.invoice?.UID,
+        response.data?.cfdi?.UID,
+        response.UID,
+        response.UUID,
+        response.uid
+      ];
+
+      console.log('🔍 Buscando UID en todas las ubicaciones posibles:', possiblePaths);
+
+      for (const path of possiblePaths) {
+        if (path && path !== '') {
+          uid = path;
+          console.log('✅ UID encontrado:', uid, 'en ubicación:', path);
+          break;
+        }
+      }
       
       if (uid) {
         setEmittedUID(uid);
@@ -823,9 +854,10 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
         console.log('✅ CFDI creado con UID:', uid);
         alert('¡Factura generada exitosamente! UID: ' + uid);
       } else {
-        console.error('❌ No se recibió UID en la respuesta:', response.data);
+        console.error('❌ No se encontró UID en ninguna ubicación');
+        console.error('📋 Respuesta completa:', JSON.stringify(response, null, 2));
         setCfdiMessage('Error: No se recibió el UID del CFDI');
-        alert('Error: La factura se procesó pero no se recibió el UID');
+        alert('Error: La factura se procesó pero no se recibió el UID. Revisa la consola para más detalles.');
       }
     } catch (err) {
       console.error('❌ Error al crear CFDI:', err);
