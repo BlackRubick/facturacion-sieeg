@@ -52,8 +52,8 @@ app.use('/payroll', createProxyMiddleware(proxyOptions));
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Manejar rutas del frontend (SPA)
-app.get('*', (req, res) => {
+// Manejar rutas del frontend (SPA) - usar catch-all route
+app.get('/*', (req, res) => {
   // Si es una ruta de API, devolver 404
   if (req.path.startsWith('/v1') || req.path.startsWith('/v3') || req.path.startsWith('/v4') || req.path.startsWith('/payroll')) {
     return res.status(404).json({ error: 'API route not found' });
