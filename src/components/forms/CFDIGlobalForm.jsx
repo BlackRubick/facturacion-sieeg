@@ -541,6 +541,7 @@ const CFDIGlobalForm = () => {
               productosImportados={productosImportados}
               pedidoInput={pedidoInput}
               watch={watch}
+              onClienteUpdate={handleClienteUpdate}
             />
           )}
         </div>
@@ -597,7 +598,7 @@ const CFDIGlobalForm = () => {
 };
 
 // Validador de correo
-function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage, setValidadoCorreo, emailFromWooCommerce, productosImportados, pedidoInput, watch }) {
+function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage, setValidadoCorreo, emailFromWooCommerce, productosImportados, pedidoInput, watch, onClienteUpdate }) {
   const [correoInput, setCorreoInput] = useState('');
   const [validado, setValidado] = useState(false);
   const [error, setError] = useState('');
@@ -659,7 +660,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
           fields={fields}
           setEmittedUID={setEmittedUID}
           setCfdiMessage={setCfdiMessage}
-          onClienteUpdate={handleClienteUpdate}
+          onClienteUpdate={onClienteUpdate}
         />
       )}
     </div>
