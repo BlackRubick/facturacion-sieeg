@@ -682,7 +682,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
           onClick={handleValidar} 
           className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow"
         >
-          Validar correo
+          Correo
         </Button>
         {error && <div className="text-red-600 mt-3 font-medium">{error}</div>}
         {validado && <div className="text-green-600 mt-3 font-medium">✅ Correo validado correctamente</div>}
