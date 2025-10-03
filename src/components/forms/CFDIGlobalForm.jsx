@@ -146,6 +146,10 @@ const CFDIGlobalForm = () => {
   const [formaPagoFromOrder, setFormaPagoFromOrder] = useState(null);
   const [metodoPagoFromOrder, setMetodoPagoFromOrder] = useState(null);
   const [emailFromWooCommerce, setEmailFromWooCommerce] = useState(null);
+  
+  // Estado para controlar los pasos del wizard
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
 
   const {
     register,
@@ -427,6 +431,29 @@ const CFDIGlobalForm = () => {
     }
   };
 
+  // Funciones para navegación del wizard
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const canGoToStep = (step) => {
+    switch (step) {
+      case 1: return true; // Siempre se puede ir al paso 1
+      case 2: return clienteData !== null; // Necesita cliente válido
+      case 3: return clienteData && productosImportados.length > 0; // Necesita productos
+      case 4: return clienteData && productosImportados.length > 0 && validadoCorreo; // Necesita validación
+      default: return false;
+    }
+  };
+
   // Función para recargar los datos del cliente después de actualizarlo
   const handleClienteUpdate = async (rfc) => {
     try {
@@ -443,158 +470,339 @@ const CFDIGlobalForm = () => {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-
-        <div className="grid grid-cols-1 gap-6">
-          {/* PASO 1: RFC del Cliente */}
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <h3 className="text-lg font-semibold text-blue-700 mb-3">Ingresa el RFC del cliente</h3>
-            <Input 
-              label="RFC*" 
-              {...register('RFC', { required: true })}
-              onBlur={e => handleBuscarCliente(e.target.value)}
-              className="text-lg"
-            />
-            {clienteData && (
-              <div className="mt-2 p-2 bg-green-100 text-green-800 rounded text-sm">
-                ✅ Cliente encontrado: <strong>{clienteData.RazonSocial}</strong>
+      <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
+        {/* Indicador de pasos */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            {[1, 2, 3, 4].map((step) => (
+              <div key={step} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  step === currentStep 
+                    ? 'bg-blue-600 text-white' 
+                    : step < currentStep || canGoToStep(step)
+                    ? 'bg-green-500 text-white cursor-pointer hover:bg-green-600' 
+                    : 'bg-gray-300 text-gray-500'
+                }`}
+                onClick={() => canGoToStep(step) ? setCurrentStep(step) : null}
+                >
+                  {step < currentStep ? '✓' : step}
+                </div>
+                {step < totalSteps && (
+                  <div className={`w-16 h-1 mx-2 ${
+                    step < currentStep ? 'bg-green-500' : 'bg-gray-300'
+                  }`} />
+                )}
               </div>
-            )}
+            ))}
           </div>
+          <div className="flex justify-between mt-2 text-xs text-gray-600">
+            <span>RFC Cliente</span>
+            <span>Pedido</span>
+            <span>Validar</span>
+            <span>Facturar</span>
+          </div>
+        </div>
 
-          {clienteError && (
-            <div className="p-2 bg-red-100 text-red-700 rounded mt-2">{clienteError}</div>
-          )}
-          
-          {/* PASO 2: Input para número de pedido - solo si hay cliente válido */}
-          {clienteData && (
-            <div className="mb-6">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-700 mb-3">Ingresa el número de pedido</h3>
-                <div className="flex flex-col md:flex-row gap-4 items-center">
-                  <input
-                    type="text"
-                    placeholder="Número de pedido "
-                    value={pedidoInput}
-                    onChange={e => setPedidoInput(e.target.value)}
-                    className="border border-blue-300 rounded-lg p-3 w-full md:w-64 text-lg"
-                  />
-                  <Button type="button" onClick={handleImportPedido} disabled={loadingPedido || !pedidoInput} className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow">
-                    {loadingPedido ? 'Cargando...' : 'Importar pedido'}
-                  </Button>
-                </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* PASO 1: RFC del Cliente */}
+          {currentStep === 1 && (
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 1: Ingresa el RFC del cliente</h2>
+                <p className="text-gray-600">Ingresa el RFC para buscar los datos del cliente registrado</p>
               </div>
-            </div>
-          )}
-
-          {/* PASO 3: Mostrar productos importados */}
-          {clienteData && productosImportados.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-700 mb-3">Productos del pedido #{pedidoInput}:</h3>
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
-                {/* Header de la tabla */}
-                <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 grid grid-cols-1 md:grid-cols-5 gap-4 font-medium text-sm text-gray-700">
-                  <div>Producto</div>
-                  <div className="text-center">Cantidad</div>
-                  <div className="text-center">Precio</div>
-                  <div className="text-center">Total</div>
-                </div>
+              
+              <div className="p-6 bg-blue-50 rounded-lg">
+                <Input 
+                  label="RFC del cliente*" 
+                  {...register('RFC', { required: true })}
+                  onBlur={e => handleBuscarCliente(e.target.value)}
+                  className="text-lg"
+                  placeholder="Ejemplo: XAXX010101000"
+                />
                 
-                {/* Filas de productos */}
-                {productosImportados.map((prod, idx) => (
-                  <div key={idx} className={`px-4 py-3 border-b border-gray-100 grid grid-cols-1 md:grid-cols-5 gap-4 text-sm ${
-                    idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                  } hover:bg-black-50 transition-colors`}>
-                    <div className="text-black-700 font-medium">{prod.name || 'Sin nombre'}</div>
-
-                    <div className="text-center text-gray-700">
-                      <span className="font-mono bg-gray-100 px-2 py-1 rounded">{prod.quantity}</span>
-                    </div>
-                    <div className="text-center text-gray-700">
-                      <span className="font-mono bg-gray-100 px-2 py-1 rounded">${prod.price || prod.total}</span>
-                    </div>
-                    <div className="text-center text-gray-700 font-medium">
-                      <span className="font-mono bg-green-100 px-2 py-1 rounded">${((prod.price || prod.total) * prod.quantity).toFixed(2)}</span>
+                {clienteData && (
+                  <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">✅</span>
+                      <div>
+                        <strong>Cliente encontrado:</strong> {clienteData.RazonSocial}
+                        <br />
+                        <small className="text-green-600">RFC: {clienteData.RFC} | Email: {clienteData.Contacto?.Email}</small>
+                      </div>
                     </div>
                   </div>
-                ))}
-                
-                {/* Footer */}
-                <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
-                  Productos importados del pedido #{pedidoInput} • Total de {productosImportados.length} productos
-                </div>
+                )}
+
+                {clienteError && (
+                  <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">❌</span>
+                      <span>{clienteError}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Botones de navegación */}
+              <div className="flex justify-end mt-6">
+                <Button 
+                  type="button" 
+                  onClick={nextStep}
+                  disabled={!clienteData}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
+                >
+                  Siguiente →
+                </Button>
               </div>
             </div>
           )}
 
-          {/* PASO 4: Validar correo - solo si hay productos importados */}
-          {clienteData && productosImportados.length > 0 && emailFromWooCommerce && (
-            <CorreoValidador
-              clienteCorreo={emailFromWooCommerce}
-              clienteData={clienteData}
-              fields={fields}
-              setEmittedUID={setEmittedUID}
-              setCfdiMessage={setCfdiMessage}
-              setValidadoCorreo={setValidadoCorreo}
-              emailFromWooCommerce={emailFromWooCommerce}
-              productosImportados={productosImportados}
-              pedidoInput={pedidoInput}
-              watch={watch}
-              control={control}
-              setValue={setValue}
-              catalogs={catalogs}
-              loadingCatalogs={loadingCatalogs}
-              onClienteUpdate={handleClienteUpdate}
-            />
-          )}
-        </div>
-        {Object.keys(errors).length > 0 && (
-          <pre className="text-red-500 mt-2">{JSON.stringify(errors, null, 2)}</pre>
-        )}
-        {emittedUID && (
-          <div className="mt-10 p-8 bg-green-50 rounded-2xl shadow-lg">
-            <h3 className="text-lg font-bold mb-2 text-green-700">CFDI emitido</h3>
-            {cfdiMessage && (
-              <div className="mb-4 text-green-800 font-semibold">{cfdiMessage}</div>
-            )}
-            <div className="flex gap-4 mb-4">
-              <Button type="button" onClick={async () => {
-                try {
-                  const res = await FacturaAPIService.getCFDIPDF(emittedUID);
-                  const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.setAttribute('download', `CFDI_${emittedUID}.pdf`);
-                  document.body.appendChild(link);
-                  link.click();
-                  link.remove();
-                } catch (err) {
-                  setCfdiMessage('Error al descargar PDF: ' + (err.response?.data?.message || err.message));
-                }
-              }} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
-                <span>📄</span> Descargar PDF
-              </Button>
-              <Button type="button" onClick={async () => {
-                try {
-                  const res = await FacturaAPIService.getCFDIXML(emittedUID);
-                  const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/xml' }));
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.setAttribute('download', `CFDI_${emittedUID}.xml`);
-                  document.body.appendChild(link);
-                  link.click();
-                  link.remove();
-                } catch (err) {
-                  setCfdiMessage('Error al descargar XML: ' + (err.response?.data?.message || err.message));
-                }
-              }} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
-                <span>🗎</span> Descargar XML
-              </Button>
+          {/* PASO 2: Número de pedido */}
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 2: Importar pedido</h2>
+                <p className="text-gray-600">Ingresa el número de pedido de WooCommerce para importar los productos</p>
+              </div>
+
+              <div className="p-6 bg-blue-50 rounded-lg">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Número de pedido de WooCommerce
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ejemplo: 12345"
+                      value={pedidoInput}
+                      onChange={e => setPedidoInput(e.target.value)}
+                      className="border border-blue-300 rounded-lg p-4 w-full text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="button" 
+                    onClick={handleImportPedido} 
+                    disabled={loadingPedido || !pedidoInput} 
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg text-lg"
+                  >
+                    {loadingPedido ? 'Importando productos...' : 'Importar pedido'}
+                  </Button>
+                </div>
+
+                {productosImportados.length > 0 && (
+                  <div className="mt-6 p-4 bg-green-100 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xl">✅</span>
+                      <span className="font-semibold text-green-800">
+                        Pedido #{pedidoInput} importado correctamente
+                      </span>
+                    </div>
+                    <div className="text-sm text-green-700">
+                      Se importaron {productosImportados.length} productos del pedido
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Botones de navegación */}
+              <div className="flex justify-between mt-6">
+                <Button 
+                  type="button" 
+                  onClick={prevStep}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
+                >
+                  ← Anterior
+                </Button>
+                <Button 
+                  type="button" 
+                  onClick={nextStep}
+                  disabled={productosImportados.length === 0}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
+                >
+                  Siguiente →
+                </Button>
+              </div>
             </div>
-            <div className="text-xs text-green-700">UID: {emittedUID}</div>
-          </div>
-        )}
-      </form>
+          )}
+
+          {/* PASO 3: Mostrar productos y validar correo */}
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 3: Validar correo</h2>
+                <p className="text-gray-600">Revisa los productos importados y valida tu correo electrónico</p>
+              </div>
+
+              {/* Mostrar productos importados */}
+              {productosImportados.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Productos del pedido #{pedidoInput}:</h3>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    {/* Header de la tabla */}
+                    <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 font-medium text-sm text-gray-700">
+                      <div>Producto</div>
+                      <div className="text-center">Cantidad</div>
+                      <div className="text-center">Precio</div>
+                      <div className="text-center">Total</div>
+                    </div>
+                    
+                    {/* Filas de productos */}
+                    {productosImportados.map((prod, idx) => (
+                      <div key={idx} className={`px-4 py-3 border-b border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm ${
+                        idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                      } hover:bg-gray-50 transition-colors`}>
+                        <div className="text-gray-700 font-medium">{prod.name || 'Sin nombre'}</div>
+                        <div className="text-center text-gray-700">
+                          <span className="font-mono bg-gray-100 px-2 py-1 rounded">{prod.quantity}</span>
+                        </div>
+                        <div className="text-center text-gray-700">
+                          <span className="font-mono bg-gray-100 px-2 py-1 rounded">${prod.price || prod.total}</span>
+                        </div>
+                        <div className="text-center text-gray-700 font-medium">
+                          <span className="font-mono bg-green-100 px-2 py-1 rounded">${((prod.price || prod.total) * prod.quantity).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Footer */}
+                    <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
+                      Total de {productosImportados.length} productos importados
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Validador de correo */}
+              {emailFromWooCommerce && (
+                <CorreoValidador
+                  clienteCorreo={emailFromWooCommerce}
+                  clienteData={clienteData}
+                  fields={fields}
+                  setEmittedUID={setEmittedUID}
+                  setCfdiMessage={setCfdiMessage}
+                  setValidadoCorreo={setValidadoCorreo}
+                  emailFromWooCommerce={emailFromWooCommerce}
+                  productosImportados={productosImportados}
+                  pedidoInput={pedidoInput}
+                  watch={watch}
+                  control={control}
+                  setValue={setValue}
+                  catalogs={catalogs}
+                  loadingCatalogs={loadingCatalogs}
+                  onClienteUpdate={handleClienteUpdate}
+                />
+              )}
+
+              {/* Botones de navegación */}
+              <div className="flex justify-between mt-6">
+                <Button 
+                  type="button" 
+                  onClick={prevStep}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
+                >
+                  ← Anterior
+                </Button>
+                <Button 
+                  type="button" 
+                  onClick={nextStep}
+                  disabled={!validadoCorreo}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
+                >
+                  Siguiente →
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* PASO 4: Revisar datos y facturar */}
+          {currentStep === 4 && validadoCorreo && (
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Paso 4: Revisar y facturar</h2>
+                <p className="text-gray-600">Revisa todos los datos y genera tu factura</p>
+              </div>
+
+              <PreviewCliente 
+                clienteData={clienteData}
+                watch={watch}
+                fields={fields}
+                setEmittedUID={setEmittedUID}
+                setCfdiMessage={setCfdiMessage}
+                onClienteUpdate={handleClienteUpdate}
+                control={control}
+                setValue={setValue}
+                catalogs={catalogs}
+                loadingCatalogs={loadingCatalogs}
+              />
+
+              {/* Botones de navegación */}
+              <div className="flex justify-between mt-6">
+                <Button 
+                  type="button" 
+                  onClick={prevStep}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
+                >
+                  ← Anterior
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Mostrar errores */}
+          {Object.keys(errors).length > 0 && (
+            <div className="mt-4 p-4 bg-red-50 rounded-lg">
+              <pre className="text-red-500 text-sm">{JSON.stringify(errors, null, 2)}</pre>
+            </div>
+          )}
+
+          {/* Resultado final - CFDI emitido */}
+          {emittedUID && (
+            <div className="mt-10 p-8 bg-green-50 rounded-2xl shadow-lg">
+              <h3 className="text-lg font-bold mb-2 text-green-700">🎉 CFDI emitido exitosamente</h3>
+              {cfdiMessage && (
+                <div className="mb-4 text-green-800 font-semibold">{cfdiMessage}</div>
+              )}
+              <div className="flex gap-4 mb-4">
+                <Button type="button" onClick={async () => {
+                  try {
+                    const res = await FacturaAPIService.getCFDIPDF(emittedUID);
+                    const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', `CFDI_${emittedUID}.pdf`);
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                  } catch (err) {
+                    setCfdiMessage('Error al descargar PDF: ' + (err.response?.data?.message || err.message));
+                  }
+                }} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
+                  <span>📄</span> Descargar PDF
+                </Button>
+                <Button type="button" onClick={async () => {
+                  try {
+                    const res = await FacturaAPIService.getCFDIXML(emittedUID);
+                    const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/xml' }));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', `CFDI_${emittedUID}.xml`);
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                  } catch (err) {
+                    setCfdiMessage('Error al descargar XML: ' + (err.response?.data?.message || err.message));
+                  }
+                }} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2">
+                  <span>🗎</span> Descargar XML
+                </Button>
+              </div>
+              <div className="text-xs text-green-700">UID: {emittedUID}</div>
+            </div>
+          )}
+        </form>
+      </div>
       <CustomerModalForm open={showCustomerModal} onClose={() => setShowCustomerModal(false)} />
     </>
   );
