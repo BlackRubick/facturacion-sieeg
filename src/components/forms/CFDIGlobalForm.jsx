@@ -935,10 +935,10 @@ const CFDIGlobalForm = () => {
             <div className="space-y-6">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  {emittedUID ? '¡Factura generada!' : 'Finalizar factura'}
+                  {emittedUID ? '' : 'Generar factura'}
                 </h2>
                 <p className="text-gray-600">
-                  {emittedUID ? 'Tu factura ha sido generada exitosamente' : 'Selecciona el uso CFDI y genera tu factura'}
+                  {emittedUID ? '' : 'Selecciona el uso CFDI y genera tu factura'}
                 </p>
               </div>
 
