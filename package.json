@@ -8,7 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server-proxy.js",
-    "build:prod": "vite build && npm run start",
+    "start:prod": "sudo ./start-production.sh",
+    "build:prod": "npm run build && npm run start:prod",
+    "pm2:start": "sudo pm2 start ecosystem.config.json",
+    "pm2:stop": "sudo pm2 stop facturacion-sieeg",
+    "pm2:restart": "sudo pm2 restart facturacion-sieeg",
+    "pm2:logs": "sudo pm2 logs facturacion-sieeg",
+    "deploy": "npm run build && sudo pm2 start ecosystem.config.json",
     "test:credentials": "node test-credentials.js"
   },
   "dependencies": {
