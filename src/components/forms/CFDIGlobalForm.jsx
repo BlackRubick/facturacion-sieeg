@@ -661,13 +661,13 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
     <div className="mb-6">
       {/* Validación de correo */}
       <div className="p-6 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm mb-4">
-        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo electrónico</h3>
+        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo</h3>
         <p className="text-sm text-gray-600 mb-4">
-          Para confirmar que eres el propietario de este pedido, ingresa el correo electrónico que usaste al realizar la compra:
+          Para confirmar que eres el propietario de este pedido, ingresa el correo  que usaste al realizar la compra:
         </p>
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Correo electrónico de la compra:
+            Correo de la compra:
           </label>
           <input
             type="email"
@@ -1095,9 +1095,9 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
 
       {/* Botón de facturar */}
       <div className="p-6 bg-green-50 border border-green-300 rounded-lg shadow-sm">
-        <h3 className="text-lg font-semibold text-green-700 mb-4">¡Listo para facturar!</h3>
+        <h3 className="text-lg font-semibold text-green-700 mb-4">¡Listo!</h3>
         <p className="text-sm text-gray-600 mb-4">
-          Verifica que los datos del cliente sean correctos y haz clic para generar la factura automáticamente.
+          verifica que los datos del cliente sean correctos y haz clic en facturar
         </p>
         <Button 
           type="button" 
@@ -1107,7 +1107,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
             handleFacturar();
           }}
         >
-           Facturar automáticamente
+           Facturar
         </Button>
       </div>
     </div>
