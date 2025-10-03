@@ -89,13 +89,40 @@ const mapearMetodoPago = (wooPaymentMethod) => {
   const metodoBajo = wooPaymentMethod.toLowerCase();
   console.log('🔍 Intentando mapeo por patrones para:', metodoBajo);
   
-  if (metodoBajo.includes('paypal')) return { FormaPago: '04', MetodoPago: 'PUE' };
-  if (metodoBajo.includes('debito') || metodoBajo.includes('debit')) return { FormaPago: '28', MetodoPago: 'PUE' };
-  if (metodoBajo.includes('credito') || metodoBajo.includes('credit') || metodoBajo.includes('tarjeta')) return { FormaPago: '04', MetodoPago: 'PUE' };
-  if (metodoBajo.includes('stripe') || metodoBajo.includes('card')) return { FormaPago: '04', MetodoPago: 'PUE' };
-  if (metodoBajo.includes('transfer') || metodoBajo.includes('spei') || metodoBajo.includes('bancari')) return { FormaPago: '03', MetodoPago: 'PUE' };
-  if (metodoBajo.includes('oxxo') || metodoBajo.includes('cash') || metodoBajo.includes('efectivo')) return { FormaPago: '01', MetodoPago: 'PUE' };
-  if (metodoBajo.includes('cheque')) return { FormaPago: '02', MetodoPago: 'PUE' };
+  // ⚠️ ORDEN IMPORTANTE: Verificar específicos antes que genéricos
+  if (metodoBajo.includes('paypal')) {
+    console.log('✅ Mapeo por patrón: paypal → FormaPago: 04');
+    return { FormaPago: '04', MetodoPago: 'PUE' };
+  }
+  if (metodoBajo.includes('debito') || metodoBajo.includes('debit')) {
+    console.log('✅ Mapeo por patrón: débito → FormaPago: 28');
+    return { FormaPago: '28', MetodoPago: 'PUE' };
+  }
+  if (metodoBajo.includes('credito') || metodoBajo.includes('credit')) {
+    console.log('✅ Mapeo por patrón: crédito → FormaPago: 04');
+    return { FormaPago: '04', MetodoPago: 'PUE' };
+  }
+  // Solo "tarjeta" genérica después de verificar débito/crédito específicos
+  if (metodoBajo.includes('tarjeta')) {
+    console.log('✅ Mapeo por patrón: tarjeta genérica → FormaPago: 04');
+    return { FormaPago: '04', MetodoPago: 'PUE' };
+  }
+  if (metodoBajo.includes('stripe') || metodoBajo.includes('card')) {
+    console.log('✅ Mapeo por patrón: stripe/card → FormaPago: 04');
+    return { FormaPago: '04', MetodoPago: 'PUE' };
+  }
+  if (metodoBajo.includes('transfer') || metodoBajo.includes('spei') || metodoBajo.includes('bancari')) {
+    console.log('✅ Mapeo por patrón: transferencia → FormaPago: 03');
+    return { FormaPago: '03', MetodoPago: 'PUE' };
+  }
+  if (metodoBajo.includes('oxxo') || metodoBajo.includes('cash') || metodoBajo.includes('efectivo')) {
+    console.log('✅ Mapeo por patrón: efectivo → FormaPago: 01');
+    return { FormaPago: '01', MetodoPago: 'PUE' };
+  }
+  if (metodoBajo.includes('cheque')) {
+    console.log('✅ Mapeo por patrón: cheque → FormaPago: 02');
+    return { FormaPago: '02', MetodoPago: 'PUE' };
+  }
   
   console.log('⚠️ No se encontró mapeo específico, usando valores por defecto');
   return { FormaPago: '99', MetodoPago: 'PUE' }; // Por defecto: Otros
