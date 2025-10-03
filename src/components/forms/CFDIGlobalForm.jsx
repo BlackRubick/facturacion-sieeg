@@ -444,34 +444,6 @@ const CFDIGlobalForm = () => {
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-700 mb-2">Facturación Automática</h2>
-          <p className="text-gray-600">Sigue los pasos para generar tu factura automáticamente</p>
-        </div>
-
-        {/* Indicador de progreso */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className={`text-sm font-semibold ${clienteData ? 'text-green-600' : 'text-blue-600'}`}>
-              1. RFC del Cliente
-            </span>
-            <span className={`text-sm font-semibold ${productosImportados.length > 0 ? 'text-green-600' : clienteData ? 'text-blue-600' : 'text-gray-400'}`}>
-              2. Número de Pedido
-            </span>
-            <span className={`text-sm font-semibold ${validadoCorreo ? 'text-green-600' : productosImportados.length > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
-              3. Validar Correo
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className={`h-2 rounded-full transition-all duration-500 ${
-                validadoCorreo ? 'bg-green-500 w-full' : 
-                productosImportados.length > 0 ? 'bg-blue-500 w-2/3' : 
-                clienteData ? 'bg-blue-500 w-1/3' : 'bg-gray-400 w-0'
-              }`}
-            ></div>
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 gap-6">
           {/* PASO 1: RFC del Cliente */}
