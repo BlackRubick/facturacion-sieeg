@@ -4,9 +4,8 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 80;
 
-// Determinar el entorno
 const isProduction = process.env.FACTURA_API_ENV === 'produccion';
 const targetUrl = isProduction ? 'https://api.factura.com' : 'https://sandbox.factura.com/api';
 
