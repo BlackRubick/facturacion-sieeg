@@ -150,6 +150,11 @@ const CFDIGlobalForm = () => {
   // Estado para controlar los pasos del wizard
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
+  
+  // Estados para controlar la visibilidad de secciones en el paso 1
+  const [showRFCSection, setShowRFCSection] = useState(true);
+  const [showPedidoSection, setShowPedidoSection] = useState(false);
+  const [showCorreoSection, setShowCorreoSection] = useState(false);
 
   const {
     register,
@@ -288,6 +293,8 @@ const CFDIGlobalForm = () => {
     if (!pedidoInput) return;
     setLoadingPedido(true);
     setValidadoCorreo(false); // Reset validación de correo al importar nuevo pedido
+    setShowCorreoSection(false); // Reset sección de correo
+    
     try {
       const url = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${pedidoInput}?consumer_key=${WOOCOMMERCE_CONSUMER_KEY}&consumer_secret=${WOOCOMMERCE_CONSUMER_SECRET}`;
       const res = await fetch(url);
@@ -383,6 +390,13 @@ const CFDIGlobalForm = () => {
         }));
         setProductosImportados(order.line_items);
         setValue('items', conceptos);
+        
+        // Ocultar sección de pedido y mostrar sección de correo
+        setTimeout(() => {
+          setShowPedidoSection(false);
+          setShowCorreoSection(true);
+        }, 1000); // Pequeña pausa para que vea el mensaje de éxito
+        
       } else {
         alert('No se encontraron productos para ese pedido');
         setProductosImportados([]);
@@ -403,6 +417,11 @@ const CFDIGlobalForm = () => {
     setProductosImportados([]); // Reset productos importados
     setPedidoInput(""); // Reset input de pedido
     setEmailFromWooCommerce(null); // Reset email de WooCommerce
+    
+    // Reset secciones del paso 1
+    setShowPedidoSection(false);
+    setShowCorreoSection(false);
+    
     try {
       const res = await FacturaAPIService.getClientByRFC(rfc);
       const data = res.data;
@@ -421,6 +440,13 @@ const CFDIGlobalForm = () => {
             console.log('✅ UsoCFDI auto-rellenado desde cliente:', data.Data.UsoCFDI);
           }
         }
+        
+        // Ocultar sección RFC y mostrar sección de pedido
+        setTimeout(() => {
+          setShowRFCSection(false);
+          setShowPedidoSection(true);
+        }, 1000); // Pequeña pausa para que vea el mensaje de éxito
+        
       } else {
         setClienteError('No se encontró el cliente para ese RFC');
         alert('El RFC no está dado de alta. Por favor registre el cliente.');
@@ -465,6 +491,38 @@ const CFDIGlobalForm = () => {
     } catch (err) {
       console.error('Error al recargar datos del cliente:', err);
     }
+  };
+
+  // Funciones para navegar entre secciones del paso 1
+  const handleEditRFC = () => {
+    setShowRFCSection(true);
+    setShowPedidoSection(false);
+    setShowCorreoSection(false);
+    // Reset datos relacionados
+    setClienteData(null);
+    setProductosImportados([]);
+    setPedidoInput("");
+    setEmailFromWooCommerce(null);
+    setValidadoCorreo(false);
+  };
+
+  const handleEditPedido = () => {
+    setShowRFCSection(false);
+    setShowPedidoSection(true);
+    setShowCorreoSection(false);
+    // Reset datos de productos y correo
+    setProductosImportados([]);
+    setPedidoInput("");
+    setEmailFromWooCommerce(null);
+    setValidadoCorreo(false);
+  };
+
+  const handleEditCorreo = () => {
+    setShowRFCSection(false);
+    setShowPedidoSection(false);
+    setShowCorreoSection(true);
+    // Reset validación de correo
+    setValidadoCorreo(false);
   };
 
   // Función para facturar desde el paso 3
@@ -621,50 +679,107 @@ const CFDIGlobalForm = () => {
             <div className="space-y-6">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Información del pedido</h2>
-                <p className="text-gray-600">Ingresa el RFC del cliente, número de pedido y valida tu correo</p>
+                <p className="text-gray-600">Completa cada paso para generar tu factura</p>
               </div>
+
+              {/* Resumen de progreso - solo si hay datos completados */}
+              {(clienteData || productosImportados.length > 0 || validadoCorreo) && (
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Progreso:</h4>
+                  <div className="space-y-2">
+                    {clienteData && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-green-600">✅</span>
+                          <span>Cliente: <strong>{clienteData.RazonSocial}</strong></span>
+                        </div>
+                        <Button 
+                          type="button" 
+                          onClick={handleEditRFC}
+                          className="text-blue-600 hover:text-blue-800 text-xs underline bg-transparent border-none shadow-none p-0"
+                        >
+                          Cambiar RFC
+                        </Button>
+                      </div>
+                    )}
+                    {productosImportados.length > 0 && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-green-600">✅</span>
+                          <span>Pedido: <strong>#{pedidoInput}</strong> ({productosImportados.length} productos)</span>
+                        </div>
+                        <Button 
+                          type="button" 
+                          onClick={handleEditPedido}
+                          className="text-blue-600 hover:text-blue-800 text-xs underline bg-transparent border-none shadow-none p-0"
+                        >
+                          Cambiar pedido
+                        </Button>
+                      </div>
+                    )}
+                    {validadoCorreo && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-green-600">✅</span>
+                          <span>Correo validado correctamente</span>
+                        </div>
+                        <Button 
+                          type="button" 
+                          onClick={handleEditCorreo}
+                          className="text-blue-600 hover:text-blue-800 text-xs underline bg-transparent border-none shadow-none p-0"
+                        >
+                          Validar otro correo
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               
               {/* RFC del Cliente */}
-              <div className="p-6 bg-blue-50 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-700 mb-3">RFC del cliente</h3>
-                <Input 
-                  label="RFC del cliente*" 
-                  {...register('RFC', { required: true })}
-                  onBlur={e => handleBuscarCliente(e.target.value)}
-                  className="text-lg"
-                  placeholder="Ejemplo: XAXX010101000"
-                />
-                
-                {clienteData && (
-                  <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">✅</span>
-                      <div>
-                        <strong>Cliente encontrado:</strong> {clienteData.RazonSocial}
-                        <br />
+              {showRFCSection && (
+                <div className="p-6 bg-blue-50 rounded-lg border-2 border-blue-300 shadow-md">
+                  <h3 className="text-lg font-semibold text-blue-700 mb-3">1. RFC del cliente</h3>
+                  <Input 
+                    label="RFC del cliente*" 
+                    {...register('RFC', { required: true })}
+                    onBlur={e => handleBuscarCliente(e.target.value)}
+                    className="text-lg"
+                    placeholder="Ejemplo: XAXX010101000"
+                  />
+                  
+                  {clienteData && (
+                    <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">✅</span>
+                        <div>
+                          <strong>Cliente encontrado:</strong> {clienteData.RazonSocial}
+                          <br />
+                          <small className="text-green-600">RFC: {clienteData.RFC}</small>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {clienteError && (
-                  <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">❌</span>
-                      <span>{clienteError}</span>
+                  {clienteError && (
+                    <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">❌</span>
+                        <span>{clienteError}</span>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               {/* Número de Pedido */}
-              {clienteData && (
-                <div className="p-6 bg-green-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-green-700 mb-3">Número de pedido</h3>
+              {showPedidoSection && clienteData && (
+                <div className="p-6 bg-green-50 rounded-lg border-2 border-green-300 shadow-md">
+                  <h3 className="text-lg font-semibold text-green-700 mb-3">2. Número de pedido</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Número de pedido
+                        Número de pedido de WooCommerce
                       </label>
                       <input
                         type="text"
@@ -683,15 +798,27 @@ const CFDIGlobalForm = () => {
                     >
                       {loadingPedido ? 'Importando productos...' : 'Importar pedido'}
                     </Button>
-                  </div>
 
+                    {productosImportados.length > 0 && (
+                      <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">✅</span>
+                          <div>
+                            <strong>Pedido #{pedidoInput} importado correctamente</strong>
+                            <br />
+                            <small className="text-green-600">Se importaron {productosImportados.length} productos</small>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
               {/* Validador de correo */}
-              {emailFromWooCommerce && productosImportados.length > 0 && (
-                <div className="p-6 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm">
-                  <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo</h3>
+              {showCorreoSection && emailFromWooCommerce && productosImportados.length > 0 && (
+                <div className="p-6 bg-yellow-50 border-2 border-yellow-300 rounded-lg shadow-md">
+                  <h3 className="text-lg font-semibold text-yellow-700 mb-3">3. Validar correo electrónico</h3>
 
                   <CorreoValidador
                     clienteCorreo={emailFromWooCommerce}
