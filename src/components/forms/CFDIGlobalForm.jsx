@@ -448,7 +448,7 @@ const CFDIGlobalForm = () => {
         <div className="grid grid-cols-1 gap-6">
           {/* PASO 1: RFC del Cliente */}
           <div className="p-4 bg-blue-50 rounded-lg">
-            <h3 className="text-lg font-semibold text-blue-700 mb-3">Paso 1: Ingresa el RFC del cliente</h3>
+            <h3 className="text-lg font-semibold text-blue-700 mb-3">Ingresa el RFC del cliente</h3>
             <Input 
               label="RFC*" 
               {...register('RFC', { required: true })}
@@ -507,11 +507,11 @@ const CFDIGlobalForm = () => {
           {clienteData && (
             <div className="mb-6">
               <div className="p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-700 mb-3">Paso 2: Ingresa el número de pedido</h3>
+                <h3 className="text-lg font-semibold text-blue-700 mb-3">Ingresa el número de pedido</h3>
                 <div className="flex flex-col md:flex-row gap-4 items-center">
                   <input
                     type="text"
-                    placeholder="Número de pedido de WooCommerce"
+                    placeholder="Número de pedido "
                     value={pedidoInput}
                     onChange={e => setPedidoInput(e.target.value)}
                     className="border border-blue-300 rounded-lg p-3 w-full md:w-64 text-lg"
@@ -661,7 +661,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
     <div className="mb-6">
       {/* Validación de correo */}
       <div className="p-6 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm mb-4">
-        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Paso 3: Valida tu correo electrónico</h3>
+        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo electrónico</h3>
         <p className="text-sm text-gray-600 mb-4">
           Para confirmar que eres el propietario de este pedido, ingresa el correo electrónico que usaste al realizar la compra:
         </p>
