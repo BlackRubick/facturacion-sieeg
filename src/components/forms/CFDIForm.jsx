@@ -1301,20 +1301,20 @@ const CFDIForm = () => {
         ) : (
           <div className="border border-gray-200 rounded-lg overflow-hidden">
             {/* Header de la tabla */}
-            <div className="bg-gray-100 px-3 py-2 border-b border-gray-200 grid grid-cols-12 gap-2 font-medium text-xs text-gray-700">
+            <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 grid grid-cols-12 gap-3 font-medium text-sm text-gray-700">
               <div className="col-span-3">Producto/Servicio</div>
-              <div className="text-center">Cant.</div>
+              <div className="text-center">Cantidad</div>
               <div className="col-span-2">Descripción</div>
-              <div className="text-center">P. Unit.</div>
-              <div className="text-center">Desc.</div>
+              <div className="text-center">P. Unitario</div>
+              <div className="text-center">Descuento</div>
               <div className="col-span-2">Unidad</div>
               <div className="text-center">SKU</div>
-              <div className="text-center">Acción</div>
+              <div className="text-center">Eliminar</div>
             </div>
             
             {/* Filas de productos */}
             {fields.map((item, idx) => (
-              <div key={item.id} className={`px-3 py-2 border-b border-gray-100 grid grid-cols-12 gap-2 text-xs items-center ${
+              <div key={item.id} className={`px-4 py-3 border-b border-gray-100 grid grid-cols-12 gap-3 text-sm items-center ${
                 idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
               } hover:bg-blue-50 transition-colors`}>
                 
@@ -1339,7 +1339,7 @@ const CFDIForm = () => {
                             setValue(`items.${idx}.Descripcion`, selected.name || '');
                           }
                         }}
-                        className={`w-full border rounded p-1 text-xs ${fieldState.error ? 'border-red-300' : 'border-gray-300'}`}
+                        className={`w-full border rounded p-2 text-sm ${fieldState.error ? 'border-red-300' : 'border-gray-300'}`}
                       >
                         <option value="">Seleccionar...</option>
                         {products.map((prod) => (
@@ -1357,7 +1357,7 @@ const CFDIForm = () => {
                   <input
                     type="number"
                     {...register(`items.${idx}.Cantidad`, { valueAsNumber: true, required: true })}
-                    className="w-full border border-gray-300 rounded p-1 text-xs text-center"
+                    className="w-full border border-gray-300 rounded p-2 text-sm text-center"
                     placeholder="1"
                     min="1"
                     step="0.01"
@@ -1369,7 +1369,7 @@ const CFDIForm = () => {
                   <input
                     type="text"
                     {...register(`items.${idx}.Descripcion`, { required: true })}
-                    className="w-full border border-gray-300 rounded p-1 text-xs"
+                    className="w-full border border-gray-300 rounded p-2 text-sm"
                     placeholder="Descripción del producto"
                   />
                 </div>
@@ -1379,7 +1379,7 @@ const CFDIForm = () => {
                   <input
                     type="number"
                     {...register(`items.${idx}.ValorUnitario`, { valueAsNumber: true, required: true })}
-                    className="w-full border border-gray-300 rounded p-1 text-xs text-center"
+                    className="w-full border border-gray-300 rounded p-2 text-sm text-center"
                     placeholder="0.00"
                     min="0"
                     step="0.01"
@@ -1391,7 +1391,7 @@ const CFDIForm = () => {
                   <input
                     type="number"
                     {...register(`items.${idx}.Descuento`)}
-                    className="w-full border border-gray-300 rounded p-1 text-xs text-center"
+                    className="w-full border border-gray-300 rounded p-2 text-sm text-center"
                     placeholder="0"
                     min="0"
                     step="0.01"
@@ -1400,10 +1400,10 @@ const CFDIForm = () => {
 
                 {/* Unidad */}
                 <div className="col-span-2">
-                  <div className="flex gap-1">
+                  <div className="flex gap-2">
                     <select
                       {...register(`items.${idx}.ClaveUnidad`, { required: true })}
-                      className="flex-1 border border-gray-300 rounded p-1 text-xs"
+                      className="flex-1 border border-gray-300 rounded p-2 text-sm"
                     >
                       <option value="">Clave</option>
                       {catalogs.ClaveUnidad.map((opt, cidx) => (
@@ -1413,7 +1413,7 @@ const CFDIForm = () => {
                     <input
                       type="text"
                       {...register(`items.${idx}.Unidad`, { required: true })}
-                      className="flex-1 border border-gray-300 rounded p-1 text-xs"
+                      className="flex-1 border border-gray-300 rounded p-2 text-sm"
                       placeholder="Unidad"
                     />
                   </div>
@@ -1424,7 +1424,7 @@ const CFDIForm = () => {
                   <input
                     type="text"
                     {...register(`items.${idx}.NoIdentificacion`)}
-                    className="w-full border border-gray-300 rounded p-1 text-xs text-center"
+                    className="w-full border border-gray-300 rounded p-2 text-sm text-center"
                     placeholder="SKU"
                   />
                 </div>
@@ -1434,7 +1434,7 @@ const CFDIForm = () => {
                   <button
                     type="button"
                     onClick={() => remove(idx)}
-                    className="bg-red-500 hover:bg-red-600 text-white rounded p-1 text-xs"
+                    className="bg-red-500 hover:bg-red-600 text-white rounded p-2 text-sm w-8 h-8 flex items-center justify-center"
                     title="Eliminar producto"
                   >
                     🗑️
@@ -1444,18 +1444,18 @@ const CFDIForm = () => {
             ))}
             
             {/* Footer con botones */}
-            <div className="bg-gray-50 px-3 py-3 border-t border-gray-200 flex gap-2">
+            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex gap-3">
               <Button 
                 type="button" 
                 onClick={() => append(defaultConcepto)} 
-                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
               >
                 <span>➕</span> Agregar producto
               </Button>
               <Button
                 type="button"
                 onClick={() => setShowProductModal(true)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
                 title="Crear nuevo producto"
               >
                 <span>➕</span> Nuevo producto
