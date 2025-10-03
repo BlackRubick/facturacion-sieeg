@@ -642,7 +642,6 @@ const CFDIGlobalForm = () => {
                       <div>
                         <strong>Cliente encontrado:</strong> {clienteData.RazonSocial}
                         <br />
-                        <small className="text-green-600">RFC: {clienteData.RFC} | Email: {clienteData.Contacto?.Email}</small>
                       </div>
                     </div>
                   </div>
@@ -665,7 +664,7 @@ const CFDIGlobalForm = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Número de pedido de WooCommerce
+                        Número de pedido
                       </label>
                       <input
                         type="text"
@@ -686,19 +685,6 @@ const CFDIGlobalForm = () => {
                     </Button>
                   </div>
 
-                  {productosImportados.length > 0 && (
-                    <div className="mt-6 p-4 bg-green-100 rounded-lg">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-xl">✅</span>
-                        <span className="font-semibold text-green-800">
-                          Pedido #{pedidoInput} importado correctamente
-                        </span>
-                      </div>
-                      <div className="text-sm text-green-700">
-                        Se importaron {productosImportados.length} productos del pedido
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -706,9 +692,7 @@ const CFDIGlobalForm = () => {
               {emailFromWooCommerce && productosImportados.length > 0 && (
                 <div className="p-6 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm">
                   <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Para confirmar que eres el propietario de este pedido, ingresa el correo que usaste al realizar la compra:
-                  </p>
+
                   <CorreoValidador
                     clienteCorreo={emailFromWooCommerce}
                     clienteData={clienteData}
@@ -926,21 +910,12 @@ const CFDIGlobalForm = () => {
 
               {/* Botón de facturar */}
               <div className="p-6 bg-green-50 border border-green-300 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold text-green-700 mb-4">¡Listo para facturar! 🎉</h3>
+                <h3 className="text-lg font-semibold text-green-700 mb-4">¡Listo!</h3>
                 <p className="text-sm text-gray-600 mb-6">
-                  Todo está configurado correctamente. Haz clic en el botón para generar tu factura CFDI.
+                  Verifica que tus datos sean correctos y haz clic en facturar
                 </p>
                 
-                {/* Resumen final */}
-                <div className="bg-white p-4 rounded-lg border border-green-200 mb-6">
-                  <h4 className="font-semibold text-gray-700 mb-2">Resumen:</h4>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <div>• <strong>Cliente:</strong> {clienteData?.RazonSocial} ({clienteData?.RFC})</div>
-                    <div>• <strong>Pedido:</strong> #{pedidoInput} ({productosImportados.length} productos)</div>
-                    <div>• <strong>Uso CFDI:</strong> {watch('UsoCFDI')}</div>
-                    <div>• <strong>Total productos:</strong> ${productosImportados.reduce((sum, prod) => sum + ((prod.price || prod.total) * prod.quantity), 0).toFixed(2)}</div>
-                  </div>
-                </div>
+
 
                 <Button 
                   type="button" 
@@ -951,7 +926,7 @@ const CFDIGlobalForm = () => {
                   }}
                   disabled={!watch('UsoCFDI')}
                 >
-                  🧾 Generar Factura CFDI
+                  Facturar
                 </Button>
               </div>
 
@@ -1078,7 +1053,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
           onClick={handleValidar} 
           className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow"
         >
-          Validar Correo
+         Correo
         </Button>
         {error && <div className="text-red-600 mt-3 font-medium">{error}</div>}
         {validado && <div className="text-green-600 mt-3 font-medium">✅ Correo validado correctamente</div>}
