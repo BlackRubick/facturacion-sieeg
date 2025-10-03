@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 3001;
 
 // Determinar el entorno basado en la variable de entorno
 const isProduction = process.env.VITE_FACTURA_API_ENV === 'produccion';
+// Importante: Producción usa https://api.factura.com (sin /api), Sandbox usa https://sandbox.factura.com/api
 const apiBaseUrl = isProduction ? 'https://api.factura.com' : 'https://sandbox.factura.com/api';
 
 console.log(`🚀 Configurando proxy para: ${apiBaseUrl}`);
