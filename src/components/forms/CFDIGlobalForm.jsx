@@ -104,6 +104,7 @@ const CFDIGlobalForm = () => {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [formaPagoFromOrder, setFormaPagoFromOrder] = useState(null);
   const [metodoPagoFromOrder, setMetodoPagoFromOrder] = useState(null);
+  const [emailFromWooCommerce, setEmailFromWooCommerce] = useState(null);
 
   const {
     register,
@@ -257,6 +258,7 @@ const CFDIGlobalForm = () => {
       console.log('💰 total:', order.total);
       console.log('📊 status:', order.status);
       console.log('💱 currency:', order.currency);
+      console.log('📧 billing email:', order.billing?.email);
       
       // Logs específicos de métodos de pago
       console.log('');
@@ -282,6 +284,11 @@ const CFDIGlobalForm = () => {
       // Guardar los valores mapeados
       setFormaPagoFromOrder(pagoMapeado.FormaPago);
       setMetodoPagoFromOrder(pagoMapeado.MetodoPago);
+      
+      // 📧 Capturar el email del billing de WooCommerce
+      const emailWooCommerce = order.billing?.email || null;
+      setEmailFromWooCommerce(emailWooCommerce);
+      console.log('📧 Email capturado de WooCommerce billing:', emailWooCommerce);
       
       // Actualizar clienteData con los valores obtenidos
       if (clienteData) {
@@ -349,6 +356,7 @@ const CFDIGlobalForm = () => {
     setMetodoPagoFromOrder(null); // Reset método de pago al buscar nuevo cliente
     setProductosImportados([]); // Reset productos importados
     setPedidoInput(""); // Reset input de pedido
+    setEmailFromWooCommerce(null); // Reset email de WooCommerce
     try {
       const res = await FacturaAPIService.getClientByRFC(rfc);
       const data = res.data;
@@ -428,12 +436,13 @@ const CFDIGlobalForm = () => {
           
           {clienteData && (
             <CorreoValidador
-              clienteCorreo={clienteData.Contacto?.Email}
+              clienteCorreo={emailFromWooCommerce || clienteData.Contacto?.Email}
               clienteData={clienteData}
               fields={fields}
               setEmittedUID={setEmittedUID}
               setCfdiMessage={setCfdiMessage}
               setValidadoCorreo={setValidadoCorreo}
+              emailFromWooCommerce={emailFromWooCommerce}
             />
           )}
           {clienteData && validadoCorreo && (
@@ -563,7 +572,7 @@ const CFDIGlobalForm = () => {
 };
 
 // Validador de correo
-function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage, setValidadoCorreo }) {
+function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, setCfdiMessage, setValidadoCorreo, emailFromWooCommerce }) {
   const [correoInput, setCorreoInput] = useState('');
   const [validado, setValidado] = useState(false);
   const [error, setError] = useState('');
@@ -571,8 +580,13 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
   useEffect(() => {
     setValidado(false);
     setError('');
-    setCorreoInput('');
-  }, [clienteCorreo]);
+    // Si hay email de WooCommerce, auto-llenarlo para facilitar la validación
+    if (emailFromWooCommerce) {
+      setCorreoInput(emailFromWooCommerce);
+    } else {
+      setCorreoInput('');
+    }
+  }, [clienteCorreo, emailFromWooCommerce]);
 
   const handleValidar = () => {
     if (correoInput.trim().toLowerCase() === (clienteCorreo || '').trim().toLowerCase()) {
@@ -581,7 +595,8 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
       setValidadoCorreo(true);
     } else {
       setValidado(false);
-      setError('El correo no coincide con el registrado para este RFC.');
+      const tipoEmail = emailFromWooCommerce ? 'del pedido de WooCommerce' : 'registrado para este RFC';
+      setError(`El correo no coincide con el ${tipoEmail}.`);
       setValidadoCorreo(false);
     }
   };
@@ -592,12 +607,20 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
         <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" /></svg>
         <label className="font-semibold text-gray-700 text-base">Valida tu correo para facturar</label>
       </div>
+      {emailFromWooCommerce && (
+        <div className="mb-2 p-2 bg-blue-100 text-blue-800 rounded text-sm">
+          📧 Email del pedido WooCommerce: <strong>{emailFromWooCommerce}</strong>
+        </div>
+      )}
       <input
         type="email"
         value={correoInput}
         onChange={e => setCorreoInput(e.target.value)}
         className="border border-yellow-400 rounded-lg p-2 w-full mb-2 focus:ring-2 focus:ring-yellow-300 focus:outline-none transition"
-        placeholder="Escribe el correo con el que facturas"
+        placeholder={emailFromWooCommerce ? 
+          `Confirma el email del pedido: ${emailFromWooCommerce}` : 
+          "Escribe el correo con el que facturas"
+        }
       />
       <Button type="button" onClick={handleValidar} className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-6 rounded-lg shadow mt-1">Validar correo</Button>
       {error && <div className="text-red-600 mt-2 font-medium">{error}</div>}
