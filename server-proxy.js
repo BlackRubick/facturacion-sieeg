@@ -6,13 +6,23 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Determinar el entorno basado en la variable de entorno
-const isProduction = process.env.VITE_FACTURA_API_ENV === 'produccion';
+// Determinar el entorno basado en la variable de entorno (usar variables sin prefijo VITE_ para el servidor)
+const isProduction = process.env.FACTURA_API_ENV === 'produccion';
 // Importante: Producción usa https://api.factura.com (sin /api), Sandbox usa https://sandbox.factura.com/api
 const apiBaseUrl = isProduction ? 'https://api.factura.com' : 'https://sandbox.factura.com/api';
 
+console.log('🔍 Debug variables de entorno:');
+console.log('FACTURA_API_ENV:', process.env.FACTURA_API_ENV);
+console.log('isProduction:', isProduction);
+console.log('apiBaseUrl:', apiBaseUrl);
 console.log(`🚀 Configurando proxy para: ${apiBaseUrl}`);
 console.log(`📊 Entorno: ${isProduction ? 'Producción' : 'Sandbox'}`);
+
+// Validar que tenemos una URL válida
+if (!apiBaseUrl || (!apiBaseUrl.startsWith('http://') && !apiBaseUrl.startsWith('https://'))) {
+  console.error('❌ Error: apiBaseUrl no es válida:', apiBaseUrl);
+  process.exit(1);
+}
 
 // Configurar proxy para rutas de API
 const facturaApiProxy = createProxyMiddleware(['/v1', '/v3', '/v4', '/payroll'], {
@@ -26,18 +36,18 @@ const facturaApiProxy = createProxyMiddleware(['/v1', '/v3', '/v4', '/payroll'],
     '^/payroll': '/payroll',
   },
   onProxyReq: (proxyReq, req, res) => {
-    // Agregar headers de autenticación
-    if (process.env.VITE_FACTURA_API_KEY) {
-      proxyReq.setHeader('F-Api-Key', process.env.VITE_FACTURA_API_KEY);
+    // Agregar headers de autenticación (usar variables sin prefijo VITE_ para el servidor)
+    if (process.env.FACTURA_API_KEY) {
+      proxyReq.setHeader('F-Api-Key', process.env.FACTURA_API_KEY);
     }
-    if (process.env.VITE_FACTURA_SECRET_KEY) {
-      proxyReq.setHeader('F-Secret-Key', process.env.VITE_FACTURA_SECRET_KEY);
+    if (process.env.FACTURA_SECRET_KEY) {
+      proxyReq.setHeader('F-Secret-Key', process.env.FACTURA_SECRET_KEY);
     }
-    if (process.env.VITE_FACTURA_PLUGIN) {
-      proxyReq.setHeader('F-PLUGIN', process.env.VITE_FACTURA_PLUGIN);
+    if (process.env.FACTURA_PLUGIN) {
+      proxyReq.setHeader('F-PLUGIN', process.env.FACTURA_PLUGIN);
     }
-    if (process.env.VITE_FACTURA_API_ENV) {
-      proxyReq.setHeader('F-Api-Env', process.env.VITE_FACTURA_API_ENV);
+    if (process.env.FACTURA_API_ENV) {
+      proxyReq.setHeader('F-Api-Env', process.env.FACTURA_API_ENV);
     }
     proxyReq.setHeader('Content-Type', 'application/json');
     
