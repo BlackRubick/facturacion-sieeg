@@ -648,7 +648,9 @@ const CFDIGlobalForm = () => {
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
-                  step === currentStep 
+                  emittedUID && step === 3
+                    ? 'bg-green-500 text-white' // Paso 3 verde cuando hay CFDI emitido
+                    : step === currentStep 
                     ? 'bg-blue-600 text-white' 
                     : step < currentStep || canGoToStep(step)
                     ? 'bg-green-500 text-white cursor-pointer hover:bg-green-600' 
@@ -656,11 +658,11 @@ const CFDIGlobalForm = () => {
                 }`}
                 onClick={() => canGoToStep(step) ? setCurrentStep(step) : null}
                 >
-                  {step < currentStep ? '✓' : step}
+                  {emittedUID && step === 3 ? '✓' : step < currentStep ? '✓' : step}
                 </div>
                 {step < totalSteps && (
                   <div className={`w-24 h-1 mx-3 ${
-                    step < currentStep ? 'bg-green-500' : 'bg-gray-300'
+                    emittedUID && step === 2 ? 'bg-green-500' : step < currentStep ? 'bg-green-500' : 'bg-gray-300'
                   }`} />
                 )}
               </div>

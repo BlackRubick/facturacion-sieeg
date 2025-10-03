@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     { email: 'vendedor@mail.com', password: 'vendedor123', type: 'vendedor', name: 'Vendedor' },
   ];
 
-  const API_URL = 'http://3.150.146.141:3000/api';
+  const API_URL = '/api';
 
   useEffect(() => {
     // Verifica si hay usuario y token en localStorage al iniciar
