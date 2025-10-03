@@ -1308,7 +1308,6 @@ const CFDIForm = () => {
               <div className="text-center">P. Unitario</div>
               <div className="text-center">Descuento</div>
               <div className="col-span-2">Unidad</div>
-              <div className="text-center">Eliminar</div>
             </div>
             
             {/* Filas de productos */}
