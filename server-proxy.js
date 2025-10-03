@@ -52,14 +52,20 @@ app.use('/payroll', createProxyMiddleware(proxyOptions));
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Manejar rutas del frontend (SPA) - usar catch-all route
-app.get('/*', (req, res) => {
-  // Si es una ruta de API, devolver 404
+// Middleware para manejar todas las rutas restantes (SPA fallback)
+app.use((req, res, next) => {
+  // Si es una ruta de API que no fue manejada por el proxy, devolver 404
   if (req.path.startsWith('/v1') || req.path.startsWith('/v3') || req.path.startsWith('/v4') || req.path.startsWith('/payroll')) {
     return res.status(404).json({ error: 'API route not found' });
   }
   
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  // Para todas las demás rutas, servir el index.html (SPA routing)
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'), (err) => {
+    if (err) {
+      console.error('Error sirviendo index.html:', err);
+      res.status(500).send('Error interno del servidor');
+    }
+  });
 });
 
 // Iniciar servidor
