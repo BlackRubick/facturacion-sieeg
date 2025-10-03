@@ -1097,7 +1097,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
       <div className="p-6 bg-green-50 border border-green-300 rounded-lg shadow-sm">
         <h3 className="text-lg font-semibold text-green-700 mb-4">¡Listo!</h3>
         <p className="text-sm text-gray-600 mb-4">
-          verifica que los datos del cliente sean correctos y haz clic en facturar
+          Verifica que tus datos sean correctos y haz clic en facturar
         </p>
         <Button 
           type="button" 
