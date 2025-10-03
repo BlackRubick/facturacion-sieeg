@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react';
 
 // Determinar el entorno basado en la variable de entorno
 const isProduction = process.env.VITE_FACTURA_API_ENV === 'produccion';
-const apiBaseUrl = isProduction ? 'https://factura.com/api' : 'https://sandbox.factura.com/api';
+const apiBaseUrl = isProduction ? 'https://api.factura.com' : 'https://sandbox.factura.com/api';
 
 /** @type {import('vite').UserConfig} */
 export default {

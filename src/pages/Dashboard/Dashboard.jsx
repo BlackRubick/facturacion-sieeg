@@ -1,4 +1,5 @@
 import React from 'react';
+import APITestComponent from '../../components/APITestComponent';
 
 const stats = [
   { label: 'Facturas emitidas', value: 128, icon: '\ud83d\udcc4', color: 'bg-blue-100 text-blue-700' },
@@ -18,6 +19,11 @@ const Dashboard = () => (
         </div>
       ))}
     </div>
+    
+    <div className="mb-8">
+      <APITestComponent />
+    </div>
+    
     <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-6 text-center">
       <h2 className="text-xl font-bold mb-4 text-blue-600">Bienvenido al sistema de facturación SIEEG</h2>
       <p className="text-gray-700">Aquí puedes gestionar tus facturas, clientes y pedidos de forma profesional y eficiente.</p>

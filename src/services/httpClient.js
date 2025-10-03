@@ -17,4 +17,37 @@ const config = {
 
 const httpClient = axios.create(config);
 
+// Interceptor para debug (solo en desarrollo)
+if (import.meta.env.MODE === 'development') {
+  httpClient.interceptors.request.use(request => {
+    console.log('🚀 API Request:', {
+      method: request.method?.toUpperCase(),
+      url: request.url,
+      baseURL: request.baseURL,
+      headers: {
+        'F-Api-Key': request.headers['F-Api-Key'] ? request.headers['F-Api-Key'].substring(0, 20) + '...' : 'Missing',
+        'F-Secret-Key': request.headers['F-Secret-Key'] ? request.headers['F-Secret-Key'].substring(0, 20) + '...' : 'Missing',
+        'F-PLUGIN': request.headers['F-PLUGIN'] || 'Missing',
+        'F-Api-Env': request.headers['F-Api-Env'] || 'Missing'
+      }
+    });
+    return request;
+  });
+
+  httpClient.interceptors.response.use(
+    response => {
+      console.log('✅ API Response:', response.status, response.data);
+      return response;
+    },
+    error => {
+      console.error('❌ API Error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      return Promise.reject(error);
+    }
+  );
+}
+
 export default httpClient;
