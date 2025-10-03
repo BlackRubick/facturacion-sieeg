@@ -15,7 +15,8 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const { state, dispatch } = useContext(AppContext);
   const { user, logout } = useAuth();
-  const [sandbox, setSandbox] = useState(true);
+  const isProduction = import.meta.env.VITE_FACTURA_API_ENV === 'produccion';
+  const [sandbox, setSandbox] = useState(!isProduction);
   const [showUserModal, setShowUserModal] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', type: 'vendedor' });
   const [userMsg, setUserMsg] = useState('');

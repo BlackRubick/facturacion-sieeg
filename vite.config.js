@@ -1,5 +1,9 @@
 import react from '@vitejs/plugin-react';
 
+// Determinar el entorno basado en la variable de entorno
+const isProduction = process.env.VITE_FACTURA_API_ENV === 'produccion';
+const apiBaseUrl = isProduction ? 'https://factura.com/api' : 'https://sandbox.factura.com/api';
+
 /** @type {import('vite').UserConfig} */
 export default {
   plugins: [react()],
@@ -8,22 +12,22 @@ export default {
     port: 3000, // Puedes cambiar a 80 si lo prefieres y tienes permisos
     proxy: {
       '/v1': {
-        target: 'https://sandbox.factura.com/api',
+        target: apiBaseUrl,
         changeOrigin: true,
         secure: true,
       },
       '/v3': {
-        target: 'https://sandbox.factura.com/api',
+        target: apiBaseUrl,
         changeOrigin: true,
         secure: true,
       },
       '/v4': {
-        target: 'https://sandbox.factura.com/api',
+        target: apiBaseUrl,
         changeOrigin: true,
         secure: true,
       },
       '/payroll': {
-        target: 'https://sandbox.factura.com/api',
+        target: apiBaseUrl,
         changeOrigin: true,
         secure: true,
       },

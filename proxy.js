@@ -5,8 +5,12 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PROXY_PORT || 4000;
 
+// Determinar el entorno basado en la variable de entorno
+const isProduction = process.env.VITE_FACTURA_API_ENV === 'produccion';
+const apiBaseUrl = isProduction ? 'https://factura.com/api' : 'https://sandbox.factura.com/api';
+
 const facturaApiProxy = createProxyMiddleware(['/v1', '/v3', '/v4', '/payroll'], {
-  target: 'https://sandbox.factura.com/api',
+  target: apiBaseUrl,
   changeOrigin: true,
   secure: true,
   pathRewrite: {
