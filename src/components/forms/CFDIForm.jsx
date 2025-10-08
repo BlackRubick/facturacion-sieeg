@@ -30,61 +30,6 @@ const WOOCOMMERCE_URL = 'https://sieeg.com.mx';
 const WOOCOMMERCE_CONSUMER_KEY = 'ck_135a712cae91341b1383f5031eff37f89a8f62a4';
 const WOOCOMMERCE_CONSUMER_SECRET = 'cs_9a3f25a9fd51c50866c4d7ad442abeb63be74c0e';
 
-// Función para encontrar la serie correcta basada en el tipo de documento
-const findSerieByTipoDocumento = (tipoDocumentoString, series) => {
-  console.log('🎯 Buscando serie para TipoDocumento:', tipoDocumentoString);
-  console.log('🔍 Series disponibles:', series);
-  
-  // Mapeo de tipos de documento a prefijos de serie
-  const tipoToPrefix = {
-    'factura': 'F',
-    'egreso': ['E', 'N'], // Egreso o Nota de Crédito
-    'pago': 'PA',
-    'honorarios': 'R',
-    'nomina': 'NOM',
-    'carta_porte': 'C',
-    'donativo': 'DO',
-    'arrendamiento': 'RA',
-    'nota_debito': 'D',
-    'retencion': 'RT',
-    'carta_porte_ingreso': 'CI'
-  };
-  
-  const prefixes = tipoToPrefix[tipoDocumentoString];
-  console.log('🔍 Prefijos a buscar:', prefixes);
-  
-  if (!prefixes || !series || series.length === 0) {
-    console.log('⚠️ No hay prefijos o series disponibles');
-    return null;
-  }
-  
-  // Convertir a array si es string
-  const prefixArray = Array.isArray(prefixes) ? prefixes : [prefixes];
-  
-  // Buscar serie que coincida con algún prefijo
-  for (const prefix of prefixArray) {
-    const serie = series.find(s => {
-      const serieName = s.SerieName || '';
-      const match = serieName.startsWith(prefix + ' - ') || serieName === prefix;
-      if (match) {
-        console.log(`✅ Serie encontrada: ${serieName} (ID: ${s.id || s.ID || s.SerieID})`);
-      }
-      return match;
-    });
-    
-    if (serie) {
-      return {
-        id: serie.id || serie.ID || serie.SerieID,
-        name: serie.SerieName,
-        serie: serie
-      };
-    }
-  }
-  
-  console.log('❌ No se encontró serie matching');
-  return null;
-};
-
 const CFDIForm = () => {
   const [catalogs, setCatalogs] = useState({
     ClaveProductServ: [],
@@ -153,7 +98,7 @@ const CFDIForm = () => {
   } = useForm({
     defaultValues: {
       dueDate: '',
-      TipoDocumento: 'factura', // Mantener como string, se mapea en el submit
+      TipoDocumento: 'factura',
       Serie: '',
       FormaPago: '',
       MetodoPago: '',
@@ -410,63 +355,12 @@ const CFDIForm = () => {
       return;
     }
     
-    // 🔥 DEBUG: Verificar datos antes del mapeo
-    console.log('🔍 DEBUG PRE-MAPEO:');
-    console.log('   - data.TipoDocumento:', data.TipoDocumento);
-    console.log('   - data.Serie:', data.Serie);
-    console.log('   - typeof data.Serie:', typeof data.Serie);
-    console.log('   - series array:', series);
-    
-    // 🎯 NUEVO: Encontrar la serie correcta basada en el tipo de documento
-    const tipoDocumentoOriginal = data.TipoDocumento || 'factura';
-    console.log('🎯 Procesando TipoDocumento:', tipoDocumentoOriginal);
-    
-    let serieID;
-    let tipoDocumentoID;
-    
-    // Prioridad 1: Si el usuario seleccionó una serie específica, usarla
-    if (data.Serie && !isNaN(Number(data.Serie))) {
-      serieID = Number(data.Serie);
-      console.log('✅ Serie seleccionada manualmente por usuario:', serieID);
-      
-      // Encontrar el tipo de documento de esa serie
-      const serieSeleccionada = series.find(s => 
-        (s.id || s.ID || s.SerieID) === serieID
-      );
-      if (serieSeleccionada) {
-        tipoDocumentoID = serieSeleccionada.TipoDocumento || serieSeleccionada.DocumentType || null;
-        console.log('📄 TipoDocumento de la serie seleccionada:', tipoDocumentoID);
-      }
-    } else {
-      // Prioridad 2: Buscar serie automáticamente basada en el tipo de documento
-      console.log('🔍 Buscando serie automática para TipoDocumento:', tipoDocumentoOriginal);
-      const serieEncontrada = findSerieByTipoDocumento(tipoDocumentoOriginal, series);
-      
-      if (serieEncontrada) {
-        serieID = serieEncontrada.id;
-        tipoDocumentoID = serieEncontrada.serie.TipoDocumento || serieEncontrada.serie.DocumentType || null;
-        console.log('✅ Serie encontrada automáticamente:', serieEncontrada.name, 'ID:', serieID);
-        console.log('📄 TipoDocumento de la serie:', tipoDocumentoID);
-      } else {
-        console.log('⚠️ No se encontró serie automática, usando primera serie disponible');
-        if (series && series.length > 0) {
-          serieID = series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined;
-          tipoDocumentoID = series[0]?.TipoDocumento || series[0]?.DocumentType || null;
-          console.log('⚠️ Usando serie por defecto:', series[0]?.SerieName, 'ID:', serieID);
-        } else {
-          serieID = undefined;
-          tipoDocumentoID = null;
-          console.log('❌ No hay series disponibles');
-        }
-      }
-    }
-
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
       },
-      TipoDocumento: tipoDocumentoID ? Number(tipoDocumentoID) : null,
-      Serie: serieID,
+      TipoDocumento: data.TipoDocumento || 'factura',
+      Serie: Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined),
       FormaPago: String(formaPagoFinal).trim(), // <-- Usar el valor final corregido
       MetodoPago: String(metodoPagoFinal).trim(), // <-- Usar el valor final corregido
       Moneda: data.Moneda || 'MXN',
@@ -478,31 +372,7 @@ const CFDIForm = () => {
     };
     
     console.log('📤 Objeto final enviado a la API:', cfdiData);
-    console.log('📤 TipoDocumento que se envía:', cfdiData.TipoDocumento, '(tipo:', typeof cfdiData.TipoDocumento, ')');
-    console.log('📤 Serie que se envía:', cfdiData.Serie, '(tipo:', typeof cfdiData.Serie, ')');
     console.log('📤 UsoCFDI que se envía:', cfdiData.UsoCFDI);
-    
-    // 🔍 NUEVA VALIDACIÓN: Verificar que TipoDocumento no sea null
-    if (cfdiData.TipoDocumento === null) {
-      console.error('❌ ERROR CRÍTICO: TipoDocumento es null!');
-      alert('Error: No se pudo determinar el tipo de documento. Verifica que la serie seleccionada sea válida.');
-      return;
-    }
-    
-    // 🔍 DEBUG: Verificar catálogo de series disponibles
-    console.log('🔍 SERIES DISPONIBLES EN EL CATÁLOGO:');
-    console.log('   - series array completo:', series);
-    if (series && series.length > 0) {
-      series.forEach((serie, idx) => {
-        console.log(`   - Serie ${idx}:`, {
-          id: serie.id || serie.ID || serie.SerieID,
-          name: serie.SerieName,
-          description: serie.SerieDescription,
-          tipoDoc: serie.TipoDocumento || serie.DocumentType,
-          completo: serie
-        });
-      });
-    }
     
     // Validación final antes del envío
     if (!cfdiData.UsoCFDI || cfdiData.UsoCFDI.trim() === '') {
