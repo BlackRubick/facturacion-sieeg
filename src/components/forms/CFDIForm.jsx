@@ -32,6 +32,8 @@ const WOOCOMMERCE_CONSUMER_SECRET = 'cs_9a3f25a9fd51c50866c4d7ad442abeb63be74c0e
 
 // Mapeo de tipos de documento del formulario a IDs de la API
 const mapTipoDocumento = (tipoString) => {
+  console.log('🚀 FUNCIÓN mapTipoDocumento LLAMADA con:', tipoString);
+  
   const mapeos = {
     'factura': '899497',     // F - Factura
     'egreso': '899500',      // N - Nota de Crédito  
@@ -47,7 +49,9 @@ const mapTipoDocumento = (tipoString) => {
   };
   
   console.log('🔍 Mapeando TipoDocumento:', tipoString, '→', mapeos[tipoString]);
-  return mapeos[tipoString] || '899497'; // Default: Factura
+  const resultado = mapeos[tipoString] || '899497'; // Default: Factura
+  console.log('✅ Resultado del mapeo:', resultado);
+  return resultado;
 };
 
 const CFDIForm = () => {
@@ -375,18 +379,39 @@ const CFDIForm = () => {
       return;
     }
     
+    // 🔥 DEBUG: Verificar datos antes del mapeo
+    console.log('🔍 DEBUG PRE-MAPEO:');
+    console.log('   - data.TipoDocumento:', data.TipoDocumento);
+    console.log('   - data.Serie:', data.Serie);
+    console.log('   - typeof data.Serie:', typeof data.Serie);
+    console.log('   - series array:', series);
+    
     // Mapear el tipo de documento del string al ID numérico
     const tipoDocumentoOriginal = data.TipoDocumento || 'factura';
+    console.log('🎯 Llamando mapTipoDocumento con:', tipoDocumentoOriginal);
     const tipoDocumentoID = mapTipoDocumento(tipoDocumentoOriginal);
     
     console.log('📄 TipoDocumento mapeado:', tipoDocumentoOriginal, '→', tipoDocumentoID);
+    
+    // 🔥 DEBUG: Verificar Series correctamente
+    let serieID;
+    if (data.Serie && !isNaN(Number(data.Serie))) {
+      serieID = Number(data.Serie);
+      console.log('✅ Serie seleccionada por usuario:', serieID);
+    } else if (series && series.length > 0) {
+      serieID = series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined;
+      console.log('⚠️ Usando serie por defecto (primera del array):', serieID);
+    } else {
+      serieID = undefined;
+      console.log('❌ No se encontró serie válida');
+    }
 
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
       },
       TipoDocumento: tipoDocumentoID, // Usar el ID mapeado
-      Serie: Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined),
+      Serie: serieID,
       FormaPago: String(formaPagoFinal).trim(), // <-- Usar el valor final corregido
       MetodoPago: String(metodoPagoFinal).trim(), // <-- Usar el valor final corregido
       Moneda: data.Moneda || 'MXN',
@@ -398,6 +423,8 @@ const CFDIForm = () => {
     };
     
     console.log('📤 Objeto final enviado a la API:', cfdiData);
+    console.log('📤 TipoDocumento que se envía:', cfdiData.TipoDocumento, '(tipo:', typeof cfdiData.TipoDocumento, ')');
+    console.log('📤 Serie que se envía:', cfdiData.Serie, '(tipo:', typeof cfdiData.Serie, ')');
     console.log('📤 UsoCFDI que se envía:', cfdiData.UsoCFDI);
     
     // Validación final antes del envío
