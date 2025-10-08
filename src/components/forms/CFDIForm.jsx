@@ -30,28 +30,59 @@ const WOOCOMMERCE_URL = 'https://sieeg.com.mx';
 const WOOCOMMERCE_CONSUMER_KEY = 'ck_135a712cae91341b1383f5031eff37f89a8f62a4';
 const WOOCOMMERCE_CONSUMER_SECRET = 'cs_9a3f25a9fd51c50866c4d7ad442abeb63be74c0e';
 
-// Mapeo de tipos de documento del formulario a IDs de la API
-const mapTipoDocumento = (tipoString) => {
-  console.log('🚀 FUNCIÓN mapTipoDocumento LLAMADA con:', tipoString);
+// Función para encontrar la serie correcta basada en el tipo de documento
+const findSerieByTipoDocumento = (tipoDocumentoString, series) => {
+  console.log('🎯 Buscando serie para TipoDocumento:', tipoDocumentoString);
+  console.log('🔍 Series disponibles:', series);
   
-  const mapeos = {
-    'factura': '899497',     // F - Factura
-    'egreso': '899500',      // N - Nota de Crédito  
-    'pago': '899508',        // PA - Complemento Pago
-    'honorarios': '899498',  // R - Recibo de Honorarios
-    'nomina': '899501',      // NOM - Nómina
-    'carta_porte': '899499', // C - Carta Porte
-    'donativo': '899504',    // DO - Donativo
-    'arrendamiento': '899505', // RA - Recibo de Arrendamiento
-    'nota_debito': '899509',   // D - Nota de Débito
-    'retencion': '899507',     // RT - Retención
-    'carta_porte_ingreso': '899510' // CI - Carta Porte de Ingreso
+  // Mapeo de tipos de documento a prefijos de serie
+  const tipoToPrefix = {
+    'factura': 'F',
+    'egreso': ['E', 'N'], // Egreso o Nota de Crédito
+    'pago': 'PA',
+    'honorarios': 'R',
+    'nomina': 'NOM',
+    'carta_porte': 'C',
+    'donativo': 'DO',
+    'arrendamiento': 'RA',
+    'nota_debito': 'D',
+    'retencion': 'RT',
+    'carta_porte_ingreso': 'CI'
   };
   
-  console.log('🔍 Mapeando TipoDocumento:', tipoString, '→', mapeos[tipoString]);
-  const resultado = mapeos[tipoString] || '899497'; // Default: Factura
-  console.log('✅ Resultado del mapeo:', resultado);
-  return resultado;
+  const prefixes = tipoToPrefix[tipoDocumentoString];
+  console.log('🔍 Prefijos a buscar:', prefixes);
+  
+  if (!prefixes || !series || series.length === 0) {
+    console.log('⚠️ No hay prefijos o series disponibles');
+    return null;
+  }
+  
+  // Convertir a array si es string
+  const prefixArray = Array.isArray(prefixes) ? prefixes : [prefixes];
+  
+  // Buscar serie que coincida con algún prefijo
+  for (const prefix of prefixArray) {
+    const serie = series.find(s => {
+      const serieName = s.SerieName || '';
+      const match = serieName.startsWith(prefix + ' - ') || serieName === prefix;
+      if (match) {
+        console.log(`✅ Serie encontrada: ${serieName} (ID: ${s.id || s.ID || s.SerieID})`);
+      }
+      return match;
+    });
+    
+    if (serie) {
+      return {
+        id: serie.id || serie.ID || serie.SerieID,
+        name: serie.SerieName,
+        serie: serie
+      };
+    }
+  }
+  
+  console.log('❌ No se encontró serie matching');
+  return null;
 };
 
 const CFDIForm = () => {
@@ -386,31 +417,55 @@ const CFDIForm = () => {
     console.log('   - typeof data.Serie:', typeof data.Serie);
     console.log('   - series array:', series);
     
-    // Mapear el tipo de documento del string al ID numérico
+    // 🎯 NUEVO: Encontrar la serie correcta basada en el tipo de documento
     const tipoDocumentoOriginal = data.TipoDocumento || 'factura';
-    console.log('🎯 Llamando mapTipoDocumento con:', tipoDocumentoOriginal);
-    const tipoDocumentoID = mapTipoDocumento(tipoDocumentoOriginal);
+    console.log('🎯 Procesando TipoDocumento:', tipoDocumentoOriginal);
     
-    console.log('📄 TipoDocumento mapeado:', tipoDocumentoOriginal, '→', tipoDocumentoID);
-    
-    // 🔥 DEBUG: Verificar Series correctamente
     let serieID;
+    let tipoDocumentoID;
+    
+    // Prioridad 1: Si el usuario seleccionó una serie específica, usarla
     if (data.Serie && !isNaN(Number(data.Serie))) {
       serieID = Number(data.Serie);
-      console.log('✅ Serie seleccionada por usuario:', serieID);
-    } else if (series && series.length > 0) {
-      serieID = series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined;
-      console.log('⚠️ Usando serie por defecto (primera del array):', serieID);
+      console.log('✅ Serie seleccionada manualmente por usuario:', serieID);
+      
+      // Encontrar el tipo de documento de esa serie
+      const serieSeleccionada = series.find(s => 
+        (s.id || s.ID || s.SerieID) === serieID
+      );
+      if (serieSeleccionada) {
+        tipoDocumentoID = serieSeleccionada.TipoDocumento || serieSeleccionada.DocumentType || null;
+        console.log('📄 TipoDocumento de la serie seleccionada:', tipoDocumentoID);
+      }
     } else {
-      serieID = undefined;
-      console.log('❌ No se encontró serie válida');
+      // Prioridad 2: Buscar serie automáticamente basada en el tipo de documento
+      console.log('🔍 Buscando serie automática para TipoDocumento:', tipoDocumentoOriginal);
+      const serieEncontrada = findSerieByTipoDocumento(tipoDocumentoOriginal, series);
+      
+      if (serieEncontrada) {
+        serieID = serieEncontrada.id;
+        tipoDocumentoID = serieEncontrada.serie.TipoDocumento || serieEncontrada.serie.DocumentType || null;
+        console.log('✅ Serie encontrada automáticamente:', serieEncontrada.name, 'ID:', serieID);
+        console.log('📄 TipoDocumento de la serie:', tipoDocumentoID);
+      } else {
+        console.log('⚠️ No se encontró serie automática, usando primera serie disponible');
+        if (series && series.length > 0) {
+          serieID = series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined;
+          tipoDocumentoID = series[0]?.TipoDocumento || series[0]?.DocumentType || null;
+          console.log('⚠️ Usando serie por defecto:', series[0]?.SerieName, 'ID:', serieID);
+        } else {
+          serieID = undefined;
+          tipoDocumentoID = null;
+          console.log('❌ No hay series disponibles');
+        }
+      }
     }
 
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
       },
-      TipoDocumento: tipoDocumentoID, // Usar el ID mapeado
+      TipoDocumento: tipoDocumentoID ? Number(tipoDocumentoID) : null,
       Serie: serieID,
       FormaPago: String(formaPagoFinal).trim(), // <-- Usar el valor final corregido
       MetodoPago: String(metodoPagoFinal).trim(), // <-- Usar el valor final corregido
@@ -426,6 +481,28 @@ const CFDIForm = () => {
     console.log('📤 TipoDocumento que se envía:', cfdiData.TipoDocumento, '(tipo:', typeof cfdiData.TipoDocumento, ')');
     console.log('📤 Serie que se envía:', cfdiData.Serie, '(tipo:', typeof cfdiData.Serie, ')');
     console.log('📤 UsoCFDI que se envía:', cfdiData.UsoCFDI);
+    
+    // 🔍 NUEVA VALIDACIÓN: Verificar que TipoDocumento no sea null
+    if (cfdiData.TipoDocumento === null) {
+      console.error('❌ ERROR CRÍTICO: TipoDocumento es null!');
+      alert('Error: No se pudo determinar el tipo de documento. Verifica que la serie seleccionada sea válida.');
+      return;
+    }
+    
+    // 🔍 DEBUG: Verificar catálogo de series disponibles
+    console.log('🔍 SERIES DISPONIBLES EN EL CATÁLOGO:');
+    console.log('   - series array completo:', series);
+    if (series && series.length > 0) {
+      series.forEach((serie, idx) => {
+        console.log(`   - Serie ${idx}:`, {
+          id: serie.id || serie.ID || serie.SerieID,
+          name: serie.SerieName,
+          description: serie.SerieDescription,
+          tipoDoc: serie.TipoDocumento || serie.DocumentType,
+          completo: serie
+        });
+      });
+    }
     
     // Validación final antes del envío
     if (!cfdiData.UsoCFDI || cfdiData.UsoCFDI.trim() === '') {
