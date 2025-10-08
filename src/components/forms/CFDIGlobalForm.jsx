@@ -31,6 +31,26 @@ const FACTURA_API_KEY = import.meta.env.VITE_FACTURA_API_KEY;
 const FACTURA_SECRET_KEY = import.meta.env.VITE_FACTURA_SECRET_KEY;
 const FACTURA_PLUGIN = import.meta.env.VITE_FACTURA_PLUGIN;
 
+// Mapeo de tipos de documento del formulario a IDs de la API
+const mapTipoDocumento = (tipoString) => {
+  const mapeos = {
+    'factura': '899497',     // F - Factura
+    'egreso': '899500',      // N - Nota de Crédito  
+    'pago': '899508',        // PA - Complemento Pago
+    'honorarios': '899498',  // R - Recibo de Honorarios
+    'nomina': '899501',      // NOM - Nómina
+    'carta_porte': '899499', // C - Carta Porte
+    'donativo': '899504',    // DO - Donativo
+    'arrendamiento': '899505', // RA - Recibo de Arrendamiento
+    'nota_debito': '899509',   // D - Nota de Débito
+    'retencion': '899507',     // RT - Retención
+    'carta_porte_ingreso': '899510' // CI - Carta Porte de Ingreso
+  };
+  
+  console.log('🔍 Mapeando TipoDocumento (CFDIGlobalForm):', tipoString, '→', mapeos[tipoString]);
+  return mapeos[tipoString] || '899497'; // Default: Factura
+};
+
 // Mapeo de métodos de pago de WooCommerce a códigos SAT (igual que en CFDIForm)
 const mapearMetodoPago = (wooPaymentMethod) => {
   // Mapeos más completos basados en los catálogos del SAT
@@ -230,11 +250,15 @@ const CFDIGlobalForm = () => {
   }, [catalogs.UsoCFDI, setValue, watch]);
 
   const onSubmit = async (data) => {
+    // Mapear el tipo de documento del string al ID numérico
+    const tipoDocumentoOriginal = data.TipoDocumento || 'factura';
+    const tipoDocumentoID = mapTipoDocumento(tipoDocumentoOriginal);
+    
     const cfdiData = {
       Receptor: {
         UID: data.customerId,
       },
-      TipoDocumento: data.TipoDocumento,
+      TipoDocumento: tipoDocumentoID, // Usar el ID mapeado
       Serie: data.Serie,
       FormaPago: data.FormaPago,
       MetodoPago: data.MetodoPago,
@@ -253,11 +277,15 @@ const CFDIGlobalForm = () => {
 
   const handleViewDraft = async (formData) => {
     // Forzar modo borrador
+    // Mapear el tipo de documento del string al ID numérico
+    const tipoDocumentoOriginal = formData.TipoDocumento || 'factura';
+    const tipoDocumentoID = mapTipoDocumento(tipoDocumentoOriginal);
+    
     const cfdiData = {
       Receptor: {
         UID: formData.customerId,
       },
-      TipoDocumento: formData.TipoDocumento,
+      TipoDocumento: tipoDocumentoID, // Usar el ID mapeado
       Serie: formData.Serie,
       FormaPago: formData.FormaPago,
       MetodoPago: formData.MetodoPago,
@@ -555,13 +583,17 @@ const CFDIGlobalForm = () => {
       });
 
       // Construir el objeto CFDI con los datos del cliente y productos importados
+      // Mapear el tipo de documento del string al ID numérico
+      const tipoDocumentoID = mapTipoDocumento('factura');
+      console.log('📄 TipoDocumento mapeado en handleFacturarStep3:', 'factura', '→', tipoDocumentoID);
+      
       const cfdiData = {
         Receptor: {
           UID: clienteData.UID,
           ResidenciaFiscal: clienteData.ResidenciaFiscal || '',
           RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
         },
-        TipoDocumento: 'factura',
+        TipoDocumento: tipoDocumentoID, // Usar el ID mapeado
         Serie: 5483035, // Serie C, asignada automáticamente
         FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
         MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
@@ -1282,13 +1314,17 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
       });
 
       // Construir el objeto CFDI con los datos del cliente y productos importados
+      // Mapear el tipo de documento del string al ID numérico
+      const tipoDocumentoID = mapTipoDocumento('factura');
+      console.log('📄 TipoDocumento mapeado en handleFacturar:', 'factura', '→', tipoDocumentoID);
+      
       const cfdiData = {
         Receptor: {
           UID: clienteData.UID,
           ResidenciaFiscal: clienteData.ResidenciaFiscal || '',
           RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
         },
-        TipoDocumento: 'factura',
+        TipoDocumento: tipoDocumentoID, // Usar el ID mapeado
         Serie: 5483035, // Serie C, asignada automáticamente
         FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
         MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto

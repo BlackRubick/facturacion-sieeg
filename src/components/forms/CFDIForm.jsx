@@ -30,6 +30,26 @@ const WOOCOMMERCE_URL = 'https://sieeg.com.mx';
 const WOOCOMMERCE_CONSUMER_KEY = 'ck_135a712cae91341b1383f5031eff37f89a8f62a4';
 const WOOCOMMERCE_CONSUMER_SECRET = 'cs_9a3f25a9fd51c50866c4d7ad442abeb63be74c0e';
 
+// Mapeo de tipos de documento del formulario a IDs de la API
+const mapTipoDocumento = (tipoString) => {
+  const mapeos = {
+    'factura': '899497',     // F - Factura
+    'egreso': '899500',      // N - Nota de Crédito  
+    'pago': '899508',        // PA - Complemento Pago
+    'honorarios': '899498',  // R - Recibo de Honorarios
+    'nomina': '899501',      // NOM - Nómina
+    'carta_porte': '899499', // C - Carta Porte
+    'donativo': '899504',    // DO - Donativo
+    'arrendamiento': '899505', // RA - Recibo de Arrendamiento
+    'nota_debito': '899509',   // D - Nota de Débito
+    'retencion': '899507',     // RT - Retención
+    'carta_porte_ingreso': '899510' // CI - Carta Porte de Ingreso
+  };
+  
+  console.log('🔍 Mapeando TipoDocumento:', tipoString, '→', mapeos[tipoString]);
+  return mapeos[tipoString] || '899497'; // Default: Factura
+};
+
 const CFDIForm = () => {
   const [catalogs, setCatalogs] = useState({
     ClaveProductServ: [],
@@ -98,7 +118,7 @@ const CFDIForm = () => {
   } = useForm({
     defaultValues: {
       dueDate: '',
-      TipoDocumento: 'factura',
+      TipoDocumento: 'factura', // Mantener como string, se mapea en el submit
       Serie: '',
       FormaPago: '',
       MetodoPago: '',
@@ -355,11 +375,17 @@ const CFDIForm = () => {
       return;
     }
     
+    // Mapear el tipo de documento del string al ID numérico
+    const tipoDocumentoOriginal = data.TipoDocumento || 'factura';
+    const tipoDocumentoID = mapTipoDocumento(tipoDocumentoOriginal);
+    
+    console.log('📄 TipoDocumento mapeado:', tipoDocumentoOriginal, '→', tipoDocumentoID);
+
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
       },
-      TipoDocumento: data.TipoDocumento || 'factura',
+      TipoDocumento: tipoDocumentoID, // Usar el ID mapeado
       Serie: Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined),
       FormaPago: String(formaPagoFinal).trim(), // <-- Usar el valor final corregido
       MetodoPago: String(metodoPagoFinal).trim(), // <-- Usar el valor final corregido
