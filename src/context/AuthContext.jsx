@@ -11,11 +11,6 @@ export const AuthProvider = ({ children }) => {
   const sessionTimeoutRef = useRef(null);
   const SESSION_DURATION = 20 * 60 * 1000; // 20 minutos en ms
 
-  const initialUsers = [
-    { email: 'admin@mail.com', password: 'admin123', type: 'admin', name: 'Administrador' },
-    { email: 'vendedor@mail.com', password: 'vendedor123', type: 'vendedor', name: 'Vendedor' },
-  ];
-
   const API_URL = '/api';
 
   useEffect(() => {
@@ -77,15 +72,7 @@ export const AuthProvider = ({ children }) => {
         return true;
       }
     } catch (err) {
-      // Si la API falla, sigue con login local
-    }
-    // Login local (solo si no hay API o para pruebas)
-    const found = initialUsers.find(u => u.email === email && u.password === password);
-    if (found) {
-      setUser(found);
-      localStorage.setItem('user', JSON.stringify(found));
-      localStorage.setItem('expiresAt', String(Date.now() + SESSION_DURATION));
-      return true;
+      return false;
     }
     return false;
   };
@@ -115,19 +102,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Funciones locales para pruebas sin API
-  let localUsers = [...initialUsers];
-
+  // SOLO API: getUsers, deleteUser, updateUser
   const getUsers = async () => {
     try {
       const res = await fetch(`${API_URL}/users`, {
         headers: { ...getAuthHeaders() }
       });
       if (res.ok) {
-        return await res.json();
+        const data = await res.json();
+        return data.users || data;
       }
     } catch (err) {}
-    return localUsers;
+    return null;
   };
 
   const deleteUser = async (idOrEmail) => {
@@ -138,8 +124,7 @@ export const AuthProvider = ({ children }) => {
       });
       if (res.ok) return true;
     } catch (err) {}
-    localUsers = localUsers.filter(u => (u.id ? u.id !== idOrEmail : u.email !== idOrEmail));
-    return true;
+    return false;
   };
 
   const updateUser = async (idOrEmail, data) => {
@@ -151,8 +136,7 @@ export const AuthProvider = ({ children }) => {
       });
       if (res.ok) return true;
     } catch (err) {}
-    localUsers = localUsers.map(u => (u.id ? u.id === idOrEmail : u.email === idOrEmail) ? { ...u, ...data } : u);
-    return true;
+    return false;
   };
 
   return (
