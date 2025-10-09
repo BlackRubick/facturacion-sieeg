@@ -119,6 +119,16 @@ const CFDIForm = () => {
     name: 'items',
   });
 
+  // 🔥 NUEVA FUNCIONALIDAD: Recalcular impuestos automáticamente cuando cambien cantidad o precio
+  const recalcularImpuestosItem = (index, valorUnitario, cantidad, tipoImpuesto = 'con_iva') => {
+    const impuestosRecalculados = calcularImpuestos(valorUnitario, cantidad, tipoImpuesto);
+    setValue(`items.${index}.Impuestos`, impuestosRecalculados, {
+      shouldValidate: true,
+      shouldDirty: true
+    });
+    console.log(`🔄 Impuestos recalculados para item ${index} (${tipoImpuesto}):`, impuestosRecalculados);
+  };
+
   useEffect(() => {
     let mounted = true;
     const fetchCatalogs = async () => {
@@ -300,18 +310,35 @@ const CFDIForm = () => {
     console.log('🚀 MetodoPago específico:', data.MetodoPago);
     console.log('🚀 RegimenFiscal específico:', data.RegimenFiscal);
     // Mapear los campos del formulario a los nombres esperados por la API
-    const items = data.items.map(item => ({
-      ClaveProdServ: String(item.ClaveProdServ || '').trim(),
-      NoIdentificacion: String(item.NoIdentificacion || '').trim(),
-      Cantidad: item.Cantidad ? Number(item.Cantidad) : 1,
-      ClaveUnidad: String(item.ClaveUnidad || '').trim(),
-      Unidad: String(item.Unidad || 'Pieza').trim(),
-      ValorUnitario: item.ValorUnitario ? Number(item.ValorUnitario) : 0,
-      Descripcion: String(item.Descripcion || '').trim(),
-      Descuento: item.Descuento !== undefined ? String(item.Descuento) : '0',
-      ObjetoImp: String(item.ObjetoImp || '02').trim(),
-      Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
-    }));
+    const items = data.items.map((item, index) => {
+      const itemMapeado = {
+        ClaveProdServ: String(item.ClaveProdServ || '').trim(),
+        NoIdentificacion: String(item.NoIdentificacion || '').trim(),
+        Cantidad: item.Cantidad ? Number(item.Cantidad) : 1,
+        ClaveUnidad: String(item.ClaveUnidad || '').trim(),
+        Unidad: String(item.Unidad || 'Pieza').trim(),
+        ValorUnitario: item.ValorUnitario ? Number(item.ValorUnitario) : 0,
+        Descripcion: String(item.Descripcion || '').trim(),
+        Descuento: item.Descuento !== undefined ? String(item.Descuento) : '0',
+        ObjetoImp: String(item.ObjetoImp || '02').trim(),
+        Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
+      };
+      
+      // 🔥 DEBUG: Log detallado de cada item y sus impuestos
+      console.log(`📊 Item ${index + 1} - ${itemMapeado.Descripcion}:`);
+      console.log('   - Cantidad:', itemMapeado.Cantidad);
+      console.log('   - ValorUnitario:', itemMapeado.ValorUnitario);
+      console.log('   - Base calculada:', itemMapeado.Cantidad * itemMapeado.ValorUnitario);
+      console.log('   - Impuestos:', JSON.stringify(itemMapeado.Impuestos, null, 2));
+      
+      if (itemMapeado.Impuestos.Traslados && itemMapeado.Impuestos.Traslados.length > 0) {
+        itemMapeado.Impuestos.Traslados.forEach((traslado, tIdx) => {
+          console.log(`      Traslado ${tIdx + 1}:`, traslado);
+        });
+      }
+      
+      return itemMapeado;
+    });
     // Enviar UsoCFDI solo en la raíz, como indica la documentación oficial  
     let usoCFDIValue = data.UsoCFDI || '';
     
@@ -461,6 +488,60 @@ const CFDIForm = () => {
     } catch (err) {
       alert('Error: ' + (err.response?.data?.message || err.message));
     }
+  };
+
+  // 🔥 NUEVA FUNCIÓN: Calcular impuestos automáticamente
+  const calcularImpuestos = (valorUnitario, cantidad, tipoImpuesto = 'con_iva') => {
+    const base = Number(valorUnitario) * Number(cantidad);
+    const baseFormatted = base.toFixed(6);
+    
+    let impuestos = {
+      Traslados: [],
+      Retenidos: [],
+      Locales: []
+    };
+    
+    switch (tipoImpuesto) {
+      case 'con_iva':
+        // IVA 16% (impuesto 002)
+        const importeIVA = base * 0.16;
+        impuestos.Traslados.push({
+          Base: baseFormatted,
+          Impuesto: "002", // IVA
+          TipoFactor: "Tasa",
+          TasaOCuota: "0.160000",
+          Importe: importeIVA.toFixed(6)
+        });
+        break;
+        
+      case 'exento':
+        // IVA Exento
+        impuestos.Traslados.push({
+          Base: baseFormatted,
+          Impuesto: "002", // IVA
+          TipoFactor: "Exento",
+          TasaOCuota: "0.000000",
+          Importe: "0.000000"
+        });
+        break;
+        
+      case 'sin_iva':
+        // Sin impuestos (array vacío pero estructura presente)
+        break;
+        
+      default:
+        // Por defecto IVA 16%
+        const importeIVADefault = base * 0.16;
+        impuestos.Traslados.push({
+          Base: baseFormatted,
+          Impuesto: "002",
+          TipoFactor: "Tasa", 
+          TasaOCuota: "0.160000",
+          Importe: importeIVADefault.toFixed(6)
+        });
+    }
+    
+    return impuestos;
   };
 
   const handleImportPedido = async () => {
@@ -737,17 +818,24 @@ const CFDIForm = () => {
           if (descripcionFinal.length > 1000) {
             descripcionFinal = descripcionFinal.substring(0, 1000);
           }
+          // 🔥 CALCULAR IMPUESTOS AUTOMÁTICAMENTE
+          const valorUnitario = Number(prod.price || prod.total || 0);
+          const cantidad = Number(prod.quantity || 1);
+          const impuestosCalculados = calcularImpuestos(valorUnitario, cantidad, 'con_iva');
+          
+          console.log(`📊 Impuestos calculados para ${prod.name}:`, impuestosCalculados);
+          
           return {
             ClaveProdServ: claveProdServ,
             NoIdentificacion: prod.sku || '',
-            Cantidad: prod.quantity || 1,
+            Cantidad: cantidad,
             ClaveUnidad: claveUnidad,
             Unidad: unidad,
-            ValorUnitario: prod.price || prod.total || '',
+            ValorUnitario: valorUnitario,
             Descripcion: descripcionFinal,
             Descuento: '0',
-            ObjetoImp: '002',
-            Impuestos: { Traslados: [], Retenidos: [], Locales: [] },
+            ObjetoImp: '02', // Sí objeto de impuestos
+            Impuestos: impuestosCalculados, // 🔥 USAR IMPUESTOS CALCULADOS
           };
         }));
         setProductosImportados(order.line_items.map(prod => ({
@@ -1418,7 +1506,14 @@ const CFDIForm = () => {
             <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex gap-3">
               <Button 
                 type="button" 
-                onClick={() => append(defaultConcepto)} 
+                onClick={() => {
+                  // Crear concepto con impuestos IVA 16% por defecto
+                  const conceptoConImpuestos = {
+                    ...defaultConcepto,
+                    Impuestos: calcularImpuestos(0, 1, 'con_iva') // IVA por defecto
+                  };
+                  append(conceptoConImpuestos);
+                }} 
                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
               >
                 <span>➕</span> Agregar
@@ -1434,10 +1529,12 @@ const CFDIForm = () => {
             </div>
 
             {/* Header de la tabla */}
-            <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-12 gap-1 px-3 py-3 text-xs font-semibold text-gray-800 uppercase tracking-wide">
+            <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-14 gap-1 px-3 py-3 text-xs font-semibold text-gray-800 uppercase tracking-wide">
               <div className="col-span-3 px-2">Producto/Servicio</div>
               <div className="text-center px-1">Cant.</div>
               <div className="text-center px-1">Precio</div>
+              <div className="text-center px-1">IVA</div>
+              <div className="text-center px-1">Tipo</div>
               <div className="text-center px-1">Desc.</div>
               <div className="text-center px-1 col-span-2">Unidad</div>
               <div className="text-center px-1 col-span-2">Clave Unidad</div>
@@ -1447,7 +1544,7 @@ const CFDIForm = () => {
             {/* Filas de la tabla */}
             {fields.length > 0 ? (
               fields.map((item, idx) => (
-                <div key={item.id} className={`grid grid-cols-12 gap-1 px-3 py-2 border-b border-gray-100 text-xs items-center ${
+                <div key={item.id} className={`grid grid-cols-14 gap-1 px-3 py-2 border-b border-gray-100 text-xs items-center ${
                   idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                 } hover:bg-blue-50 transition-colors`}>
                   
@@ -1464,12 +1561,18 @@ const CFDIForm = () => {
                             field.onChange(e.target.value);
                             const selected = products.find(p => p.claveprodserv === e.target.value);
                             if (selected) {
+                              const valorUnitario = Number(selected.price || 0);
+                              const cantidad = Number(watch(`items.${idx}.Cantidad`) || 1);
+                              
                               setValue(`items.${idx}.ClaveProdServ`, selected.claveprodserv || '');
                               setValue(`items.${idx}.NoIdentificacion`, selected.sku || '');
                               setValue(`items.${idx}.ClaveUnidad`, selected.claveunidad || '');
                               setValue(`items.${idx}.Unidad`, selected.unidad || 'Pieza');
-                              setValue(`items.${idx}.ValorUnitario`, selected.price || 0);
+                              setValue(`items.${idx}.ValorUnitario`, valorUnitario);
                               setValue(`items.${idx}.Descripcion`, selected.name || '');
+                              
+                              // 🔥 RECALCULAR IMPUESTOS AL SELECCIONAR PRODUCTO
+                              recalcularImpuestosItem(idx, valorUnitario, cantidad);
                             }
                           }}
                           className={`w-full border rounded px-2 py-1 text-xs ${fieldState.error ? 'border-red-300' : 'border-gray-300'} focus:border-blue-400 focus:ring-1 focus:ring-blue-200`}
@@ -1494,6 +1597,12 @@ const CFDIForm = () => {
                       placeholder="1"
                       min="1"
                       step="0.01"
+                      onChange={(e) => {
+                        const cantidad = Number(e.target.value);
+                        const valorUnitario = Number(watch(`items.${idx}.ValorUnitario`) || 0);
+                        setValue(`items.${idx}.Cantidad`, cantidad);
+                        recalcularImpuestosItem(idx, valorUnitario, cantidad);
+                      }}
                     />
                   </div>
 
@@ -1506,7 +1615,54 @@ const CFDIForm = () => {
                       placeholder="0.00"
                       min="0"
                       step="0.01"
+                      onChange={(e) => {
+                        const valorUnitario = Number(e.target.value);
+                        const cantidad = Number(watch(`items.${idx}.Cantidad`) || 1);
+                        setValue(`items.${idx}.ValorUnitario`, valorUnitario);
+                        recalcularImpuestosItem(idx, valorUnitario, cantidad);
+                      }}
                     />
+                  </div>
+
+                  {/* IVA Calculado - Solo mostrar */}
+                  <div className="px-1">
+                    {(() => {
+                      const cantidad = Number(watch(`items.${idx}.Cantidad`) || 0);
+                      const valorUnitario = Number(watch(`items.${idx}.ValorUnitario`) || 0);
+                      const impuestos = watch(`items.${idx}.Impuestos`);
+                      
+                      let importeIVA = 0;
+                      if (impuestos?.Traslados?.length > 0) {
+                        const ivaTraslado = impuestos.Traslados.find(t => t.Impuesto === '002');
+                        if (ivaTraslado) {
+                          importeIVA = Number(ivaTraslado.Importe || 0);
+                        }
+                      }
+                      
+                      return (
+                        <div className="text-center text-green-600 font-medium bg-green-50 px-1 py-1 rounded text-xs">
+                          ${importeIVA.toFixed(2)}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Tipo de Impuesto */}
+                  <div className="px-1">
+                    <select
+                      className="w-full border border-gray-300 rounded px-1 py-1 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                      onChange={(e) => {
+                        const tipoImpuesto = e.target.value;
+                        const valorUnitario = Number(watch(`items.${idx}.ValorUnitario`) || 0);
+                        const cantidad = Number(watch(`items.${idx}.Cantidad`) || 1);
+                        recalcularImpuestosItem(idx, valorUnitario, cantidad, tipoImpuesto);
+                      }}
+                      defaultValue="con_iva"
+                    >
+                      <option value="con_iva">16%</option>
+                      <option value="exento">Exento</option>
+                      <option value="sin_iva">Sin IVA</option>
+                    </select>
                   </div>
 
                   {/* Descuento */}
