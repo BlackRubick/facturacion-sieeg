@@ -13,6 +13,9 @@ export const AuthProvider = ({ children }) => {
 
   const API_URL = '/api';
 
+  // Devuelve el header Authorization si hay token
+  const getAuthHeaders = () => token ? { Authorization: `Bearer ${token}` } : {};
+
   useEffect(() => {
     // Verifica si hay usuario y token en localStorage al iniciar
     const storedUser = localStorage.getItem('user');
