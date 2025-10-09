@@ -15,7 +15,7 @@ const defaultConcepto = {
   ValorUnitario: '',
   Descripcion: '',
   Descuento: '0',
-  ObjetoImp: '02',
+  ObjetoImp: '002',
   Impuestos: {
     Traslados: [],
     Retenidos: [],
@@ -562,7 +562,7 @@ const CFDIGlobalForm = () => {
           RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
         },
         TipoDocumento: 'factura',
-        Serie: 5483035, // Serie C, asignada automáticamente
+        Serie: 899497, // Serie C, asignada automáticamente
         FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
         MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
         Moneda: 'MXN',
@@ -1289,7 +1289,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
           RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
         },
         TipoDocumento: 'factura',
-        Serie: 5483035, // Serie C, asignada automáticamente
+        Serie: 899497, // Serie C, asignada automáticamente
         FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
         MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
         Moneda: 'MXN',
