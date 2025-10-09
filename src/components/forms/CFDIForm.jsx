@@ -179,11 +179,17 @@ const CFDIForm = () => {
 
   // Refuerzo: sincronizar valores iniciales y cambios para Serie, Moneda y UsoCFDI
   useEffect(() => {
-    // Serie - CORREGIDO: usar ID en lugar de SerieName
+    // Serie - CORREGIDO: usar ID en lugar de SerieName y registrar con Controller
     if (series.length > 0 && !watch('Serie')) {
-      const serieID = series[0].id || series[0].ID || series[0].SerieID || '';
-      setValue('Serie', String(serieID));
-      console.log('🔧 Serie inicial auto-configurada:', serieID, 'para serie:', series[0]);
+      // Buscar la serie de tipo 'factura' por defecto
+      const serieFactura = series.find(s => s.SerieType === 'factura') || series[0];
+      const serieID = serieFactura.id || serieFactura.ID || serieFactura.SerieID || '';
+      setValue('Serie', String(serieID), { 
+        shouldValidate: true, 
+        shouldDirty: true, 
+        shouldTouch: true 
+      });
+      console.log('🔧 Serie inicial auto-configurada:', serieID, 'para serie:', serieFactura);
     }
     // Moneda
     if (catalogs.Moneda.length > 0 && !watch('Moneda')) {
@@ -238,6 +244,13 @@ const CFDIForm = () => {
   }, [selectedClientData, loadingCatalogs, catalogs.UsoCFDI, catalogs.RegimenFiscal]);
 
   const onSubmit = async (dataRaw) => {
+    // 🔍 DEBUG INICIAL: Verificar todos los valores del formulario
+    console.log('🔥 === INICIO onSubmit DEBUG ===');
+    console.log('📋 dataRaw completo:', JSON.stringify(dataRaw, null, 2));
+    console.log('📋 dataRaw.Serie específicamente:', dataRaw.Serie);
+    console.log('📋 watch("Serie") para comparar:', watch('Serie'));
+    console.log('📋 Tipo de dataRaw.Serie:', typeof dataRaw.Serie);
+    
     // Calcular la fecha real según la opción seleccionada
     let fechaCFDI = '';
     const hoy = new Date();
@@ -1068,18 +1081,32 @@ const CFDIForm = () => {
             </Button>
           </div>
           <div>
-            <Select
-              label="Selecciona una serie"
-              options={series.map(s => ({
-                value: String(s.id || s.ID || s.SerieID || ''),
-                label: `${s.SerieName} - ${s.SerieDescription || ''}`,
-              }))}
-              value={String(watch('Serie') || '')}
-              onChange={value => setValue('Serie', String(value || ''))}
-              placeholder="Buscar serie..."
-              isLoading={false}
-              error={!watch('Serie')}
-              helperText={!watch('Serie') ? 'Debes seleccionar una serie.' : ''}
+            <Controller
+              name="Serie"
+              control={control}
+              rules={{ required: 'Debes seleccionar una serie.' }}
+              render={({ field, fieldState }) => {
+                const safeValue = field.value == null ? '' : String(field.value);
+                console.log('[Controller:Serie] value:', safeValue, 'options:', series.length, 'series');
+                return (
+                  <Select
+                    label="Selecciona una serie"
+                    options={series.map(s => ({
+                      value: String(s.id || s.ID || s.SerieID || ''),
+                      label: `${s.SerieName} - ${s.SerieDescription || ''}`,
+                    }))}
+                    value={safeValue}
+                    onChange={(value) => {
+                      console.log('[Controller:Serie] onChange value:', value);
+                      field.onChange(value);
+                    }}
+                    placeholder="Buscar serie..."
+                    isLoading={false}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                );
+              }}
             />
           </div>
         </div>
