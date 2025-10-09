@@ -531,6 +531,10 @@ const CFDIGlobalForm = () => {
   const handleFacturarStep3 = async () => {
     console.log('🎯 Iniciando proceso de facturación desde paso 3...');
     
+    // 🔍 DEBUG: Verificar estado inicial de Serie en handleFacturarStep3
+    console.log('🔍 ESTADO INICIAL EN handleFacturarStep3:');
+    console.log('   - watch("Serie") al inicio:', watch('Serie'));
+    
     try {
       // Validar que tengamos los datos necesarios
       if (!clienteData?.UID) {
@@ -549,6 +553,25 @@ const CFDIGlobalForm = () => {
 
       const usoCFDI = watch('UsoCFDI') || clienteData.UsoCFDI || 'G03';
       const serieSeleccionada = watch('Serie'); // ✅ Obtener serie del formulario
+      
+      // 🔍 DEBUG: Verificar todos los valores del formulario
+      console.log('🔍 DEBUGGING VALORES DEL FORMULARIO:');
+      console.log('   - watch("Serie"):', watch('Serie'));
+      console.log('   - Tipo de watch("Serie"):', typeof watch('Serie'));
+      console.log('   - JSON.stringify watch("Serie"):', JSON.stringify(watch('Serie')));
+      console.log('   - serieSeleccionada:', serieSeleccionada);
+      console.log('   - Tipo de serieSeleccionada:', typeof serieSeleccionada);
+      
+      // Verificar todos los valores del formulario
+      const allFormValues = watch();
+      console.log('   - Todos los valores del formulario:', allFormValues);
+      console.log('   - allFormValues.Serie:', allFormValues.Serie);
+      
+      // 🚨 POSIBLE PROBLEMA: verificar si hay valores adicionales que puedan sobrescribir Serie
+      console.log('🚨 VERIFICANDO POSIBLES CONFLICTOS:');
+      console.log('   - clienteData:', clienteData);
+      console.log('   - ¿clienteData tiene Serie?:', clienteData.Serie);
+      console.log('   - ¿fields tiene Serie en algún lado?:', fields.find(f => f.Serie));
       
       if (!serieSeleccionada) {
         console.error('❌ No se ha seleccionado una serie');
