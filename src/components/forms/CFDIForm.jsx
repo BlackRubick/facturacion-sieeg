@@ -252,6 +252,14 @@ const CFDIForm = () => {
     console.log('📋 watch("Serie") para comparar:', watch('Serie'));
     console.log('📋 Tipo de dataRaw.Serie:', typeof dataRaw.Serie);
     
+    // 🔍 DEBUG ESPECÍFICO: NumeroPedido
+    console.log('🔥 === DEBUG NÚMERO DE PEDIDO ===');
+    console.log('📋 dataRaw.NumeroPedido:', dataRaw.NumeroPedido);
+    console.log('📋 watch("NumeroPedido"):', watch('NumeroPedido'));
+    console.log('📋 Tipo de dataRaw.NumeroPedido:', typeof dataRaw.NumeroPedido);
+    console.log('📋 NumeroPedido está vacío?:', !dataRaw.NumeroPedido);
+    console.log('📋 NumeroPedido length:', String(dataRaw.NumeroPedido || '').length);
+    
     // Calcular la fecha real según la opción seleccionada
     let fechaCFDI = '';
     const hoy = new Date();
@@ -420,6 +428,15 @@ const CFDIForm = () => {
     console.log('📤 Serie que se envía:', cfdiData.Serie);
     console.log('📤 Serie seleccionada completa:', serieSeleccionada);
     console.log('📤 NumOrder (Número de Pedido) que se envía:', cfdiData.NumOrder);
+    
+    // 🔥 DEBUG ADICIONAL: Verificar construcción del NumOrder
+    console.log('🔍 === DEBUG CONSTRUCCIÓN NUMORDER ===');
+    console.log('📋 data.NumeroPedido antes de procesar:', data.NumeroPedido);
+    console.log('📋 String(data.NumeroPedido || ""):', String(data.NumeroPedido || ''));
+    console.log('📋 String(data.NumeroPedido || "").trim():', String(data.NumeroPedido || '').trim());
+    console.log('📋 cfdiData.NumOrder final:', cfdiData.NumOrder);
+    console.log('📋 cfdiData.NumOrder length:', cfdiData.NumOrder.length);
+    console.log('📋 cfdiData.NumOrder está vacío?:', !cfdiData.NumOrder || cfdiData.NumOrder.trim() === '');
     
     // Validación final antes del envío
     if (!cfdiData.UsoCFDI || cfdiData.UsoCFDI.trim() === '') {
@@ -746,6 +763,12 @@ const CFDIForm = () => {
           shouldTouch: true 
         });
         console.log('✅ Número de pedido guardado:', pedidoInput);
+        
+        // 🔍 Verificación inmediata
+        setTimeout(() => {
+          const valorVerificado = watch('NumeroPedido');
+          console.log('🔍 Verificación NumeroPedido después de setValue:', valorVerificado);
+        }, 100);
         
         // Notificar al usuario sobre el auto-rellenado del método de pago
         if (pagoMapeado.FormaPago !== '99') {
@@ -1317,15 +1340,25 @@ const CFDIForm = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Número de Pedido</label>
-            <input
-              type="text"
-              {...register('NumeroPedido')}
-              placeholder="Ej: 12345 (opcional)"
-              value={watch('NumeroPedido') || ''}
-              onChange={e => setValue('NumeroPedido', e.target.value)}
-              className="w-full border rounded-lg p-2"
+            <Controller
+              name="NumeroPedido"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <input
+                  type="text"
+                  placeholder="Ej: 12345 (opcional)"
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  className="w-full border rounded-lg p-2"
+                />
+              )}
             />
             <span className="text-xs text-gray-500">Se auto-rellena al importar un pedido. Aparecerá en el PDF.</span>
+            {/* DEBUG: Mostrar valor actual */}
+            <div className="text-xs text-blue-500 mt-1">
+              Debug - Valor actual: "{watch('NumeroPedido') || 'vacío'}"
+            </div>
           </div>
         </div>
         {isGlobal && (

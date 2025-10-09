@@ -15,7 +15,26 @@ export const invoiceSchema = z.object({
     Impuestos: z.any().optional(),
   })).min(1, 'Al menos un item requerido'),
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida'),
-  // ... más validaciones
+  TipoDocumento: z.string().optional(),
+  Serie: z.string().optional(),
+  FormaPago: z.string().optional(),
+  MetodoPago: z.string().optional(),
+  Moneda: z.string().optional(),
+  UsoCFDI: z.string().optional(),
+  Pais: z.string().optional(),
+  RegimenFiscal: z.string().optional(),
+  BorradorSiFalla: z.string().optional(),
+  Draft: z.string().optional(),
+  NumeroPedido: z.string().optional(), // 🔥 NUEVO: Campo para número de pedido
+  // Campos para factura global
+  RFC: z.string().optional(),
+  RazonSocial: z.string().optional(),
+  Correo: z.string().optional(),
+  Pedido: z.string().optional(),
+  CodigoPostal: z.string().optional(),
+  Periodicidad: z.string().optional(),
+  Meses: z.string().optional(),
+  Año: z.string().optional(),
 });
 
 export const customerSchema = z.object({
