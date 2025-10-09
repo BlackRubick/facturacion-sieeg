@@ -128,6 +128,60 @@ const mapearMetodoPago = (wooPaymentMethod) => {
   return { FormaPago: '99', MetodoPago: 'PUE' }; // Por defecto: Otros
 };
 
+// 🔥 NUEVA FUNCIÓN: Calcular impuestos automáticamente (igual que en CFDIForm)
+const calcularImpuestos = (valorUnitario, cantidad, tipoImpuesto = 'con_iva') => {
+  const base = Number(valorUnitario) * Number(cantidad);
+  const baseFormatted = base.toFixed(6);
+  
+  let impuestos = {
+    Traslados: [],
+    Retenidos: [],
+    Locales: []
+  };
+  
+  switch (tipoImpuesto) {
+    case 'con_iva':
+      // IVA 16% (impuesto 002)
+      const importeIVA = base * 0.16;
+      impuestos.Traslados.push({
+        Base: baseFormatted,
+        Impuesto: "002", // IVA
+        TipoFactor: "Tasa",
+        TasaOCuota: "0.160000",
+        Importe: importeIVA.toFixed(6)
+      });
+      break;
+      
+    case 'exento':
+      // IVA Exento
+      impuestos.Traslados.push({
+        Base: baseFormatted,
+        Impuesto: "002", // IVA
+        TipoFactor: "Exento",
+        TasaOCuota: "0.000000",
+        Importe: "0.000000"
+      });
+      break;
+      
+    case 'sin_iva':
+      // Sin impuestos (array vacío pero estructura presente)
+      break;
+      
+    default:
+      // Por defecto IVA 16%
+      const importeIVADefault = base * 0.16;
+      impuestos.Traslados.push({
+        Base: baseFormatted,
+        Impuesto: "002",
+        TipoFactor: "Tasa", 
+        TasaOCuota: "0.160000",
+        Importe: importeIVADefault.toFixed(6)
+      });
+  }
+  
+  return impuestos;
+};
+
 const CFDIGlobalForm = () => {
   const [showDraft, setShowDraft] = useState(false);
   const [draftData, setDraftData] = useState(null);
@@ -173,6 +227,7 @@ const CFDIGlobalForm = () => {
       MetodoPago: '',
       Moneda: 'MXN',
       UsoCFDI: '',
+      NumeroPedido: '', // 🔥 NUEVO: Campo para número de pedido
       InformacionGlobal: {
         Periodicidad: '',
         Meses: '',
@@ -230,6 +285,10 @@ const CFDIGlobalForm = () => {
   }, [catalogs.UsoCFDI, setValue, watch]);
 
   const onSubmit = async (data) => {
+    console.log('🔥 === DEBUG NÚMERO DE PEDIDO - CFDIGlobalForm ===');
+    console.log('📋 data.NumeroPedido:', data.NumeroPedido);
+    console.log('📋 watch("NumeroPedido"):', watch('NumeroPedido'));
+    
     const cfdiData = {
       Receptor: {
         UID: data.customerId,
@@ -242,7 +301,10 @@ const CFDIGlobalForm = () => {
       UsoCFDI: data.UsoCFDI,
       Conceptos: data.items,
       InformacionGlobal: data.InformacionGlobal,
+      NumOrder: String(data.NumeroPedido || '').trim(), // 🔥 NUEVO: Número de pedido para el PDF
     };
+    
+    console.log('📤 NumOrder que se envía:', cfdiData.NumOrder);
     try {
       const response = await FacturaAPIService.createCFDI40(cfdiData);
       alert('CFDI Global creado: ' + JSON.stringify(response.data));
@@ -265,6 +327,7 @@ const CFDIGlobalForm = () => {
       UsoCFDI: formData.UsoCFDI,
       Conceptos: formData.items,
       InformacionGlobal: formData.InformacionGlobal,
+      NumOrder: String(formData.NumeroPedido || '').trim(), // 🔥 NUEVO: Número de pedido para el PDF
       BorradorSiFalla: '1',
       Draft: '1',
     };
@@ -375,21 +438,42 @@ const CFDIGlobalForm = () => {
           if (descripcionFinal.length > 1000) {
             descripcionFinal = descripcionFinal.substring(0, 1000);
           }
+          // 🔥 CALCULAR IMPUESTOS AUTOMÁTICAMENTE
+          const valorUnitario = Number(prod.price || prod.total || 0);
+          const cantidad = Number(prod.quantity || 1);
+          const impuestosCalculados = calcularImpuestos(valorUnitario, cantidad, 'con_iva');
+          
+          console.log(`📊 Impuestos calculados para ${prod.name} en CFDIGlobalForm:`, impuestosCalculados);
+          
           return {
             ClaveProdServ: claveProdServ,
             NoIdentificacion: prod.sku || '',
-            Cantidad: prod.quantity || 1,
+            Cantidad: cantidad,
             ClaveUnidad: claveUnidad,
             Unidad: unidad,
-            ValorUnitario: prod.price || prod.total || '',
+            ValorUnitario: valorUnitario,
             Descripcion: descripcionFinal,
             Descuento: '0',
-            ObjetoImp: '02',
-            Impuestos: { Traslados: [], Retenidos: [], Locales: [] },
+            ObjetoImp: '02', // Sí objeto de impuestos
+            Impuestos: impuestosCalculados, // 🔥 USAR IMPUESTOS CALCULADOS
           };
         }));
         setProductosImportados(order.line_items);
         setValue('items', conceptos);
+        
+        // 🔥 NUEVO: Guardar el número de pedido automáticamente
+        setValue('NumeroPedido', String(pedidoInput), { 
+          shouldValidate: true, 
+          shouldDirty: true, 
+          shouldTouch: true 
+        });
+        console.log('✅ Número de pedido guardado en CFDIGlobalForm:', pedidoInput);
+        
+        // 🔍 Verificación inmediata
+        setTimeout(() => {
+          const valorVerificado = watch('NumeroPedido');
+          console.log('🔍 Verificación NumeroPedido en CFDIGlobalForm:', valorVerificado);
+        }, 100);
         
         // Ocultar sección de pedido y mostrar sección de correo
         setTimeout(() => {
@@ -527,7 +611,7 @@ const CFDIGlobalForm = () => {
 
   // Función para facturar desde el paso 3
   const handleFacturarStep3 = async () => {
-    console.log('🎯 Iniciando proceso de facturación desde paso 3...');
+    console.log('🎯 Iniciando proceso de facturación desde paso 3 de CFDIGlobalForm...');
     
     try {
       // Validar que tengamos los datos necesarios
@@ -546,13 +630,19 @@ const CFDIGlobalForm = () => {
       }
 
       const usoCFDI = watch('UsoCFDI') || clienteData.UsoCFDI || 'G03';
-      console.log('📋 Datos para facturar:', {
+      console.log('📋 [handleFacturarStep3] Datos para facturar en CFDIGlobalForm:', {
         clienteUID: clienteData.UID,
         usoCFDI: usoCFDI,
         numConceptos: fields.length,
         formaPago: clienteData.FormaPago || '03',
-        metodoPago: clienteData.MetodoPago || 'PUE'
+        metodoPago: clienteData.MetodoPago || 'PUE',
+        numeroPedido: watch('NumeroPedido')
       });
+
+      // 🔥 DEBUG ADICIONAL: Verificar que el NumeroPedido esté llegando
+      console.log('🔍 [handleFacturarStep3] DEBUG NumeroPedido:');
+      console.log('   - watch("NumeroPedido"):', watch('NumeroPedido'));
+      console.log('   - String(watch("NumeroPedido") || "").trim():', String(watch('NumeroPedido') || '').trim());
 
       // Construir el objeto CFDI con los datos del cliente y productos importados
       const cfdiData = {
@@ -567,6 +657,7 @@ const CFDIGlobalForm = () => {
         MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
         Moneda: 'MXN',
         UsoCFDI: usoCFDI,
+        NumOrder: String(watch('NumeroPedido') || '').trim(), // 🔥 NUEVO: Número de pedido para el PDF
         Conceptos: fields.map(item => ({
           ClaveProdServ: item.ClaveProdServ,
           NoIdentificacion: item.NoIdentificacion,
@@ -1254,7 +1345,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
   };
 
   const handleFacturar = async () => {
-    console.log('🎯 Iniciando proceso de facturación automática...');
+    console.log('🎯 Iniciando proceso de facturación automática en PreviewCliente...');
     
     try {
       // Validar que tengamos los datos necesarios
@@ -1273,12 +1364,13 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
       }
 
       const usoCFDI = watch('UsoCFDI') || clienteData.UsoCFDI || 'G03';
-      console.log('📋 Datos para facturar:', {
+      console.log('📋 Datos para facturar en PreviewCliente:', {
         clienteUID: clienteData.UID,
         usoCFDI: usoCFDI,
         numConceptos: fields.length,
         formaPago: clienteData.FormaPago || '03',
-        metodoPago: clienteData.MetodoPago || 'PUE'
+        metodoPago: clienteData.MetodoPago || 'PUE',
+        numeroPedido: watch('NumeroPedido')
       });
 
       // Construir el objeto CFDI con los datos del cliente y productos importados
@@ -1294,6 +1386,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
         MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
         Moneda: 'MXN',
         UsoCFDI: usoCFDI,
+        NumOrder: String(watch('NumeroPedido') || '').trim(), // 🔥 NUEVO: Número de pedido para el PDF
         Conceptos: fields.map(item => ({
           ClaveProdServ: item.ClaveProdServ,
           NoIdentificacion: item.NoIdentificacion,
