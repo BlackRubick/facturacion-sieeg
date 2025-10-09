@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 
 const AuthContext = createContext();
 
@@ -8,6 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
+  const sessionTimeoutRef = useRef(null);
+  const SESSION_DURATION = 20 * 60 * 1000; // 20 minutos en ms
 
   const initialUsers = [
     { email: 'admin@mail.com', password: 'admin123', type: 'admin', name: 'Administrador' },
@@ -20,12 +22,42 @@ export const AuthProvider = ({ children }) => {
     // Verifica si hay usuario y token en localStorage al iniciar
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
-    if (storedUser) setUser(JSON.parse(storedUser));
-    if (storedToken) setToken(storedToken);
+    const expiresAt = localStorage.getItem('expiresAt');
+    if (storedUser && storedToken && expiresAt) {
+      if (Date.now() < Number(expiresAt)) {
+        setUser(JSON.parse(storedUser));
+        setToken(storedToken);
+      } else {
+        handleAutoLogout();
+      }
+    }
     setLoading(false);
   }, []);
 
-  const getAuthHeaders = () => token ? { 'Authorization': `Bearer ${token}` } : {};
+  // Revisa expiración cada minuto
+  useEffect(() => {
+    if (user) {
+      sessionTimeoutRef.current = setInterval(() => {
+        const expiresAt = localStorage.getItem('expiresAt');
+        if (expiresAt && Date.now() > Number(expiresAt)) {
+          handleAutoLogout();
+        }
+      }, 60000); // cada minuto
+    } else {
+      clearInterval(sessionTimeoutRef.current);
+    }
+    return () => clearInterval(sessionTimeoutRef.current);
+  }, [user]);
+
+  const handleAutoLogout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('expiresAt');
+    // Puedes mostrar un mensaje si quieres
+    window.location.href = '/login';
+  };
 
   // Login usando API
   const login = async (email, password) => {
@@ -41,6 +73,7 @@ export const AuthProvider = ({ children }) => {
         setToken(data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('token', data.token);
+        localStorage.setItem('expiresAt', String(Date.now() + SESSION_DURATION));
         return true;
       }
     } catch (err) {
@@ -51,6 +84,7 @@ export const AuthProvider = ({ children }) => {
     if (found) {
       setUser(found);
       localStorage.setItem('user', JSON.stringify(found));
+      localStorage.setItem('expiresAt', String(Date.now() + SESSION_DURATION));
       return true;
     }
     return false;
@@ -62,6 +96,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('expiresAt');
     // Si tu API requiere logout, descomenta:
     // await fetch(`${API_URL}/logout`, { method: 'POST', headers: { ...getAuthHeaders() } });
   };
