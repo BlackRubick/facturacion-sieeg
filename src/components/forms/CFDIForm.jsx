@@ -179,9 +179,11 @@ const CFDIForm = () => {
 
   // Refuerzo: sincronizar valores iniciales y cambios para Serie, Moneda y UsoCFDI
   useEffect(() => {
-    // Serie
+    // Serie - CORREGIDO: usar ID en lugar de SerieName
     if (series.length > 0 && !watch('Serie')) {
-      setValue('Serie', series[0].SerieName || '');
+      const serieID = series[0].id || series[0].ID || series[0].SerieID || '';
+      setValue('Serie', String(serieID));
+      console.log('🔧 Serie inicial auto-configurada:', serieID, 'para serie:', series[0]);
     }
     // Moneda
     if (catalogs.Moneda.length > 0 && !watch('Moneda')) {
@@ -355,12 +357,35 @@ const CFDIForm = () => {
       return;
     }
     
+    // 🔍 DEBUG: Analizar valor de Serie seleccionada
+    console.log('🔍 DEBUG Serie - data.Serie del formulario:', data.Serie);
+    console.log('🔍 DEBUG Serie - series array:', series);
+    console.log('🔍 DEBUG Serie - watch("Serie"):', watch('Serie'));
+    
+    // Encontrar la serie seleccionada por ID
+    let serieSeleccionada = null;
+    if (data.Serie) {
+      serieSeleccionada = series.find(s => 
+        String(s.id || s.ID || s.SerieID) === String(data.Serie)
+      );
+      console.log('🔍 DEBUG Serie - serieSeleccionada encontrada:', serieSeleccionada);
+    }
+    
+    // Si no se encuentra, usar la primera como fallback
+    if (!serieSeleccionada && series.length > 0) {
+      serieSeleccionada = series[0];
+      console.log('⚠️ FALLBACK: Usando primera serie disponible:', serieSeleccionada);
+    }
+    
+    const serieID = serieSeleccionada ? (serieSeleccionada.id || serieSeleccionada.ID || serieSeleccionada.SerieID) : undefined;
+    console.log('📤 Serie ID que se enviará a la API:', serieID);
+    
     const cfdiData = {
       Receptor: {
         UID: String(data.customerId || '').trim(),
       },
       TipoDocumento: data.TipoDocumento || 'factura',
-      Serie: Number(data.Serie) || (series[0]?.id || series[0]?.ID || series[0]?.SerieID || undefined),
+      Serie: Number(serieID),
       FormaPago: String(formaPagoFinal).trim(), // <-- Usar el valor final corregido
       MetodoPago: String(metodoPagoFinal).trim(), // <-- Usar el valor final corregido
       Moneda: data.Moneda || 'MXN',
@@ -373,6 +398,8 @@ const CFDIForm = () => {
     
     console.log('📤 Objeto final enviado a la API:', cfdiData);
     console.log('📤 UsoCFDI que se envía:', cfdiData.UsoCFDI);
+    console.log('📤 Serie que se envía:', cfdiData.Serie);
+    console.log('📤 Serie seleccionada completa:', serieSeleccionada);
     
     // Validación final antes del envío
     if (!cfdiData.UsoCFDI || cfdiData.UsoCFDI.trim() === '') {

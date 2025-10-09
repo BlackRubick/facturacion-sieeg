@@ -17,7 +17,7 @@ const defaultConcepto = {
   Descuento: '0',
   ObjetoImp: '02',
   Impuestos: {
-    Traslados: [],
+    Traslados: [],z
     Retenidos: [],
     Locales: [],
   },
@@ -129,7 +129,6 @@ const mapearMetodoPago = (wooPaymentMethod) => {
 };
 
 const CFDIGlobalForm = () => {
-  console.log('🚀 CFDIGlobalForm componente cargado');
   const [showDraft, setShowDraft] = useState(false);
   const [draftData, setDraftData] = useState(null);
   const [catalogs, setCatalogs] = useState({});
@@ -191,7 +190,7 @@ const CFDIGlobalForm = () => {
     const fetchCatalogs = async () => {
       setLoadingCatalogs(true);
       try {
-        const [prod, unidad, forma, metodo, moneda, uso, pais, regimen, relacion, impuesto, series] = await Promise.all([
+        const [prod, unidad, forma, metodo, moneda, uso, pais, regimen, relacion, impuesto] = await Promise.all([
           FacturaAPIService.getCatalog('ClaveProductServ'),
           FacturaAPIService.getCatalog('ClaveUnidad'),
           FacturaAPIService.getCatalog('FormaPago'),
@@ -202,14 +201,7 @@ const CFDIGlobalForm = () => {
           FacturaAPIService.getCatalog('RegimenFiscal'),
           FacturaAPIService.getCatalog('Relacion'),
           FacturaAPIService.getCatalog('Impuesto'),
-          FacturaAPIService.getSeries(), // ✅ Agregar catálogo de series
         ]);
-        const seriesData = series.data.data || [];
-        console.log('📊 CATÁLOGOS CARGADOS:');
-        console.log('   - Series cargadas:', seriesData);
-        console.log('   - Número de series:', seriesData.length);
-        console.log('   - Primera serie:', seriesData[0]);
-        
         setCatalogs({
           ClaveProductServ: prod.data.data || [],
           ClaveUnidad: unidad.data.data || [],
@@ -221,7 +213,6 @@ const CFDIGlobalForm = () => {
           RegimenFiscal: regimen.data.data || [],
           Relacion: relacion.data.data || [],
           Impuesto: impuesto.data.data || [],
-          Series: seriesData, // ✅ Agregar series al estado
         });
       } catch (err) {
         // Puedes mostrar error si lo deseas
@@ -538,10 +529,6 @@ const CFDIGlobalForm = () => {
   const handleFacturarStep3 = async () => {
     console.log('🎯 Iniciando proceso de facturación desde paso 3...');
     
-    // 🔍 DEBUG: Verificar estado inicial de Serie en handleFacturarStep3
-    console.log('🔍 ESTADO INICIAL EN handleFacturarStep3:');
-    console.log('   - watch("Serie") al inicio:', watch('Serie'));
-    
     try {
       // Validar que tengamos los datos necesarios
       if (!clienteData?.UID) {
@@ -559,38 +546,9 @@ const CFDIGlobalForm = () => {
       }
 
       const usoCFDI = watch('UsoCFDI') || clienteData.UsoCFDI || 'G03';
-      const serieSeleccionada = watch('Serie'); // ✅ Obtener serie del formulario
-      
-      // 🔍 DEBUG: Verificar todos los valores del formulario
-      console.log('🔍 DEBUGGING VALORES DEL FORMULARIO:');
-      console.log('   - watch("Serie"):', watch('Serie'));
-      console.log('   - Tipo de watch("Serie"):', typeof watch('Serie'));
-      console.log('   - JSON.stringify watch("Serie"):', JSON.stringify(watch('Serie')));
-      console.log('   - serieSeleccionada:', serieSeleccionada);
-      console.log('   - Tipo de serieSeleccionada:', typeof serieSeleccionada);
-      
-      // Verificar todos los valores del formulario
-      const allFormValues = watch();
-      console.log('   - Todos los valores del formulario:', allFormValues);
-      console.log('   - allFormValues.Serie:', allFormValues.Serie);
-      
-      // 🚨 POSIBLE PROBLEMA: verificar si hay valores adicionales que puedan sobrescribir Serie
-      console.log('🚨 VERIFICANDO POSIBLES CONFLICTOS:');
-      console.log('   - clienteData:', clienteData);
-      console.log('   - ¿clienteData tiene Serie?:', clienteData.Serie);
-      console.log('   - ¿fields tiene Serie en algún lado?:', fields.find(f => f.Serie));
-      
-      if (!serieSeleccionada) {
-        console.error('❌ No se ha seleccionado una serie');
-        setCfdiMessage('Error: Debes seleccionar una serie');
-        alert('Error: Debes seleccionar una serie');
-        return;
-      }
-      
       console.log('📋 Datos para facturar:', {
         clienteUID: clienteData.UID,
         usoCFDI: usoCFDI,
-        serie: serieSeleccionada, // ✅ Log de la serie seleccionada
         numConceptos: fields.length,
         formaPago: clienteData.FormaPago || '03',
         metodoPago: clienteData.MetodoPago || 'PUE'
@@ -604,7 +562,7 @@ const CFDIGlobalForm = () => {
           RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
         },
         TipoDocumento: 'factura',
-        Serie: serieSeleccionada, // ✅ USAR LA SERIE SELECCIONADA
+        Serie: 5483035, // Serie C, asignada automáticamente
         FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
         MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
         Moneda: 'MXN',
@@ -1042,47 +1000,6 @@ const CFDIGlobalForm = () => {
                 </div>
               ) : (
                 <>
-                  {/* ✅ SELECCIÓN DE SERIE */}
-                  <div className="p-6 bg-blue-50 rounded-lg border border-blue-300">
-                    <h3 className="text-lg font-semibold text-blue-700 mb-3">Selecciona la serie</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Selecciona el tipo de serie para tu CFDI:
-                    </p>
-                    <Controller
-                      name="Serie"
-                      control={control}
-                      rules={{ required: 'Debes seleccionar una serie.' }}
-                      render={({ field, fieldState }) => {
-                        const safeValue = field.value == null ? '' : String(field.value);
-                        console.log('[Controller:Serie] value:', safeValue, 'options:', catalogs.Series);
-                        return (
-                          <Select
-                            label="Selecciona serie*"
-                            options={Array.isArray(catalogs.Series) ? catalogs.Series.map((opt, idx) => ({
-                              value: String(opt.value || opt.key || opt.id),
-                              label: `${opt.label || opt.name || opt.descripcion || opt.value}`,
-                            })) : []}
-                            value={safeValue}
-                            onChange={val => {
-                              const v = val == null ? '' : String(val);
-                              console.log('🔥 SERIE SELECCIONADA EN ONCHANGE:');
-                              console.log('   - Valor recibido (val):', val);
-                              console.log('   - Valor convertido (v):', v);
-                              console.log('   - Tipo de v:', typeof v);
-                              field.onChange(v);
-                              setValue('Serie', v, { shouldValidate: true, shouldDirty: true });
-                              console.log('[Select:Serie] onChange value:', v);
-                            }}
-                            placeholder="Selecciona una serie"
-                            isLoading={loadingCatalogs}
-                            error={!!fieldState.error}
-                            helperText={fieldState.error?.message}
-                          />
-                        );
-                      }}
-                    />
-                  </div>
-
                   {/* Selección de Uso CFDI - solo si NO hay CFDI emitido */}
                   <div className="p-6 bg-yellow-50 rounded-lg border border-yellow-300">
                     <h3 className="text-lg font-semibold text-yellow-700 mb-3">Selecciona el uso de CFDI</h3>
@@ -1132,12 +1049,9 @@ const CFDIGlobalForm = () => {
                       className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg text-xl" 
                       onClick={() => {
                         console.log('🖱️ Click en botón Facturar automáticamente');
-                        console.log('🔥 VERIFICAR SERIE ANTES DE LLAMAR handleFacturarStep3:');
-                        console.log('   - watch("Serie"):', watch('Serie'));
-                        console.log('   - watch("UsoCFDI"):', watch('UsoCFDI'));
                         handleFacturarStep3();
                       }}
-                      disabled={!watch('UsoCFDI') || !watch('Serie')} // ✅ Validar ambos campos
+                      disabled={!watch('UsoCFDI')}
                     >
                       Facturar
                     </Button>
@@ -1359,19 +1273,9 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
       }
 
       const usoCFDI = watch('UsoCFDI') || clienteData.UsoCFDI || 'G03';
-      const serieSeleccionada = watch('Serie'); // ✅ Obtener serie del formulario
-      
-      if (!serieSeleccionada) {
-        console.error('❌ No se ha seleccionado una serie - PreviewCliente');
-        setCfdiMessage('Error: Debes seleccionar una serie');
-        alert('Error: Debes seleccionar una serie');
-        return;
-      }
-      
       console.log('📋 Datos para facturar:', {
         clienteUID: clienteData.UID,
         usoCFDI: usoCFDI,
-        serie: serieSeleccionada, // ✅ Log de la serie seleccionada
         numConceptos: fields.length,
         formaPago: clienteData.FormaPago || '03',
         metodoPago: clienteData.MetodoPago || 'PUE'
@@ -1385,7 +1289,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
           RegimenFiscalR: clienteData.RegimenId || clienteData.RegimenFiscal || '',
         },
         TipoDocumento: 'factura',
-        Serie: serieSeleccionada, // ✅ USAR LA SERIE SELECCIONADA
+        Serie: 5483035, // Serie C, asignada automáticamente
         FormaPago: clienteData.FormaPago || '03', // Obtenida automáticamente del pedido o valor por defecto
         MetodoPago: clienteData.MetodoPago || 'PUE', // Obtenido automáticamente del pedido o valor por defecto
         Moneda: 'MXN',
