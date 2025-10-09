@@ -62,7 +62,7 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen bg-white flex flex-col w-full">
       {!(isFacturaClientesPublic || isFacturaClientesVendedor || isFacturaNormalVendedor) && (
-        <header className="bg-blue-700 text-white px-2 sm:px-4 py-2 shadow-sm w-full">
+        <header className="bg-white text-black px-2 sm:px-4 py-2 shadow-sm w-full border-b">
           <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-7xl mx-auto gap-2">
             {/* Logo y título */}
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
@@ -75,7 +75,7 @@ const Layout = ({ children }) => {
                       <li key={item.path} className="w-full sm:w-auto">
                         <Link
                           to={item.path}
-                          className={`block px-3 py-1 rounded-md font-medium transition-colors duration-150 hover:bg-blue-800 hover:scale-105 shadow-sm text-sm w-full sm:w-auto text-center ${location.pathname === item.path ? 'bg-blue-900' : 'bg-blue-700'}`}
+                          className={`block px-3 py-1 rounded-md font-medium transition-colors duration-150 hover:bg-blue-700 hover:scale-105 shadow-sm text-sm w-full sm:w-auto text-center text-white ${location.pathname === item.path ? 'bg-blue-700' : 'bg-blue-600 hover:bg-blue-700'}`}
                         >
                           {item.label}
                         </Link>
@@ -85,7 +85,7 @@ const Layout = ({ children }) => {
                   {/* Opción para vendedor */}
                   {isVendedor && location.pathname === '/factura-normal' && (
                     <li className="w-full sm:w-auto">
-                      <span className="block px-3 py-1 rounded-md font-medium bg-blue-900 shadow-sm text-sm w-full sm:w-auto text-center">Factura Normal</span>
+                      <span className="block px-3 py-1 rounded-md font-medium bg-blue-600 text-white shadow-sm text-sm w-full sm:w-auto text-center">Factura Normal</span>
                     </li>
                   )}
                 </ul>
@@ -95,22 +95,22 @@ const Layout = ({ children }) => {
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
               {!isVendedor && user ? (
                 <>
-                  <span className="text-sm font-medium bg-blue-800 px-2 py-1 rounded shadow w-full sm:w-auto text-center">{user.email} <span className="text-xs">({user.type})</span></span>
+                  <span className="text-sm font-medium bg-blue-500 text-white px-2 py-1 rounded shadow w-full sm:w-auto text-center">{user.email} <span className="text-xs">({user.type})</span></span>
                   {user && user.type === 'admin' && (
-                    <button onClick={() => setShowUserModal(true)} className="bg-blue-600 px-3 py-1 rounded font-semibold shadow hover:bg-blue-800 transition-colors text-sm w-full sm:w-auto text-center">Agregar usuario</button>
+                    <button onClick={() => setShowUserModal(true)} className="bg-blue-600 text-white px-3 py-1 rounded font-semibold shadow hover:bg-blue-700 transition-colors text-sm w-full sm:w-auto text-center">Agregar usuario</button>
                   )}
                 </>
               ) : null}
               {!isVendedor && (
                 <button
                   onClick={handleToggleSandbox}
-                  className={`px-3 py-1 rounded font-semibold shadow transition-colors text-sm w-full sm:w-auto text-center ${sandbox ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-200 text-blue-700 hover:bg-gray-300'}`}
+                  className={`px-3 py-1 rounded font-semibold shadow transition-colors text-sm w-full sm:w-auto text-center ${sandbox ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                 >
                   {sandbox ? 'Sandbox' : 'Producción'}
                 </button>
               )}
               {user && (
-                <button onClick={logout} className="bg-red-500 px-3 py-1 rounded font-semibold shadow hover:bg-red-600 transition-colors text-sm w-full sm:w-auto text-center ml-0 sm:ml-1">Salir</button>
+                <button onClick={logout} className="bg-red-500 text-white px-3 py-1 rounded font-semibold shadow hover:bg-red-600 transition-colors text-sm w-full sm:w-auto text-center ml-0 sm:ml-1">Salir</button>
               )}
             </div>
           </div>
