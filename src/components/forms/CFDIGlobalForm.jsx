@@ -17,7 +17,7 @@ const defaultConcepto = {
   Descuento: '0',
   ObjetoImp: '02',
   Impuestos: {
-    Traslados: [],z
+    Traslados: [],
     Retenidos: [],
     Locales: [],
   },
