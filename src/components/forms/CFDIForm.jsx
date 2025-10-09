@@ -183,7 +183,7 @@ const CFDIForm = () => {
     if (series.length > 0 && !watch('Serie')) {
       // Buscar la serie de tipo 'factura' por defecto
       const serieFactura = series.find(s => s.SerieType === 'factura') || series[0];
-      const serieID = serieFactura.id || serieFactura.ID || serieFactura.SerieID || '';
+      const serieID = serieFactura.SerieID || serieFactura.id || serieFactura.ID || '';
       setValue('Serie', String(serieID), { 
         shouldValidate: true, 
         shouldDirty: true, 
@@ -375,22 +375,26 @@ const CFDIForm = () => {
     console.log('🔍 DEBUG Serie - series array:', series);
     console.log('🔍 DEBUG Serie - watch("Serie"):', watch('Serie'));
     
+    // 🔧 SOLUCION: Si data.Serie está vacío, usar el valor del watch
+    const serieValue = data.Serie || watch('Serie');
+    console.log('🔧 SOLUCION Serie - serieValue final a usar:', serieValue);
+    
     // Encontrar la serie seleccionada por ID
     let serieSeleccionada = null;
-    if (data.Serie) {
+    if (serieValue) {
       serieSeleccionada = series.find(s => 
-        String(s.id || s.ID || s.SerieID) === String(data.Serie)
+        String(s.SerieID || s.id || s.ID) === String(serieValue)
       );
       console.log('🔍 DEBUG Serie - serieSeleccionada encontrada:', serieSeleccionada);
     }
     
-    // Si no se encuentra, usar la primera como fallback
+    // Si no se encuentra, usar la serie de tipo 'factura' como fallback
     if (!serieSeleccionada && series.length > 0) {
-      serieSeleccionada = series[0];
-      console.log('⚠️ FALLBACK: Usando primera serie disponible:', serieSeleccionada);
+      serieSeleccionada = series.find(s => s.SerieType === 'factura') || series[0];
+      console.log('⚠️ FALLBACK: Usando serie de factura disponible:', serieSeleccionada);
     }
     
-    const serieID = serieSeleccionada ? (serieSeleccionada.id || serieSeleccionada.ID || serieSeleccionada.SerieID) : undefined;
+    const serieID = serieSeleccionada ? (serieSeleccionada.SerieID || serieSeleccionada.id || serieSeleccionada.ID) : undefined;
     console.log('📤 Serie ID que se enviará a la API:', serieID);
     
     const cfdiData = {
@@ -1092,7 +1096,7 @@ const CFDIForm = () => {
                   <Select
                     label="Selecciona una serie"
                     options={series.map(s => ({
-                      value: String(s.id || s.ID || s.SerieID || ''),
+                      value: String(s.SerieID || s.id || s.ID || ''),
                       label: `${s.SerieName} - ${s.SerieDescription || ''}`,
                     }))}
                     value={safeValue}
