@@ -107,6 +107,7 @@ const CFDIForm = () => {
       UsoCFDI: '',
       BorradorSiFalla: '0',
       Draft: '0',
+      NumeroPedido: '', // Nuevo campo para el número de pedido
       items: [],
     },
     resolver: zodResolver(invoiceSchema),
@@ -411,12 +412,14 @@ const CFDIForm = () => {
       BorradorSiFalla: String(data.BorradorSiFalla || '0'),
       Draft: String(data.Draft || '0'),
       dueDate: fechaCFDI,
+      NumOrder: String(data.NumeroPedido || '').trim(), // 🔥 NUEVO: Número de pedido/orden para el PDF
     };
     
     console.log('📤 Objeto final enviado a la API:', cfdiData);
     console.log('📤 UsoCFDI que se envía:', cfdiData.UsoCFDI);
     console.log('📤 Serie que se envía:', cfdiData.Serie);
     console.log('📤 Serie seleccionada completa:', serieSeleccionada);
+    console.log('📤 NumOrder (Número de Pedido) que se envía:', cfdiData.NumOrder);
     
     // Validación final antes del envío
     if (!cfdiData.UsoCFDI || cfdiData.UsoCFDI.trim() === '') {
@@ -735,6 +738,14 @@ const CFDIForm = () => {
           Cantidad: prod.quantity || 1 
         })));
         setValue('items', conceptos);
+        
+        // 🔥 NUEVO: Guardar el número de pedido automáticamente
+        setValue('NumeroPedido', String(pedidoInput), { 
+          shouldValidate: true, 
+          shouldDirty: true, 
+          shouldTouch: true 
+        });
+        console.log('✅ Número de pedido guardado:', pedidoInput);
         
         // Notificar al usuario sobre el auto-rellenado del método de pago
         if (pagoMapeado.FormaPago !== '99') {
@@ -1303,6 +1314,18 @@ const CFDIForm = () => {
               );
             })()}
             {!watch('dueDate') && <span className="text-red-500 text-xs">Debes seleccionar una fecha para el CFDI.</span>}
+          </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Número de Pedido</label>
+            <input
+              type="text"
+              {...register('NumeroPedido')}
+              placeholder="Ej: 12345 (opcional)"
+              value={watch('NumeroPedido') || ''}
+              onChange={e => setValue('NumeroPedido', e.target.value)}
+              className="w-full border rounded-lg p-2"
+            />
+            <span className="text-xs text-gray-500">Se auto-rellena al importar un pedido. Aparecerá en el PDF.</span>
           </div>
         </div>
         {isGlobal && (
