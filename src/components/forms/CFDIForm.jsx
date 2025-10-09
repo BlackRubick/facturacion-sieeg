@@ -746,7 +746,7 @@ const CFDIForm = () => {
             ValorUnitario: prod.price || prod.total || '',
             Descripcion: descripcionFinal,
             Descuento: '0',
-            ObjetoImp: '02',
+            ObjetoImp: '002',
             Impuestos: { Traslados: [], Retenidos: [], Locales: [] },
           };
         }));
