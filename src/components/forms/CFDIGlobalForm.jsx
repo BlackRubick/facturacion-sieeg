@@ -129,6 +129,7 @@ const mapearMetodoPago = (wooPaymentMethod) => {
 };
 
 const CFDIGlobalForm = () => {
+  console.log('🚀 CFDIGlobalForm componente cargado');
   const [showDraft, setShowDraft] = useState(false);
   const [draftData, setDraftData] = useState(null);
   const [catalogs, setCatalogs] = useState({});
@@ -203,6 +204,12 @@ const CFDIGlobalForm = () => {
           FacturaAPIService.getCatalog('Impuesto'),
           FacturaAPIService.getSeries(), // ✅ Agregar catálogo de series
         ]);
+        const seriesData = series.data.data || [];
+        console.log('📊 CATÁLOGOS CARGADOS:');
+        console.log('   - Series cargadas:', seriesData);
+        console.log('   - Número de series:', seriesData.length);
+        console.log('   - Primera serie:', seriesData[0]);
+        
         setCatalogs({
           ClaveProductServ: prod.data.data || [],
           ClaveUnidad: unidad.data.data || [],
@@ -214,7 +221,7 @@ const CFDIGlobalForm = () => {
           RegimenFiscal: regimen.data.data || [],
           Relacion: relacion.data.data || [],
           Impuesto: impuesto.data.data || [],
-          Series: series.data.data || [], // ✅ Agregar series al estado
+          Series: seriesData, // ✅ Agregar series al estado
         });
       } catch (err) {
         // Puedes mostrar error si lo deseas
@@ -1058,6 +1065,10 @@ const CFDIGlobalForm = () => {
                             value={safeValue}
                             onChange={val => {
                               const v = val == null ? '' : String(val);
+                              console.log('🔥 SERIE SELECCIONADA EN ONCHANGE:');
+                              console.log('   - Valor recibido (val):', val);
+                              console.log('   - Valor convertido (v):', v);
+                              console.log('   - Tipo de v:', typeof v);
                               field.onChange(v);
                               setValue('Serie', v, { shouldValidate: true, shouldDirty: true });
                               console.log('[Select:Serie] onChange value:', v);
@@ -1121,6 +1132,9 @@ const CFDIGlobalForm = () => {
                       className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg text-xl" 
                       onClick={() => {
                         console.log('🖱️ Click en botón Facturar automáticamente');
+                        console.log('🔥 VERIFICAR SERIE ANTES DE LLAMAR handleFacturarStep3:');
+                        console.log('   - watch("Serie"):', watch('Serie'));
+                        console.log('   - watch("UsoCFDI"):', watch('UsoCFDI'));
                         handleFacturarStep3();
                       }}
                       disabled={!watch('UsoCFDI') || !watch('Serie')} // ✅ Validar ambos campos
