@@ -1508,39 +1508,166 @@ const CFDIForm = () => {
           {/* Fila de inputs para agregar/editar producto */}
           <div className="grid grid-cols-9 gap-1 px-3 py-2 items-center bg-white border-b border-gray-100">
             {/* Producto/Servicio */}
-            <select className="border rounded px-2 py-1 text-xs w-full" defaultValue="">
-              <option value="">Seleccionar...</option>
-              {products.map((prod) => (
-                <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
-                  {(prod.name || 'Sin nombre').substring(0, 40)}
-                </option>
-              ))}
-            </select>
+            <Controller
+              name={`items.0.ClaveProdServ`}
+              control={control}
+              render={({ field }) => (
+                <select
+                  className="border rounded px-2 py-1 text-xs w-full"
+                  value={field.value || ''}
+                  onChange={e => {
+                    const clave = e.target.value;
+                    field.onChange(clave);
+                    // Buscar producto seleccionado
+                    const prod = products.find(p => p.claveprodserv === clave);
+                    if (prod) {
+                      setValue('items.0.Descripcion', prod.name || '');
+                      setValue('items.0.ValorUnitario', prod.price || '');
+                      setValue('items.0.Unidad', prod.unidad || 'Pieza');
+                      setValue('items.0.ClaveUnidad', prod.claveunidad || 'H87');
+                      setValue('items.0.NoIdentificacion', prod.sku || '');
+                      setValue('items.0.Cantidad', 1);
+                      setValue('items.0.Descuento', '0');
+                      setValue('items.0.TipoImpuesto', 'con_iva');
+                      // Recalcular impuestos
+                      recalcularImpuestosItem(0, prod.price || 0, 1, 'con_iva');
+                    }
+                  }}
+                >
+                  <option value="">Seleccionar...</option>
+                  {products.map((prod) => (
+                    <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
+                      {(prod.name || 'Sin nombre').substring(0, 40)}
+                    </option>
+                  ))}
+                </select>
+              )}
+            />
             {/* Cantidad */}
-            <input type="number" className="border rounded px-2 py-1 text-xs w-full text-center" placeholder="1" min="1" step="0.01" />
+            <Controller
+              name={`items.0.Cantidad`}
+              control={control}
+              render={({ field }) => (
+                <input
+                  type="number"
+                  className="border rounded px-2 py-1 text-xs w-full text-center"
+                  placeholder="1"
+                  min="1"
+                  step="0.01"
+                  value={field.value || ''}
+                  onChange={e => {
+                    field.onChange(e.target.value);
+                    recalcularImpuestosItem(0, watch('items.0.ValorUnitario'), e.target.value, watch('items.0.TipoImpuesto'));
+                  }}
+                />
+              )}
+            />
             {/* Precio */}
-            <input type="number" className="border rounded px-2 py-1 text-xs w-full text-center" placeholder="0.00" min="0" step="0.01" />
+            <Controller
+              name={`items.0.ValorUnitario`}
+              control={control}
+              render={({ field }) => (
+                <input
+                  type="number"
+                  className="border rounded px-2 py-1 text-xs w-full text-center"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  value={field.value || ''}
+                  onChange={e => {
+                    field.onChange(e.target.value);
+                    recalcularImpuestosItem(0, e.target.value, watch('items.0.Cantidad'), watch('items.0.TipoImpuesto'));
+                  }}
+                />
+              )}
+            />
             {/* IVA */}
-            <div className="text-center text-green-600 font-medium bg-green-50 px-2 py-1 rounded text-xs">$0.00</div>
+            <div className="text-center text-green-600 font-medium bg-green-50 px-2 py-1 rounded text-xs">
+              ${
+                (() => {
+                  const imp = watch('items.0.Impuestos?.Traslados?.[0]?.Importe');
+                  return imp ? Number(imp).toFixed(2) : '0.00';
+                })()
+              }
+            </div>
             {/* Tipo */}
-            <select className="border rounded px-2 py-1 text-xs w-full">
-              <option value="con_iva">16%</option>
-              <option value="exento">Exento</option>
-              <option value="sin_iva">Sin IVA</option>
-            </select>
+            <Controller
+              name={`items.0.TipoImpuesto`}
+              control={control}
+              defaultValue="con_iva"
+              render={({ field }) => (
+                <select
+                  className="border rounded px-2 py-1 text-xs w-full"
+                  value={field.value || 'con_iva'}
+                  onChange={e => {
+                    field.onChange(e.target.value);
+                    recalcularImpuestosItem(0, watch('items.0.ValorUnitario'), watch('items.0.Cantidad'), e.target.value);
+                  }}
+                >
+                  <option value="con_iva">16%</option>
+                  <option value="exento">Exento</option>
+                  <option value="sin_iva">Sin IVA</option>
+                </select>
+              )}
+            />
             {/* Desc. */}
-            <input type="number" className="border rounded px-2 py-1 text-xs w-full text-center" placeholder="0" min="0" step="0.01" />
+            <Controller
+              name={`items.0.Descuento`}
+              control={control}
+              render={({ field }) => (
+                <input
+                  type="number"
+                  className="border rounded px-2 py-1 text-xs w-full text-center"
+                  placeholder="0"
+                  min="0"
+                  step="0.01"
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                />
+              )}
+            />
             {/* Unidad */}
-            <input type="text" className="border rounded px-2 py-1 text-xs w-full text-center" placeholder="Pieza" />
+            <Controller
+              name={`items.0.Unidad`}
+              control={control}
+              render={({ field }) => (
+                <input
+                  type="text"
+                  className="border rounded px-2 py-1 text-xs w-full text-center"
+                  placeholder="Pieza"
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                />
+              )}
+            />
             {/* Clave Unidad */}
-            <select className="border rounded px-2 py-1 text-xs w-full">
-              <option value="">Clave...</option>
-              {catalogs.ClaveUnidad.map((opt, cidx) => (
-                <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
-              ))}
-            </select>
+            <Controller
+              name={`items.0.ClaveUnidad`}
+              control={control}
+              render={({ field }) => (
+                <select
+                  className="border rounded px-2 py-1 text-xs w-full"
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                >
+                  <option value="">Clave...</option>
+                  {catalogs.ClaveUnidad.map((opt, cidx) => (
+                    <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
+                  ))}
+                </select>
+              )}
+            />
             {/* Acción */}
-            <button type="button" className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors" title="Eliminar producto">✕</button>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors"
+                title="Eliminar producto"
+                onClick={() => remove(0)}
+              >
+                ✕
+              </button>
+            </div>
           </div>
           {/* Filas de la tabla existentes */}
           {fields.length > 0 ? (
@@ -1553,7 +1680,7 @@ const CFDIForm = () => {
                 {/* Precio */}
                 <div className="text-center">${item.ValorUnitario}</div>
                 {/* IVA */}
-                <div className="text-center text-green-600 font-medium">${Number(item.Impuestos?.Traslados?.[0]?.Importe || 0).toFixed(2)}</div>
+                <div className="text-center text-green-600 font-medium">${item.Impuestos?.Traslados?.[0]?.Importe?.toFixed(2) || '0.00'}</div>
                 {/* Tipo */}
                 <div className="text-center">{item.TipoImpuesto || '16%'}</div>
                 {/* Desc. */}
