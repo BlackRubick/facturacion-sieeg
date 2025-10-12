@@ -304,8 +304,6 @@ const CFDIForm = () => {
     console.log('   - Tipo de UsoCFDI:', typeof data.UsoCFDI);
     console.log('   - UsoCFDI está vacío?:', !data.UsoCFDI);
     console.log('   - UsoCFDI es string vacío?:', data.UsoCFDI === '');
-    console.log('   - Valor watch actual:', watch('UsoCFDI'));
-    
     console.log('🚀 FormaPago específico:', data.FormaPago);
     console.log('🚀 MetodoPago específico:', data.MetodoPago);
     console.log('🚀 RegimenFiscal específico:', data.RegimenFiscal);
@@ -1505,199 +1503,202 @@ const CFDIForm = () => {
             <div>Clave Unidad</div>
             <div>Acción</div>
           </div>
-          {/* Fila de inputs para agregar/editar producto */}
-          <div className="grid grid-cols-9 gap-1 px-3 py-2 items-center bg-white border-b border-gray-100">
-            {/* Producto/Servicio */}
-            <Controller
-              name={`items.0.ClaveProdServ`}
-              control={control}
-              render={({ field }) => (
-                <select
-                  className="border rounded px-2 py-1 text-xs w-full"
-                  value={field.value || ''}
-                  onChange={e => {
-                    const clave = e.target.value;
-                    field.onChange(clave);
-                    // Buscar producto seleccionado
-                    const prod = products.find(p => p.claveprodserv === clave);
-                    if (prod) {
-                      setValue('items.0.Descripcion', prod.name || '');
-                      setValue('items.0.ValorUnitario', prod.price || '');
-                      setValue('items.0.Unidad', prod.unidad || 'Pieza');
-                      setValue('items.0.ClaveUnidad', prod.claveunidad || 'H87');
-                      setValue('items.0.NoIdentificacion', prod.sku || '');
-                      setValue('items.0.Cantidad', 1);
-                      setValue('items.0.Descuento', '0');
-                      setValue('items.0.TipoImpuesto', 'con_iva');
-                      // Recalcular impuestos
-                      recalcularImpuestosItem(0, prod.price || 0, 1, 'con_iva');
-                    }
-                  }}
-                >
-                  <option value="">Seleccionar...</option>
-                  {products.map((prod) => (
-                    <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
-                      {(prod.name || 'Sin nombre').substring(0, 40)}
-                    </option>
-                  ))}
-                </select>
-              )}
-            />
-            {/* Cantidad */}
-            <Controller
-              name={`items.0.Cantidad`}
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1 text-xs w-full text-center"
-                  placeholder="1"
-                  min="1"
-                  step="0.01"
-                  value={field.value || ''}
-                  onChange={e => {
-                    field.onChange(e.target.value);
-                    recalcularImpuestosItem(0, watch('items.0.ValorUnitario'), e.target.value, watch('items.0.TipoImpuesto'));
-                  }}
-                />
-              )}
-            />
-            {/* Precio */}
-            <Controller
-              name={`items.0.ValorUnitario`}
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1 text-xs w-full text-center"
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  value={field.value || ''}
-                  onChange={e => {
-                    field.onChange(e.target.value);
-                    recalcularImpuestosItem(0, e.target.value, watch('items.0.Cantidad'), watch('items.0.TipoImpuesto'));
-                  }}
-                />
-              )}
-            />
-            {/* IVA */}
-            <div className="text-center text-green-600 font-medium">${
+          {/* Fila de inputs para agregar/editar producto (conectada a lógica y autocompletado) */}
+          {fields.length === 0 && (
+            <div className="grid grid-cols-9 gap-1 px-3 py-2 items-center bg-white border-b border-gray-100">
+              {/* Producto/Servicio */}
+              <Controller
+                name={`items.0.ClaveProdServ`}
+                control={control}
+                render={({ field }) => (
+                  <select
+                    className="border rounded px-2 py-1 text-xs w-full"
+                    value={field.value || ''}
+                    onChange={e => {
+                      const clave = e.target.value;
+                      field.onChange(clave);
+                      // Buscar producto seleccionado
+                      const prod = products.find(p => p.claveprodserv === clave);
+                      if (prod) {
+                        setValue('items.0.Descripcion', prod.name || '');
+                        setValue('items.0.ValorUnitario', prod.price || '');
+                        setValue('items.0.Unidad', prod.unidad || 'Pieza');
+                        setValue('items.0.ClaveUnidad', prod.claveunidad || 'H87');
+                        setValue('items.0.NoIdentificacion', prod.sku || '');
+                        setValue('items.0.Cantidad', 1);
+                        setValue('items.0.Descuento', '0');
+                        setValue('items.0.TipoImpuesto', 'con_iva');
+                        // Recalcular impuestos
+                        recalcularImpuestosItem(0, prod.price || 0, 1, 'con_iva');
+                      }
+                    }}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {products.map((prod) => (
+                      <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
+                        {(prod.name || 'Sin nombre').substring(0, 40)}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
+              {/* Cantidad */}
+              <Controller
+                name={`items.0.Cantidad`}
+                control={control}
+                render={({ field }) => (
+                  <input
+                    type="number"
+                    className="border rounded px-2 py-1 text-xs w-full text-center"
+                    placeholder="1"
+                    min="1"
+                    step="0.01"
+                    value={field.value || ''}
+                    onChange={e => {
+                      field.onChange(e.target.value);
+                      recalcularImpuestosItem(0, watch('items.0.ValorUnitario'), e.target.value, watch('items.0.TipoImpuesto'));
+                    }}
+                  />
+                )}
+              />
+              {/* Precio */}
+              <Controller
+                name={`items.0.ValorUnitario`}
+                control={control}
+                render={({ field }) => (
+                  <input
+                    type="number"
+                    className="border rounded px-2 py-1 text-xs w-full text-center"
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    value={field.value || ''}
+                    onChange={e => {
+                      field.onChange(e.target.value);
+                      recalcularImpuestosItem(0, e.target.value, watch('items.0.Cantidad'), watch('items.0.TipoImpuesto'));
+                    }}
+                  />
+                )}
+              />
+              {/* IVA */}
+              <div className="text-center text-green-600 font-medium bg-green-50 px-2 py-1 rounded text-xs">
+                ${
                   (() => {
-                    const imp = item.Impuestos?.Traslados?.[0]?.Importe;
+                    const imp = watch('items.0.Impuestos?.Traslados?.[0]?.Importe');
                     return imp && !isNaN(Number(imp)) ? Number(imp).toFixed(2) : '0.00';
                   })()
-                }</div>
-            {/* Tipo */}
-            <Controller
-              name={`items.0.TipoImpuesto`}
-              control={control}
-              defaultValue="con_iva"
-              render={({ field }) => (
-                <select
-                  className="border rounded px-2 py-1 text-xs w-full"
-                  value={field.value || 'con_iva'}
-                  onChange={e => {
-                    field.onChange(e.target.value);
-                    recalcularImpuestosItem(0, watch('items.0.ValorUnitario'), watch('items.0.Cantidad'), e.target.value);
-                  }}
-                >
-                  <option value="con_iva">16%</option>
-                  <option value="exento">Exento</option>
-                  <option value="sin_iva">Sin IVA</option>
-                </select>
-              )}
-            />
-            {/* Desc. */}
-            <Controller
-              name={`items.0.Descuento`}
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1 text-xs w-full text-center"
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-            {/* Unidad */}
-            <Controller
-              name={`items.0.Unidad`}
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="text"
-                  className="border rounded px-2 py-1 text-xs w-full text-center"
-                  placeholder="Pieza"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-            {/* Clave Unidad */}
-            <Controller
-              name={`items.0.ClaveUnidad`}
-              control={control}
-              render={({ field }) => (
-                <select
-                  className="border rounded px-2 py-1 text-xs w-full"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                >
-                  <option value="">Clave...</option>
-                  {catalogs.ClaveUnidad.map((opt, cidx) => (
-                    <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
-                  ))}
-                </select>
-              )}
-            />
-            {/* Acción */}
-            <div className="flex justify-center">
-              <button
-                type="button"
-                className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors"
-                title="Eliminar producto"
-                onClick={() => remove(0)}
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-          {/* Filas de la tabla existentes */}
-          {fields.length > 0 ? (
-            fields.map((item, idx) => (
-              <div key={item.id} className={`grid grid-cols-9 gap-1 px-3 py-2 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100`}>
-                {/* Producto/Servicio */}
-                <div className="truncate">{item.Descripcion || 'Sin nombre'}</div>
-                {/* Cantidad */}
-                <div className="text-center">{item.Cantidad}</div>
-                {/* Precio */}
-                <div className="text-center">${item.ValorUnitario}</div>
-                {/* IVA */}
-                <div className="text-center text-green-600 font-medium">${item.Impuestos?.Traslados?.[0]?.Importe?.toFixed(2) || '0.00'}</div>
-                {/* Tipo */}
-                <div className="text-center">{item.TipoImpuesto || '16%'}</div>
-                {/* Desc. */}
-                <div className="text-center">{item.Descuento || 0}</div>
-                {/* Unidad */}
-                <div className="text-center">{item.Unidad || ''}</div>
-                {/* Clave Unidad */}
-                <div className="text-center">{item.ClaveUnidad || ''}</div>
-                {/* Acción */}
-                <div className="flex justify-center">
-                  <button type="button" onClick={() => remove(idx)} className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors" title="Eliminar producto">✕</button>
-                </div>
+                }
               </div>
-            ))
-          ) : (
-            <div className="text-center py-8 text-gray-500 text-sm">
-              No hay productos. Haz clic en "Agregar" para empezar.
+              {/* Tipo */}
+              <Controller
+                name={`items.0.TipoImpuesto`}
+                control={control}
+                defaultValue="con_iva"
+                render={({ field }) => (
+                  <select
+                    className="border rounded px-2 py-1 text-xs w-full"
+                    value={field.value || 'con_iva'}
+                    onChange={e => {
+                      field.onChange(e.target.value);
+                      recalcularImpuestosItem(0, watch('items.0.ValorUnitario'), watch('items.0.Cantidad'), e.target.value);
+                    }}
+                  >
+                    <option value="con_iva">16%</option>
+                    <option value="exento">Exento</option>
+                    <option value="sin_iva">Sin IVA</option>
+                  </select>
+                )}
+              />
+              {/* Desc. */}
+              <Controller
+                name={`items.0.Descuento`}
+                control={control}
+                render={({ field }) => (
+                  <input
+                    type="number"
+                    className="border rounded px-2 py-1 text-xs w-full text-center"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+              {/* Unidad */}
+              <Controller
+                name={`items.0.Unidad`}
+                control={control}
+                render={({ field }) => (
+                  <input
+                    type="text"
+                    className="border rounded px-2 py-1 text-xs w-full text-center"
+                    placeholder="Pieza"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+              {/* Clave Unidad */}
+              <Controller
+                name={`items.0.ClaveUnidad`}
+                control={control}
+                render={({ field }) => (
+                  <select
+                    className="border rounded px-2 py-1 text-xs w-full"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  >
+                    <option value="">Clave...</option>
+                    {catalogs.ClaveUnidad.map((opt, cidx) => (
+                      <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
+                    ))}
+                  </select>
+                )}
+              />
+              {/* Acción */}
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors"
+                  title="Eliminar producto"
+                  onClick={() => remove(0)}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           )}
+          {/* Filas de la tabla existentes */}
+          {fields.length > 0 && fields.map((item, idx) => (
+            <div key={item.id} className={`grid grid-cols-9 gap-1 px-3 py-2 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100`}>
+              {/* Producto/Servicio */}
+              <div className="truncate">{item.Descripcion || 'Sin nombre'}</div>
+              {/* Cantidad */}
+              <div className="text-center">{item.Cantidad}</div>
+              {/* Precio */}
+              <div className="text-center">${item.ValorUnitario}</div>
+              {/* IVA */}
+              <div className="text-center text-green-600 font-medium">${
+                (() => {
+                  const imp = item.Impuestos?.Traslados?.[0]?.Importe;
+                  return imp && !isNaN(Number(imp)) ? Number(imp).toFixed(2) : '0.00';
+                })()
+              }</div>
+              {/* Tipo */}
+              <div className="text-center">{item.TipoImpuesto || '16%'}</div>
+              {/* Desc. */}
+              <div className="text-center">{item.Descuento || 0}</div>
+              {/* Unidad */}
+              <div className="text-center">{item.Unidad || ''}</div>
+              {/* Clave Unidad */}
+              <div className="text-center">{item.ClaveUnidad || ''}</div>
+              {/* Acción */}
+              <div className="flex justify-center">
+                <button type="button" onClick={() => remove(idx)} className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors" title="Eliminar producto">✕</button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       <div className="flex gap-2 mt-8 flex-wrap">
