@@ -1470,27 +1470,31 @@ const CFDIForm = () => {
         {productosImportados.length > 0 ? (
           <div className="border border-gray-200 rounded-lg overflow-hidden">
             {/* Header de la tabla */}
-            <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 font-medium text-sm text-gray-700">
-              <div>Producto</div>
-              <div className="text-center">Cantidad</div>
-              <div className="text-center">Precio</div>
-              <div className="text-center">Total</div>
+            <div className="bg-gray-200 border-b border-gray-300 grid grid-cols-14 text-xs font-bold text-gray-700 uppercase tracking-wide" style={{borderBottom: '2px solid #e5e7eb'}}>
+              <div className="col-span-3 flex items-center justify-center border-r border-gray-300 py-2">Producto/Servicio</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">Cant.</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">Precio</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">IVA</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">Tipo</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">Desc.</div>
+              <div className="col-span-2 flex items-center justify-center border-r border-gray-300 py-2">Unidad</div>
+              <div className="col-span-2 flex items-center justify-center border-r border-gray-300 py-2">Clave Unidad</div>
+              <div className="flex items-center justify-center py-2">Acción</div>
             </div>
             {/* Filas de productos */}
             {productosImportados.map((prod, idx) => (
-              <div key={idx} className={`px-4 py-3 border-b border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm ${
-                idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-              } hover:bg-blue-50 transition-colors`}>
-                <div className="text-black font-medium">{prod.name || 'Sin nombre'}</div>
-                <div className="text-center text-gray-700">
-                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">{prod.quantity}</span>
+              <div key={idx} className={`grid grid-cols-14 text-xs items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-200`}>
+                <div className="col-span-3 px-2 py-2 border-r border-gray-200">{prod.name || 'Sin nombre'}</div>
+                <div className="text-center px-1 py-2 border-r border-gray-200">{prod.quantity}</div>
+                <div className="text-center px-1 py-2 border-r border-gray-200">${prod.price || prod.total}</div>
+                <div className="text-center px-1 py-2 border-r border-gray-200 font-medium">
+                  <span className="font-mono bg-green-100 px-2 py-1 rounded">${((prod.price || prod.total) * prod.quantity * 0.16).toFixed(2)}</span>
                 </div>
-                <div className="text-center text-gray-700">
-                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">${prod.price || prod.total}</span>
-                </div>
-                <div className="text-center text-gray-700 font-medium">
-                  <span className="font-mono bg-green-100 px-2 py-1 rounded">${((prod.price || prod.total) * prod.quantity).toFixed(2)}</span>
-                </div>
+                <div className="text-center px-1 py-2 border-r border-gray-200">16%</div>
+                <div className="text-center px-1 py-2 border-r border-gray-200">0</div>
+                <div className="col-span-2 text-center px-1 py-2 border-r border-gray-200">Pieza</div>
+                <div className="col-span-2 text-center px-1 py-2 border-r border-gray-200">Clave</div>
+                <div className="flex justify-center px-1 py-2">-</div>
               </div>
             ))}
             {/* Footer */}
@@ -1525,25 +1529,23 @@ const CFDIForm = () => {
               </Button>
             </div>
             {/* Header de la tabla mejorado visualmente */}
-            <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-14 gap-1 px-3 py-3 text-xs font-semibold text-gray-800 uppercase tracking-wide">
-              <div className="col-span-3 px-2">Producto/Servicio</div>
-              <div className="text-center px-1">Cant.</div>
-              <div className="text-center px-1">Precio</div>
-              <div className="text-center px-1">IVA</div>
-              <div className="text-center px-1">Tipo</div>
-              <div className="text-center px-1">Desc.</div>
-              <div className="text-center px-1 col-span-2">Unidad</div>
-              <div className="text-center px-1 col-span-2">Clave Unidad</div>
-              <div className="text-center px-1">Acción</div>
+            <div className="bg-gray-200 border-b border-gray-300 grid grid-cols-14 text-xs font-bold text-gray-700 uppercase tracking-wide" style={{borderBottom: '2px solid #e5e7eb'}}>
+              <div className="col-span-3 flex items-center justify-center border-r border-gray-300 py-2">Producto/Servicio</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">Cant.</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">Precio</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">IVA</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">Tipo</div>
+              <div className="flex items-center justify-center border-r border-gray-300 py-2">Desc.</div>
+              <div className="col-span-2 flex items-center justify-center border-r border-gray-300 py-2">Unidad</div>
+              <div className="col-span-2 flex items-center justify-center border-r border-gray-300 py-2">Clave Unidad</div>
+              <div className="flex items-center justify-center py-2">Acción</div>
             </div>
             {/* Filas de la tabla mejoradas visualmente */}
             {fields.length > 0 ? (
               fields.map((item, idx) => (
-                <div key={item.id} className={`grid grid-cols-14 gap-1 px-3 py-2 border-b border-gray-100 text-xs items-center ${
-                  idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                } hover:bg-blue-50 transition-colors`}>
+                <div key={item.id} className={`grid grid-cols-14 text-xs items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-200`}>
                   {/* Producto/Servicio */}
-                  <div className="col-span-3 px-2">
+                  <div className="col-span-3 px-2 py-2 border-r border-gray-200">
                     <Controller
                       name={`items.${idx}.ClaveProdServ`}
                       control={control}
@@ -1582,7 +1584,7 @@ const CFDIForm = () => {
                     />
                   </div>
                   {/* Cantidad */}
-                  <div className="px-1">
+                  <div className="px-1 py-2 border-r border-gray-200">
                     <input
                       type="number"
                       {...register(`items.${idx}.Cantidad`, { valueAsNumber: true, required: true })}
@@ -1599,7 +1601,7 @@ const CFDIForm = () => {
                     />
                   </div>
                   {/* Precio */}
-                  <div className="px-1">
+                  <div className="px-1 py-2 border-r border-gray-200">
                     <input
                       type="number"
                       {...register(`items.${idx}.ValorUnitario`, { valueAsNumber: true, required: true })}
@@ -1616,7 +1618,7 @@ const CFDIForm = () => {
                     />
                   </div>
                   {/* IVA */}
-                  <div className="px-1">
+                  <div className="px-1 py-2 border-r border-gray-200">
                     {(() => {
                       const cantidad = Number(watch(`items.${idx}.Cantidad`) || 0);
                       const valorUnitario = Number(watch(`items.${idx}.ValorUnitario`) || 0);
@@ -1638,7 +1640,7 @@ const CFDIForm = () => {
                     })()}
                   </div>
                   {/* Tipo */}
-                  <div className="px-1">
+                  <div className="px-1 py-2 border-r border-gray-200">
                     <select
                       className="w-full border border-gray-300 rounded px-1 py-1 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                       onChange={(e) => {
@@ -1655,7 +1657,7 @@ const CFDIForm = () => {
                     </select>
                   </div>
                   {/* Desc. */}
-                  <div className="px-1">
+                  <div className="px-1 py-2 border-r border-gray-200">
                     <input
                       type="number"
                       {...register(`items.${idx}.Descuento`)}
@@ -1666,7 +1668,7 @@ const CFDIForm = () => {
                     />
                   </div>
                   {/* Unidad */}
-                  <div className="col-span-2 px-1">
+                  <div className="col-span-2 px-1 py-2 border-r border-gray-200">
                     <input
                       type="text"
                       {...register(`items.${idx}.Unidad`, { required: true })}
@@ -1675,7 +1677,7 @@ const CFDIForm = () => {
                     />
                   </div>
                   {/* Clave Unidad */}
-                  <div className="col-span-2 px-1">
+                  <div className="col-span-2 px-1 py-2 border-r border-gray-200">
                     <select
                       {...register(`items.${idx}.ClaveUnidad`, { required: true })}
                       className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
@@ -1687,7 +1689,7 @@ const CFDIForm = () => {
                     </select>
                   </div>
                   {/* Acción */}
-                  <div className="flex justify-center px-1">
+                  <div className="flex justify-center px-1 py-2">
                     <button
                       type="button"
                       onClick={() => remove(idx)}
