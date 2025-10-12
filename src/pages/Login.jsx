@@ -25,11 +25,11 @@ const Login = () => {
 
   return (
     <div className="min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-blue-100 to-blue-200">
-      <div className="bg-white rounded-xl shadow-2xl border border-blue-100 w-full max-w-md p-8 flex flex-col items-center mx-2">
+      <div className="w-full max-w-md p-8 flex flex-col items-center mx-2"> 
         <img
           src="/SIEEGNEW.png"
           alt="Logo SIEEG"
-          className="h-20 object-contain mt-2 mb-6 shadow-lg"
+          className="h-20 object-contain mt-2 mb-6"
         />
         <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
           <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">Iniciar sesión</h2>
