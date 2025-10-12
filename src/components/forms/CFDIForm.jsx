@@ -1471,12 +1471,38 @@ const CFDIForm = () => {
             <Button 
               type="button" 
               onClick={() => {
-                // Crear concepto con impuestos IVA 16% por defecto
-                const conceptoConImpuestos = {
-                  ...defaultConcepto,
-                  Impuestos: calcularImpuestos(0, 1, 'con_iva')
-                };
-                append(conceptoConImpuestos);
+                // Usar los datos de la fila de alta (nuevoProducto) igual que el botón de acción
+                const np = watch('nuevoProducto');
+                if (!np || !np.ClaveProdServ || !np.Descripcion) return;
+                // Calcular impuestos para el nuevo producto
+                const impuestos = recalcularImpuestosItem(-1, np.ValorUnitario, np.Cantidad, np.TipoImpuesto, true) || np.Impuestos;
+                append({
+                  ClaveProdServ: np.ClaveProdServ,
+                  NoIdentificacion: np.NoIdentificacion || '',
+                  Cantidad: Number(np.Cantidad) || 1,
+                  ClaveUnidad: np.ClaveUnidad || '',
+                  Unidad: np.Unidad || 'Pieza',
+                  ValorUnitario: Number(np.ValorUnitario) || 0,
+                  Descripcion: np.Descripcion || '',
+                  Descuento: np.Descuento || '0',
+                  ObjetoImp: '02',
+                  TipoImpuesto: np.TipoImpuesto || 'con_iva',
+                  Impuestos: impuestos,
+                });
+                // Limpiar la fila de alta
+                setValue('nuevoProducto', {
+                  ClaveProdServ: '',
+                  NoIdentificacion: '',
+                  Cantidad: 1,
+                  ClaveUnidad: '',
+                  Unidad: '',
+                  ValorUnitario: '',
+                  Descripcion: '',
+                  Descuento: '0',
+                  ObjetoImp: '02',
+                  TipoImpuesto: 'con_iva',
+                  Impuestos: recalcularImpuestosItem(-1, 0, 1, 'con_iva', true),
+                });
               }} 
               className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
             >
