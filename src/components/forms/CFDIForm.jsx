@@ -1476,7 +1476,6 @@ const CFDIForm = () => {
               <div className="text-center">Precio</div>
               <div className="text-center">Total</div>
             </div>
-            
             {/* Filas de productos */}
             {productosImportados.map((prod, idx) => (
               <div key={idx} className={`px-4 py-3 border-b border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm ${
@@ -1494,7 +1493,6 @@ const CFDIForm = () => {
                 </div>
               </div>
             ))}
-            
             {/* Footer */}
             <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
               Productos importados del pedido #{pedidoInput} • Total de {productosImportados.length} productos
@@ -1510,8 +1508,7 @@ const CFDIForm = () => {
                   // Crear concepto con impuestos IVA 16% por defecto
                   const conceptoConImpuestos = {
                     ...defaultConcepto,
-                    Impuestos: calcularImpuestos(0, 1, 'con_iva') // IVA por defecto
-                  };
+                    Impuestos: calcularImpuestos(0, 1, 'con_iva')                  };
                   append(conceptoConImpuestos);
                 }} 
                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
@@ -1527,8 +1524,7 @@ const CFDIForm = () => {
                 <span>➕</span> Nuevo
               </Button>
             </div>
-
-            {/* Header de la tabla */}
+            {/* Header de la tabla mejorado visualmente */}
             <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-14 gap-1 px-3 py-3 text-xs font-semibold text-gray-800 uppercase tracking-wide">
               <div className="col-span-3 px-2">Producto/Servicio</div>
               <div className="text-center px-1">Cant.</div>
@@ -1540,14 +1536,12 @@ const CFDIForm = () => {
               <div className="text-center px-1 col-span-2">Clave Unidad</div>
               <div className="text-center px-1">Acción</div>
             </div>
-
-            {/* Filas de la tabla */}
+            {/* Filas de la tabla mejoradas visualmente */}
             {fields.length > 0 ? (
               fields.map((item, idx) => (
                 <div key={item.id} className={`grid grid-cols-14 gap-1 px-3 py-2 border-b border-gray-100 text-xs items-center ${
                   idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                 } hover:bg-blue-50 transition-colors`}>
-                  
                   {/* Producto/Servicio */}
                   <div className="col-span-3 px-2">
                     <Controller
@@ -1575,7 +1569,7 @@ const CFDIForm = () => {
                               recalcularImpuestosItem(idx, valorUnitario, cantidad);
                             }
                           }}
-                          className={`w-full border rounded px-2 py-1 text-xs ${fieldState.error ? 'border-red-300' : 'border-gray-300'} focus:border-blue-400 focus:ring-1 focus:ring-blue-200`}
+                          className={`w-full border rounded px-2 py-1 text-xs ${fieldState.error ? 'border-red-300' : 'border-gray-300'} focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white`}
                         >
                           <option value="">Seleccionar...</option>
                           {products.map((prod) => (
@@ -1587,13 +1581,12 @@ const CFDIForm = () => {
                       )}
                     />
                   </div>
-
                   {/* Cantidad */}
                   <div className="px-1">
                     <input
                       type="number"
                       {...register(`items.${idx}.Cantidad`, { valueAsNumber: true, required: true })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                       placeholder="1"
                       min="1"
                       step="0.01"
@@ -1605,13 +1598,12 @@ const CFDIForm = () => {
                       }}
                     />
                   </div>
-
-                  {/* Precio Unitario */}
+                  {/* Precio */}
                   <div className="px-1">
                     <input
                       type="number"
                       {...register(`items.${idx}.ValorUnitario`, { valueAsNumber: true, required: true })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                       placeholder="0.00"
                       min="0"
                       step="0.01"
@@ -1623,8 +1615,7 @@ const CFDIForm = () => {
                       }}
                     />
                   </div>
-
-                  {/* IVA Calculado - Solo mostrar */}
+                  {/* IVA */}
                   <div className="px-1">
                     {(() => {
                       const cantidad = Number(watch(`items.${idx}.Cantidad`) || 0);
@@ -1646,11 +1637,10 @@ const CFDIForm = () => {
                       );
                     })()}
                   </div>
-
-                  {/* Tipo de Impuesto */}
+                  {/* Tipo */}
                   <div className="px-1">
                     <select
-                      className="w-full border border-gray-300 rounded px-1 py-1 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                      className="w-full border border-gray-300 rounded px-1 py-1 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                       onChange={(e) => {
                         const tipoImpuesto = e.target.value;
                         const valorUnitario = Number(watch(`items.${idx}.ValorUnitario`) || 0);
@@ -1664,34 +1654,31 @@ const CFDIForm = () => {
                       <option value="sin_iva">Sin IVA</option>
                     </select>
                   </div>
-
-                  {/* Descuento */}
+                  {/* Desc. */}
                   <div className="px-1">
                     <input
                       type="number"
                       {...register(`items.${idx}.Descuento`)}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                       placeholder="0"
                       min="0"
                       step="0.01"
                     />
                   </div>
-
                   {/* Unidad */}
                   <div className="col-span-2 px-1">
                     <input
                       type="text"
                       {...register(`items.${idx}.Unidad`, { required: true })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                       placeholder="Pieza"
                     />
                   </div>
-
                   {/* Clave Unidad */}
                   <div className="col-span-2 px-1">
                     <select
                       {...register(`items.${idx}.ClaveUnidad`, { required: true })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                     >
                       <option value="">Clave...</option>
                       {catalogs.ClaveUnidad.map((opt, cidx) => (
@@ -1699,7 +1686,6 @@ const CFDIForm = () => {
                       ))}
                     </select>
                   </div>
-
                   {/* Acción */}
                   <div className="flex justify-center px-1">
                     <button
