@@ -1553,7 +1553,7 @@ const CFDIForm = () => {
                 {/* Precio */}
                 <div className="text-center">${item.ValorUnitario}</div>
                 {/* IVA */}
-                <div className="text-center text-green-600 font-medium">${item.Impuestos?.Traslados?.[0]?.Importe?.toFixed(2) || '0.00'}</div>
+                <div className="text-center text-green-600 font-medium">${Number(item.Impuestos?.Traslados?.[0]?.Importe || 0).toFixed(2)}</div>
                 {/* Tipo */}
                 <div className="text-center">{item.TipoImpuesto || '16%'}</div>
                 {/* Desc. */}
