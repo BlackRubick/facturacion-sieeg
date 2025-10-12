@@ -27,7 +27,7 @@ const Login = () => {
     <div className="min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-blue-100 to-blue-200">
       <div className="bg-white rounded-xl shadow-2xl border border-blue-100 w-full max-w-md p-8 flex flex-col items-center mx-2">
         <img
-          src="public/SIEEG NEW.png"
+          src="/SIEEGNEW.png"
           alt="Logo SIEEG"
           className="h-20 object-contain mt-2 mb-6 shadow-lg"
         />
