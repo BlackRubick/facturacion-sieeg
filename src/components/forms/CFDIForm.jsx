@@ -1582,14 +1582,12 @@ const CFDIForm = () => {
               )}
             />
             {/* IVA */}
-            <div className="text-center text-green-600 font-medium bg-green-50 px-2 py-1 rounded text-xs">
-              ${
-                (() => {
-                  const imp = watch('items.0.Impuestos?.Traslados?.[0]?.Importe');
-                  return imp ? Number(imp).toFixed(2) : '0.00';
-                })()
-              }
-            </div>
+            <div className="text-center text-green-600 font-medium">${
+                  (() => {
+                    const imp = item.Impuestos?.Traslados?.[0]?.Importe;
+                    return imp && !isNaN(Number(imp)) ? Number(imp).toFixed(2) : '0.00';
+                  })()
+                }</div>
             {/* Tipo */}
             <Controller
               name={`items.0.TipoImpuesto`}
