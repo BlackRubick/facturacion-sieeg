@@ -1560,8 +1560,8 @@ const CFDIForm = () => {
                 >
                   <option value="">Seleccionar...</option>
                   {products.map((prod) => (
-                    <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
-                      {(prod.name || 'Sin nombre').substring(0, 40)}
+                    <option key={prod.claveprodserv} value={prod.claveprodserv || ''} title={prod.name || 'Sin nombre'}>
+                      {prod.name || 'Sin nombre'}
                     </option>
                   ))}
                 </select>
