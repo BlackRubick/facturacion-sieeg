@@ -1518,7 +1518,7 @@ const CFDIForm = () => {
             </Button>
           </div>
           {/* Header horizontal alineado */}
-          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-9 gap-1 px-3 py-2 text-xs font-semibold text-gray-800 uppercase tracking-wide text-center">
+          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-9 gap-1 px-3 py-2 font-semibold text-gray-800 uppercase tracking-wide text-center text-[10px]">
             <div>Producto/Servicio</div>
             <div>Cant.</div>
             <div>Precio</div>
@@ -1528,9 +1528,9 @@ const CFDIForm = () => {
             <div>Unidad</div>
             <div>Clave Unidad</div>
             <div>Acción</div>
-          </div>
+                   </div>
           {/* Fila de inputs para agregar/editar producto (siempre visible arriba) */}
-          <div className="grid grid-cols-9 gap-1 px-3 py-2 items-center bg-white border-b border-gray-100">
+          <div className="grid grid-cols-9 gap-1 px-3 py-2 items-center bg-white border-b border-gray-100 text-[10px]">
             {/* Producto/Servicio */}
             <Controller
               name="nuevoProducto.ClaveProdServ"
@@ -1538,7 +1538,7 @@ const CFDIForm = () => {
               defaultValue=""
               render={({ field }) => (
                 <select
-                  className="border rounded px-2 py-1 text-xs w-full"
+                  className="border rounded px-2 py-1 text-[10px] w-full"
                   value={field.value || ''}
                   onChange={e => {
                     const clave = e.target.value;
@@ -1575,7 +1575,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <input
                   type="number"
-                  className="border rounded px-2 py-1 text-xs w-full text-center"
+                  className="border rounded px-2 py-1 text-[10px] w-full text-center"
                   placeholder="1"
                   min="1"
                   step="0.01"
@@ -1595,7 +1595,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <input
                   type="number"
-                  className="border rounded px-2 py-1 text-xs w-full text-center"
+                  className="border rounded px-2 py-1 text-[10px] w-full text-center"
                   placeholder="0.00"
                   min="0"
                   step="0.01"
@@ -1608,7 +1608,7 @@ const CFDIForm = () => {
               )}
             />
             {/* IVA */}
-            <div className="text-center text-green-600 font-medium bg-green-50 px-2 py-1 rounded text-xs">
+            <div className="text-center text-green-600 font-medium bg-green-50 px-2 py-1 rounded text-[10px]">
               ${
                 (() => {
                   const imp = watch('nuevoProducto.Impuestos?.Traslados?.[0]?.Importe');
@@ -1623,7 +1623,7 @@ const CFDIForm = () => {
               defaultValue="con_iva"
               render={({ field }) => (
                 <select
-                  className="border rounded px-2 py-1 text-xs w-full"
+                  className="border rounded px-2 py-1 text-[10px] w-full"
                   value={field.value || 'con_iva'}
                   onChange={e => {
                     field.onChange(e.target.value);
@@ -1644,7 +1644,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <input
                   type="number"
-                  className="border rounded px-2 py-1 text-xs w-full text-center"
+                  className="border rounded px-2 py-1 text-[10px] w-full text-center"
                   placeholder="0"
                   min="0"
                   step="0.01"
@@ -1661,7 +1661,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <input
                   type="text"
-                  className="border rounded px-2 py-1 text-xs w-full text-center"
+                  className="border rounded px-2 py-1 text-[10px] w-full text-center"
                   placeholder="Pieza"
                   value={field.value || ''}
                   onChange={field.onChange}
@@ -1675,7 +1675,7 @@ const CFDIForm = () => {
               defaultValue={''}
               render={({ field }) => (
                 <select
-                  className="border rounded px-2 py-1 text-xs w-full"
+                  className="border rounded px-2 py-1 text-[10px] w-full"
                   value={field.value || ''}
                   onChange={field.onChange}
                 >
@@ -1733,7 +1733,7 @@ const CFDIForm = () => {
           </div>
           {/* Filas de la tabla existentes */}
           {fields.length > 0 && fields.map((item, idx) => (
-            <div key={item.id} className={`grid grid-cols-9 gap-1 px-3 py-2 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100`}>
+            <div key={item.id} className={`grid grid-cols-9 gap-1 px-3 py-2 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[10px]`}>
               {/* Producto/Servicio */}
               <div className="truncate">{item.Descripcion || 'Sin nombre'}</div>
               {/* Cantidad */}
