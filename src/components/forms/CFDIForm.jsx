@@ -1467,247 +1467,113 @@ const CFDIForm = () => {
       </div>
       <div className="mb-8 p-6 bg-gray-50 rounded-xl shadow">
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Productos / Conceptos</h3>
-        {productosImportados.length > 0 ? (
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
-            {/* Header de la tabla */}
-            <div className="bg-gray-200 border-b border-gray-300 grid grid-cols-14 text-xs font-bold text-gray-700 uppercase tracking-wide" style={{borderBottom: '2px solid #e5e7eb'}}>
-              <div className="col-span-3 flex items-center justify-center border-r border-gray-300 py-2">Producto/Servicio</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">Cant.</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">Precio</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">IVA</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">Tipo</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">Desc.</div>
-              <div className="col-span-2 flex items-center justify-center border-r border-gray-300 py-2">Unidad</div>
-              <div className="col-span-2 flex items-center justify-center border-r border-gray-300 py-2">Clave Unidad</div>
-              <div className="flex items-center justify-center py-2">Acción</div>
-            </div>
-            {/* Filas de productos */}
-            {productosImportados.map((prod, idx) => (
-              <div key={idx} className={`grid grid-cols-14 text-xs items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-200`}>
-                <div className="col-span-3 px-2 py-2 border-r border-gray-200">{prod.name || 'Sin nombre'}</div>
-                <div className="text-center px-1 py-2 border-r border-gray-200">{prod.quantity}</div>
-                <div className="text-center px-1 py-2 border-r border-gray-200">${prod.price || prod.total}</div>
-                <div className="text-center px-1 py-2 border-r border-gray-200 font-medium">
-                  <span className="font-mono bg-green-100 px-2 py-1 rounded">${((prod.price || prod.total) * prod.quantity * 0.16).toFixed(2)}</span>
-                </div>
-                <div className="text-center px-1 py-2 border-r border-gray-200">16%</div>
-                <div className="text-center px-1 py-2 border-r border-gray-200">0</div>
-                <div className="col-span-2 text-center px-1 py-2 border-r border-gray-200">Pieza</div>
-                <div className="col-span-2 text-center px-1 py-2 border-r border-gray-200">Clave</div>
-                <div className="flex justify-center px-1 py-2">-</div>
-              </div>
-            ))}
-            {/* Footer */}
-            <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
-              Productos importados del pedido #{pedidoInput} • Total de {productosImportados.length} productos
-            </div>
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          {/* Botones en la parte superior */}
+          <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex gap-3">
+            <Button 
+              type="button" 
+              onClick={() => {
+                // Crear concepto con impuestos IVA 16% por defecto
+                const conceptoConImpuestos = {
+                  ...defaultConcepto,
+                  Impuestos: calcularImpuestos(0, 1, 'con_iva')
+                };
+                append(conceptoConImpuestos);
+              }} 
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+            >
+              <span>➕</span> Agregar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setShowProductModal(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+              title="Crear nuevo producto"
+            >
+              <span>➕</span> Nuevo
+            </Button>
           </div>
-        ) : (
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
-            {/* Botones en la parte superior */}
-            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex gap-3">
-              <Button 
-                type="button" 
-                onClick={() => {
-                  // Crear concepto con impuestos IVA 16% por defecto
-                  const conceptoConImpuestos = {
-                    ...defaultConcepto,
-                    Impuestos: calcularImpuestos(0, 1, 'con_iva')                  };
-                  append(conceptoConImpuestos);
-                }} 
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
-              >
-                <span>➕</span> Agregar
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setShowProductModal(true)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
-                title="Crear nuevo producto"
-              >
-                <span>➕</span> Nuevo
-              </Button>
-            </div>
-            {/* Header de la tabla mejorado visualmente */}
-            <div className="bg-gray-200 border-b border-gray-300 grid grid-cols-14 text-xs font-bold text-gray-700 uppercase tracking-wide" style={{borderBottom: '2px solid #e5e7eb'}}>
-              <div className="col-span-3 flex items-center justify-center border-r border-gray-300 py-2">Producto/Servicio</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">Cant.</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">Precio</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">IVA</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">Tipo</div>
-              <div className="flex items-center justify-center border-r border-gray-300 py-2">Desc.</div>
-              <div className="col-span-2 flex items-center justify-center border-r border-gray-300 py-2">Unidad</div>
-              <div className="col-span-2 flex items-center justify-center border-r border-gray-300 py-2">Clave Unidad</div>
-              <div className="flex items-center justify-center py-2">Acción</div>
-            </div>
-            {/* Filas de la tabla mejoradas visualmente */}
-            {fields.length > 0 ? (
-              fields.map((item, idx) => (
-                <div key={item.id} className={`grid grid-cols-14 text-xs items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-200`}>
-                  {/* Producto/Servicio */}
-                  <div className="col-span-3 px-2 py-2 border-r border-gray-200">
-                    <Controller
-                      name={`items.${idx}.ClaveProdServ`}
-                      control={control}
-                      rules={{ required: 'Requerido' }}
-                      render={({ field, fieldState }) => (
-                        <select
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e.target.value);
-                            const selected = products.find(p => p.claveprodserv === e.target.value);
-                            if (selected) {
-                              const valorUnitario = Number(selected.price || 0);
-                              const cantidad = Number(watch(`items.${idx}.Cantidad`) || 1);
-                              
-                              setValue(`items.${idx}.ClaveProdServ`, selected.claveprodserv || '');
-                              setValue(`items.${idx}.NoIdentificacion`, selected.sku || '');
-                              setValue(`items.${idx}.ClaveUnidad`, selected.claveunidad || '');
-                              setValue(`items.${idx}.Unidad`, selected.unidad || 'Pieza');
-                              setValue(`items.${idx}.ValorUnitario`, valorUnitario);
-                              setValue(`items.${idx}.Descripcion`, selected.name || '');
-                              
-                              // 🔥 RECALCULAR IMPUESTOS AL SELECCIONAR PRODUCTO
-                              recalcularImpuestosItem(idx, valorUnitario, cantidad);
-                            }
-                          }}
-                          className={`w-full border rounded px-2 py-1 text-xs ${fieldState.error ? 'border-red-300' : 'border-gray-300'} focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white`}
-                        >
-                          <option value="">Seleccionar...</option>
-                          {products.map((prod) => (
-                            <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
-                              {(prod.name || 'Sin nombre').substring(0, 40)}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    />
-                  </div>
-                  {/* Cantidad */}
-                  <div className="px-1 py-2 border-r border-gray-200">
-                    <input
-                      type="number"
-                      {...register(`items.${idx}.Cantidad`, { valueAsNumber: true, required: true })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
-                      placeholder="1"
-                      min="1"
-                      step="0.01"
-                      onChange={(e) => {
-                        const cantidad = Number(e.target.value);
-                        const valorUnitario = Number(watch(`items.${idx}.ValorUnitario`) || 0);
-                        setValue(`items.${idx}.Cantidad`, cantidad);
-                        recalcularImpuestosItem(idx, valorUnitario, cantidad);
-                      }}
-                    />
-                  </div>
-                  {/* Precio */}
-                  <div className="px-1 py-2 border-r border-gray-200">
-                    <input
-                      type="number"
-                      {...register(`items.${idx}.ValorUnitario`, { valueAsNumber: true, required: true })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                      onChange={(e) => {
-                        const valorUnitario = Number(e.target.value);
-                        const cantidad = Number(watch(`items.${idx}.Cantidad`) || 1);
-                        setValue(`items.${idx}.ValorUnitario`, valorUnitario);
-                        recalcularImpuestosItem(idx, valorUnitario, cantidad);
-                      }}
-                    />
-                  </div>
-                  {/* IVA */}
-                  <div className="px-1 py-2 border-r border-gray-200">
-                    {(() => {
-                      const cantidad = Number(watch(`items.${idx}.Cantidad`) || 0);
-                      const valorUnitario = Number(watch(`items.${idx}.ValorUnitario`) || 0);
-                      const impuestos = watch(`items.${idx}.Impuestos`);
-                      
-                      let importeIVA = 0;
-                      if (impuestos?.Traslados?.length > 0) {
-                        const ivaTraslado = impuestos.Traslados.find(t => t.Impuesto === '002');
-                        if (ivaTraslado) {
-                          importeIVA = Number(ivaTraslado.Importe || 0);
-                        }
-                      }
-                      
-                      return (
-                        <div className="text-center text-green-600 font-medium bg-green-50 px-1 py-1 rounded text-xs">
-                          ${importeIVA.toFixed(2)}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                  {/* Tipo */}
-                  <div className="px-1 py-2 border-r border-gray-200">
-                    <select
-                      className="w-full border border-gray-300 rounded px-1 py-1 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
-                      onChange={(e) => {
-                        const tipoImpuesto = e.target.value;
-                        const valorUnitario = Number(watch(`items.${idx}.ValorUnitario`) || 0);
-                        const cantidad = Number(watch(`items.${idx}.Cantidad`) || 1);
-                        recalcularImpuestosItem(idx, valorUnitario, cantidad, tipoImpuesto);
-                      }}
-                      defaultValue="con_iva"
-                    >
-                      <option value="con_iva">16%</option>
-                      <option value="exento">Exento</option>
-                      <option value="sin_iva">Sin IVA</option>
-                    </select>
-                  </div>
-                  {/* Desc. */}
-                  <div className="px-1 py-2 border-r border-gray-200">
-                    <input
-                      type="number"
-                      {...register(`items.${idx}.Descuento`)}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
-                      placeholder="0"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                  {/* Unidad */}
-                  <div className="col-span-2 px-1 py-2 border-r border-gray-200">
-                    <input
-                      type="text"
-                      {...register(`items.${idx}.Unidad`, { required: true })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-center focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
-                      placeholder="Pieza"
-                    />
-                  </div>
-                  {/* Clave Unidad */}
-                  <div className="col-span-2 px-1 py-2 border-r border-gray-200">
-                    <select
-                      {...register(`items.${idx}.ClaveUnidad`, { required: true })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
-                    >
-                      <option value="">Clave...</option>
-                      {catalogs.ClaveUnidad.map((opt, cidx) => (
-                        <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {/* Acción */}
-                  <div className="flex justify-center px-1 py-2">
-                    <button
-                      type="button"
-                      onClick={() => remove(idx)}
-                      className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors"
-                      title="Eliminar producto"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500 text-sm">
-                No hay productos. Haz clic en "Agregar" para empezar.
-              </div>
-            )}
+          {/* Header horizontal alineado */}
+          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-9 gap-1 px-3 py-2 text-xs font-semibold text-gray-800 uppercase tracking-wide text-center">
+            <div>Producto/Servicio</div>
+            <div>Cant.</div>
+            <div>Precio</div>
+            <div>IVA</div>
+            <div>Tipo</div>
+            <div>Desc.</div>
+            <div>Unidad</div>
+            <div>Clave Unidad</div>
+            <div>Acción</div>
           </div>
-        )}
+          {/* Fila de inputs para agregar/editar producto */}
+          <div className="grid grid-cols-9 gap-1 px-3 py-2 items-center bg-white border-b border-gray-100">
+            {/* Producto/Servicio */}
+            <select className="border rounded px-2 py-1 text-xs w-full" defaultValue="">
+              <option value="">Seleccionar...</option>
+              {products.map((prod) => (
+                <option key={prod.claveprodserv} value={prod.claveprodserv || ''}>
+                  {(prod.name || 'Sin nombre').substring(0, 40)}
+                </option>
+              ))}
+            </select>
+            {/* Cantidad */}
+            <input type="number" className="border rounded px-2 py-1 text-xs w-full text-center" placeholder="1" min="1" step="0.01" />
+            {/* Precio */}
+            <input type="number" className="border rounded px-2 py-1 text-xs w-full text-center" placeholder="0.00" min="0" step="0.01" />
+            {/* IVA */}
+            <div className="text-center text-green-600 font-medium bg-green-50 px-2 py-1 rounded text-xs">$0.00</div>
+            {/* Tipo */}
+            <select className="border rounded px-2 py-1 text-xs w-full">
+              <option value="con_iva">16%</option>
+              <option value="exento">Exento</option>
+              <option value="sin_iva">Sin IVA</option>
+            </select>
+            {/* Desc. */}
+            <input type="number" className="border rounded px-2 py-1 text-xs w-full text-center" placeholder="0" min="0" step="0.01" />
+            {/* Unidad */}
+            <input type="text" className="border rounded px-2 py-1 text-xs w-full text-center" placeholder="Pieza" />
+            {/* Clave Unidad */}
+            <select className="border rounded px-2 py-1 text-xs w-full">
+              <option value="">Clave...</option>
+              {catalogs.ClaveUnidad.map((opt, cidx) => (
+                <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
+              ))}
+            </select>
+            {/* Acción */}
+            <button type="button" className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors" title="Eliminar producto">✕</button>
+          </div>
+          {/* Filas de la tabla existentes */}
+          {fields.length > 0 ? (
+            fields.map((item, idx) => (
+              <div key={item.id} className={`grid grid-cols-9 gap-1 px-3 py-2 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100`}>
+                {/* Producto/Servicio */}
+                <div className="truncate">{item.Descripcion || 'Sin nombre'}</div>
+                {/* Cantidad */}
+                <div className="text-center">{item.Cantidad}</div>
+                {/* Precio */}
+                <div className="text-center">${item.ValorUnitario}</div>
+                {/* IVA */}
+                <div className="text-center text-green-600 font-medium">${item.Impuestos?.Traslados?.[0]?.Importe?.toFixed(2) || '0.00'}</div>
+                {/* Tipo */}
+                <div className="text-center">{item.TipoImpuesto || '16%'}</div>
+                {/* Desc. */}
+                <div className="text-center">{item.Descuento || 0}</div>
+                {/* Unidad */}
+                <div className="text-center">{item.Unidad || ''}</div>
+                {/* Clave Unidad */}
+                <div className="text-center">{item.ClaveUnidad || ''}</div>
+                {/* Acción */}
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => remove(idx)} className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors" title="Eliminar producto">✕</button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500 text-sm">
+              No hay productos. Haz clic en "Agregar" para empezar.
+            </div>
+          )}
+        </div>
       </div>
       <div className="flex gap-2 mt-8 flex-wrap">
 
