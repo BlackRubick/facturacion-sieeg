@@ -1519,7 +1519,7 @@ const CFDIForm = () => {
           </div>
           {/* Header horizontal alineado */}
           <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-9 gap-1 px-3 py-2 font-semibold text-gray-800 uppercase tracking-wide text-center text-[10px]">
-            <div>Producto/Servicio</div>
+            <div>Producto</div>
             <div>Cant.</div>
             <div>Precio</div>
             <div>IVA</div>
