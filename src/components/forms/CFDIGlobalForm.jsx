@@ -1668,3 +1668,5 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
     </div>
   );
 }
+
+export default CFDIGlobalForm;
