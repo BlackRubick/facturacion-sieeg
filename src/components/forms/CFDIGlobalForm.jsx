@@ -312,6 +312,11 @@ const CFDIGlobalForm = () => {
       if (cfdiData.NumOrder && cfdiData.NumOrder.trim() !== '') {
         const orderId = cfdiData.NumOrder.trim();
         const updateUrl = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}?consumer_key=${WOOCOMMERCE_CONSUMER_KEY}&consumer_secret=${WOOCOMMERCE_CONSUMER_SECRET}`;
+        console.log('🟡 Enviando petición para actualizar estado del pedido en WooCommerce:', {
+          url: updateUrl,
+          orderId,
+          body: { status: 'completed' }
+        });
         try {
           const res = await fetch(updateUrl, {
             method: 'PUT',
@@ -320,11 +325,12 @@ const CFDIGlobalForm = () => {
             },
             body: JSON.stringify({ status: 'completed' }) // Cambia 'completed' por el estado que desees
           });
+          const responseText = await res.text();
+          console.log('🟢 Respuesta de WooCommerce al actualizar pedido:', responseText);
           if (res.ok) {
             console.log(`✅ Pedido #${orderId} actualizado a 'completed'`);
           } else {
-            const errText = await res.text();
-            console.error(`❌ Error actualizando pedido #${orderId}:`, errText);
+            console.error(`❌ Error actualizando pedido #${orderId}:`, responseText);
           }
         } catch (err) {
           console.error(`❌ Error en fetch al actualizar pedido #${orderId}:`, err);
