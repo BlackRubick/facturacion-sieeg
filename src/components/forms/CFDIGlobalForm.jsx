@@ -1018,7 +1018,7 @@ const CFDIGlobalForm = () => {
               )}
 
               {/* Datos del cliente con opción de editar */}
-              <PreviewClienteStep2 
+              <PreviewCliente 
                 clienteData={clienteData}
                 onClienteUpdate={handleClienteUpdate}
               />
