@@ -1175,6 +1175,18 @@ const CFDIForm = () => {
     setLoadingClientData(false);
   };
 
+  const handleAddProductManual = (producto) => {
+    // Calcular impuestos automáticamente al agregar producto manual
+    const impuestos = calcularImpuestos(producto.ValorUnitario, producto.Cantidad, 'con_iva');
+    const concepto = {
+      ...producto,
+      Impuestos: impuestos,
+      ObjetoImp: '02', // Asegurar que sea objeto de impuesto
+    };
+    append(concepto);
+    console.log('✅ Producto manual agregado con impuestos:', concepto);
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-lg">
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">

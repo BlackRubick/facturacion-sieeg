@@ -355,7 +355,7 @@ const CFDIGlobalForm = () => {
       UsoCFDI: formData.UsoCFDI,
       Conceptos: formData.items,
       InformacionGlobal: formData.InformacionGlobal,
-      NumOrder: String(formData.NumeroPedido || '').trim(), // 🔥 NUEVO: Número de pedido para el PDF
+      NumOrder: String(formData.NumeroPedido || '').trim(), 
       BorradorSiFalla: '1',
       Draft: '1',
     };
