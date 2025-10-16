@@ -1643,11 +1643,11 @@ const CFDIForm = () => {
                 />
               )}
             />
-            {/* IVA */}
+            {/* IVA en la fila de alta (nuevoProducto) */}
             <div className="text-center text-green-600 font-medium">
               ${
-                item.Impuestos && item.Impuestos.Traslados && item.Impuestos.Traslados.length > 0
-                  ? item.Impuestos.Traslados[0].Importe
+                watch('nuevoProducto.Impuestos') && watch('nuevoProducto.Impuestos').Traslados && watch('nuevoProducto.Impuestos').Traslados.length > 0
+                  ? watch('nuevoProducto.Impuestos').Traslados[0].Importe
                   : '0.00'
               }
             </div>
