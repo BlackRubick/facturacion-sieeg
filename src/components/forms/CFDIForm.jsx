@@ -1554,7 +1554,7 @@ const CFDIForm = () => {
             </Button>
           </div>
           {/* Header horizontal alineado */}
-          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-9 gap-1 px-3 py-2 font-semibold text-gray-800 uppercase tracking-wide text-center text-[10px]">
+          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-8 gap-2 px-3 py-3 font-semibold text-gray-800 uppercase tracking-wide text-center text-[14px]">
             <div>Producto</div>
             <div>Cant.</div>
             <div>Precio</div>
@@ -1563,10 +1563,9 @@ const CFDIForm = () => {
             <div>Desc.</div>
             <div>Unidad</div>
             <div>Clave Unidad</div>
-            <div>Acción</div>
-                   </div>
+          </div>
           {/* Fila de inputs para agregar/editar producto (siempre visible arriba) */}
-          <div className="grid grid-cols-9 gap-1 px-3 py-2 items-center bg-white border-b border-gray-100 text-[10px]">
+          <div className="grid grid-cols-8 gap-2 px-3 py-3 items-center bg-white border-b border-gray-100 text-[14px]">
             {/* Producto/Servicio */}
             <Controller
               name="nuevoProducto.ClaveProdServ"
@@ -1726,80 +1725,18 @@ const CFDIForm = () => {
                 </select>
               )}
             />
-            {/* Acción */}
-            <div className="flex justify-center">
-              <button
-                type="button"
-                className="bg-green-500 hover:bg-green-600 text-white rounded w-8 h-8 flex items-center justify-center text-lg font-bold shadow-sm transition-colors"
-                title="Agregar producto"
-                onClick={() => {
-                  // Validar campos mínimos
-                  const np = watch('nuevoProducto');
-                  if (!np || !np.ClaveProdServ || !np.Descripcion) return;
-                  // Calcular impuestos para el nuevo producto
-                  const impuestos = recalcularImpuestosItem(-1, np.ValorUnitario, np.Cantidad, np.TipoImpuesto, true) || np.Impuestos;
-                  append({
-                    ClaveProdServ: np.ClaveProdServ,
-                    NoIdentificacion: np.NoIdentificacion || '',
-                    Cantidad: Number(np.Cantidad) || 1,
-                    ClaveUnidad: np.ClaveUnidad || '',
-                    Unidad: np.Unidad || 'Pieza',
-                    ValorUnitario: Number(np.ValorUnitario) || 0,
-                    Descripcion: np.Descripcion || '',
-                    Descuento: np.Descuento || '0',
-                    ObjetoImp: '02',
-                    TipoImpuesto: np.TipoImpuesto || 'con_iva',
-                    Impuestos: impuestos,
-                  });
-                  // Limpiar la fila de alta
-                  setValue('nuevoProducto', {
-                    ClaveProdServ: '',
-                    NoIdentificacion: '',
-                    Cantidad: 1,
-                    ClaveUnidad: '',
-                    Unidad: '',
-                    ValorUnitario: '',
-                    Descripcion: '',
-                    Descuento: '0',
-                    ObjetoImp: '02',
-                    TipoImpuesto: 'con_iva',
-                    Impuestos: recalcularImpuestosItem(-1, 0, 1, 'con_iva', true),
-                  });
-                }}
-              >
-                ➕
-              </button>
-            </div>
           </div>
           {/* Filas de la tabla existentes */}
           {fields.length > 0 && fields.map((item, idx) => (
-            <div key={item.id} className={`grid grid-cols-9 gap-1 px-3 py-2 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[10px]`}>
-              {/* Producto/Servicio */}
-              <div className="truncate">{item.Descripcion || 'Sin nombre'}</div>
-              {/* Cantidad */}
+            <div key={item.id} className={`grid grid-cols-8 gap-2 px-3 py-3 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[14px]`}>
+              <div className="truncate font-bold">{item.Descripcion || 'Sin nombre'}</div>
               <div className="text-center">{item.Cantidad}</div>
-              {/* Precio */}
               <div className="text-center">${item.ValorUnitario}</div>
-              {/* IVA */}
-              <div className="text-center text-green-600 font-medium">
-                ${
-                  item.Impuestos && item.Impuestos.Traslados && item.Impuestos.Traslados.length > 0
-                    ? item.Impuestos.Traslados[0].Importe
-                    : '0.00'
-                }
-              </div>
-              {/* Tipo */}
+              <div className="text-center text-green-600 font-bold">${item.Impuestos && item.Impuestos.Traslados && item.Impuestos.Traslados.length > 0 ? item.Impuestos.Traslados[0].Importe : '0.00'}</div>
               <div className="text-center">{item.TipoImpuesto || '16%'}</div>
-              {/* Desc. */}
               <div className="text-center">{item.Descuento || 0}</div>
-              {/* Unidad */}
-              <div className="text-center">{item.Unidad || ''}</div>
-              {/* Clave Unidad */}
-              <div className="text-center">{item.ClaveUnidad || ''}</div>
-              {/* Acción */}
-              <div className="flex justify-center">
-                <button type="button" onClick={() => remove(idx)} className="bg-red-500 hover:bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm transition-colors" title="Eliminar producto">✕</button>
-              </div>
+              <div className="text-center font-bold">{item.Unidad || ''}</div>
+              <div className="text-center font-bold">{item.ClaveUnidad || ''}</div>
             </div>
           ))}
         </div>
