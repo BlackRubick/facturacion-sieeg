@@ -1590,9 +1590,7 @@ const CFDIForm = () => {
                       setValue('nuevoProducto.Cantidad', 1);
                       setValue('nuevoProducto.Descuento', '0');
                       setValue('nuevoProducto.TipoImpuesto', 'con_iva');
-                      // Recalcular y asignar impuestos al seleccionar producto
-                      const impuestos = recalcularImpuestosItem(-1, prod.price || 0, 1, 'con_iva', true);
-                      setValue('nuevoProducto.Impuestos', impuestos);
+                      recalcularImpuestosItem(-1, prod.price || 0, 1, 'con_iva', true);
                     }
                   }}
                 >
@@ -1620,7 +1618,8 @@ const CFDIForm = () => {
                   value={field.value || ''}
                   onChange={e => {
                     field.onChange(e.target.value);
-                    recalcularImpuestosItem(-1, watch('nuevoProducto.ValorUnitario'), e.target.value, watch('nuevoProducto.TipoImpuesto'), true);
+                    const impuestos = calcularImpuestos(watch('nuevoProducto.ValorUnitario'), e.target.value, watch('nuevoProducto.TipoImpuesto'));
+                    setValue('nuevoProducto.Impuestos', impuestos);
                   }}
                 />
               )}
@@ -1640,7 +1639,8 @@ const CFDIForm = () => {
                   value={field.value || ''}
                   onChange={e => {
                     field.onChange(e.target.value);
-                    recalcularImpuestosItem(-1, e.target.value, watch('nuevoProducto.Cantidad'), watch('nuevoProducto.TipoImpuesto'), true);
+                    const impuestos = calcularImpuestos(e.target.value, watch('nuevoProducto.Cantidad'), watch('nuevoProducto.TipoImpuesto'));
+                    setValue('nuevoProducto.Impuestos', impuestos);
                   }}
                 />
               )}
@@ -1664,7 +1664,8 @@ const CFDIForm = () => {
                   value={field.value || 'con_iva'}
                   onChange={e => {
                     field.onChange(e.target.value);
-                    recalcularImpuestosItem(-1, watch('nuevoProducto.ValorUnitario'), watch('nuevoProducto.Cantidad'), e.target.value, true);
+                    const impuestos = calcularImpuestos(watch('nuevoProducto.ValorUnitario'), watch('nuevoProducto.Cantidad'), e.target.value);
+                    setValue('nuevoProducto.Impuestos', impuestos);
                   }}
                 >
                   <option value="con_iva">16%</option>
