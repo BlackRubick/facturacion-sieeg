@@ -1500,9 +1500,9 @@ const CFDIForm = () => {
       </div>
       <div className="mb-8 p-6 bg-gray-50 rounded-xl shadow">
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Productos / Conceptos</h3>
-        <div className="border border-gray-200 rounded-lg overflow-x-auto">
+        <div className="border border-gray-200 rounded-lg w-full" style={{ minWidth: '1200px' }}>
           {/* Header horizontal alineado */}
-          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-8 gap-2 px-3 py-3 font-semibold text-gray-800 uppercase tracking-wide text-center text-[14px]">
+          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 font-semibold text-gray-800 uppercase tracking-wide text-center text-[15px]">
             <div className="text-left">Producto</div>
             <div>Cant.</div>
             <div>Precio</div>
@@ -1513,7 +1513,7 @@ const CFDIForm = () => {
             <div>Clave Unidad</div>
           </div>
           {/* Fila de inputs para agregar/editar producto (siempre visible arriba) */}
-          <div className="grid grid-cols-8 gap-2 px-3 py-3 items-center bg-white border-b border-gray-100 text-[14px]">
+          <div className="grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 items-center bg-white border-b border-gray-100 text-[15px]">
             {/* Producto/Servicio */}
             <Controller
               name="nuevoProducto.ClaveProdServ"
@@ -1521,8 +1521,8 @@ const CFDIForm = () => {
               defaultValue=""
               render={({ field }) => (
                 <select
-                  className="border rounded px-2 py-1 text-[14px] w-full"
-                  style={{ maxWidth: '100%', whiteSpace: 'normal' }}
+                  className="border rounded px-2 py-1 text-[15px] w-full"
+                  style={{ whiteSpace: 'normal' }}
                   value={field.value || ''}
                   onChange={e => {
                     const clave = e.target.value;
@@ -1561,7 +1561,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <input
                   type="number"
-                  className="border rounded px-2 py-1 text-[14px] w-full text-center"
+                  className="border rounded px-2 py-1 text-[15px] w-full text-center"
                   placeholder="1"
                   min="1"
                   step="1"
@@ -1582,7 +1582,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <input
                   type="number"
-                  className="border rounded px-2 py-1 text-[14px] w-full text-center"
+                  className="border rounded px-2 py-1 text-[15px] w-full text-center"
                   placeholder="0.00"
                   min="0"
                   step="0.01"
@@ -1610,7 +1610,7 @@ const CFDIForm = () => {
               defaultValue="con_iva"
               render={({ field }) => (
                 <select
-                  className="border rounded px-2 py-1 text-[14px] w-full"
+                  className="border rounded px-2 py-1 text-[15px] w-full"
                   value={field.value || 'con_iva'}
                   onChange={e => {
                     field.onChange(e.target.value);
@@ -1632,7 +1632,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <input
                   type="number"
-                  className="border rounded px-2 py-1 text-[14px] w-full text-center"
+                  className="border rounded px-2 py-1 text-[15px] w-full text-center"
                   placeholder="0"
                   min="0"
                   step="0.01"
@@ -1649,8 +1649,8 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <input
                   type="text"
-                  className="border rounded px-2 py-1 text-[14px] w-full"
-                  style={{ maxWidth: '100%', whiteSpace: 'normal' }}
+                  className="border rounded px-2 py-1 text-[15px] w-full"
+                  style={{ whiteSpace: 'normal' }}
                   placeholder="Pieza"
                   value={field.value || ''}
                   onChange={field.onChange}
@@ -1664,8 +1664,8 @@ const CFDIForm = () => {
               defaultValue={''}
               render={({ field }) => (
                 <select
-                  className="border rounded px-2 py-1 text-[14px] w-full"
-                  style={{ maxWidth: '100%', whiteSpace: 'normal' }}
+                  className="border rounded px-2 py-1 text-[15px] w-full"
+                  style={{ whiteSpace: 'normal' }}
                   value={field.value || ''}
                   onChange={field.onChange}
                 >
@@ -1679,15 +1679,15 @@ const CFDIForm = () => {
           </div>
           {/* Filas de la tabla existentes */}
           {fields.length > 0 && fields.map((item, idx) => (
-            <div key={item.id} className={`grid grid-cols-8 gap-2 px-3 py-3 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[14px]`}>
-              <div className="truncate font-bold text-left" style={{ maxWidth: '100%', whiteSpace: 'normal' }}>{item.Descripcion || 'Sin nombre'}</div>
+            <div key={item.id} className={`grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[15px]`}>
+              <div className="font-bold text-left" style={{ whiteSpace: 'normal' }}>{item.Descripcion || 'Sin nombre'}</div>
               <div className="text-center">{item.Cantidad}</div>
               <div className="text-center">${item.ValorUnitario}</div>
               <div className="text-center text-green-600 font-bold">${item.Impuestos && item.Impuestos.Traslados && item.Impuestos.Traslados.length > 0 ? item.Impuestos.Traslados[0].Importe : '0.00'}</div>
               <div className="text-center">{item.TipoImpuesto || '16%'}</div>
               <div className="text-center">{item.Descuento || 0}</div>
-              <div className="text-center font-bold" style={{ maxWidth: '100%', whiteSpace: 'normal' }}>{item.Unidad || ''}</div>
-              <div className="text-center font-bold" style={{ maxWidth: '100%', whiteSpace: 'normal' }}>{item.ClaveUnidad || ''}</div>
+              <div className="text-center font-bold" style={{ whiteSpace: 'normal' }}>{item.Unidad || ''}</div>
+              <div className="text-center font-bold" style={{ whiteSpace: 'normal' }}>{item.ClaveUnidad || ''}</div>
             </div>
           ))}
         </div>
