@@ -1500,59 +1500,7 @@ const CFDIForm = () => {
       </div>
       <div className="mb-8 p-6 bg-gray-50 rounded-xl shadow">
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Productos / Conceptos</h3>
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
-          {/* Botones en la parte superior */}
-          <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex gap-3">
-            <Button 
-              type="button" 
-              onClick={() => {
-                // Usar los datos de la fila de alta (nuevoProducto) igual que el botón de acción
-                const np = watch('nuevoProducto');
-                if (!np || !np.ClaveProdServ || !np.Descripcion) return;
-                // Calcular impuestos para el nuevo producto
-                const impuestos = recalcularImpuestosItem(-1, np.ValorUnitario, np.Cantidad, np.TipoImpuesto, true) || np.Impuestos;
-                append({
-                  ClaveProdServ: np.ClaveProdServ,
-                  NoIdentificacion: np.NoIdentificacion || '',
-                  Cantidad: Number(np.Cantidad) || 1,
-                  ClaveUnidad: np.ClaveUnidad || '',
-                  Unidad: np.Unidad || 'Pieza',
-                  ValorUnitario: Number(np.ValorUnitario) || 0,
-                  Descripcion: np.Descripcion || '',
-                  Descuento: np.Descuento || '0',
-                  ObjetoImp: '02',
-                  TipoImpuesto: np.TipoImpuesto || 'con_iva',
-                  Impuestos: impuestos,
-                });
-                // Limpiar la fila de alta
-                setValue('nuevoProducto', {
-                  ClaveProdServ: '',
-                  NoIdentificacion: '',
-                  Cantidad: 1,
-                  ClaveUnidad: '',
-                  Unidad: '',
-                  ValorUnitario: '',
-                  Descripcion: '',
-                  Descuento: '0',
-                  ObjetoImp: '02',
-                  TipoImpuesto: 'con_iva',
-                  Impuestos: recalcularImpuestosItem(-1, 0, 1, 'con_iva', true),
-                });
-              }} 
- 
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
-            >
-              <span>➕</span> Agregar
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setShowProductModal(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
-              title="Crear nuevo producto"
-            >
-              <span>➕</span> Nuevo
-            </Button>
-          </div>
+        <div className="border border-gray-200 rounded-lg overflow-x-auto">
           {/* Header horizontal alineado */}
           <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-8 gap-2 px-3 py-3 font-semibold text-gray-800 uppercase tracking-wide text-center text-[14px]">
             <div className="text-left">Producto</div>
@@ -1574,7 +1522,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <select
                   className="border rounded px-2 py-1 text-[14px] w-full"
-                  style={{ minWidth: '180px', maxWidth: '100%', whiteSpace: 'normal' }}
+                  style={{ maxWidth: '100%', whiteSpace: 'normal' }}
                   value={field.value || ''}
                   onChange={e => {
                     const clave = e.target.value;
@@ -1702,7 +1650,7 @@ const CFDIForm = () => {
                 <input
                   type="text"
                   className="border rounded px-2 py-1 text-[14px] w-full"
-                  style={{ minWidth: '120px', maxWidth: '100%', whiteSpace: 'normal' }}
+                  style={{ maxWidth: '100%', whiteSpace: 'normal' }}
                   placeholder="Pieza"
                   value={field.value || ''}
                   onChange={field.onChange}
@@ -1717,7 +1665,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <select
                   className="border rounded px-2 py-1 text-[14px] w-full"
-                  style={{ minWidth: '120px', maxWidth: '100%', whiteSpace: 'normal' }}
+                  style={{ maxWidth: '100%', whiteSpace: 'normal' }}
                   value={field.value || ''}
                   onChange={field.onChange}
                 >
@@ -1732,14 +1680,14 @@ const CFDIForm = () => {
           {/* Filas de la tabla existentes */}
           {fields.length > 0 && fields.map((item, idx) => (
             <div key={item.id} className={`grid grid-cols-8 gap-2 px-3 py-3 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[14px]`}>
-              <div className="truncate font-bold text-left" style={{ minWidth: '180px', maxWidth: '100%', whiteSpace: 'normal' }}>{item.Descripcion || 'Sin nombre'}</div>
+              <div className="truncate font-bold text-left" style={{ maxWidth: '100%', whiteSpace: 'normal' }}>{item.Descripcion || 'Sin nombre'}</div>
               <div className="text-center">{item.Cantidad}</div>
               <div className="text-center">${item.ValorUnitario}</div>
               <div className="text-center text-green-600 font-bold">${item.Impuestos && item.Impuestos.Traslados && item.Impuestos.Traslados.length > 0 ? item.Impuestos.Traslados[0].Importe : '0.00'}</div>
               <div className="text-center">{item.TipoImpuesto || '16%'}</div>
               <div className="text-center">{item.Descuento || 0}</div>
-              <div className="text-center font-bold" style={{ minWidth: '120px', maxWidth: '100%', whiteSpace: 'normal' }}>{item.Unidad || ''}</div>
-              <div className="text-center font-bold" style={{ minWidth: '120px', maxWidth: '100%', whiteSpace: 'normal' }}>{item.ClaveUnidad || ''}</div>
+              <div className="text-center font-bold" style={{ maxWidth: '100%', whiteSpace: 'normal' }}>{item.Unidad || ''}</div>
+              <div className="text-center font-bold" style={{ maxWidth: '100%', whiteSpace: 'normal' }}>{item.ClaveUnidad || ''}</div>
             </div>
           ))}
         </div>
