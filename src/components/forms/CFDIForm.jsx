@@ -1502,7 +1502,7 @@ const CFDIForm = () => {
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Productos / Conceptos</h3>
         <div className="border border-gray-200 rounded-lg overflow-x-auto">
           {/* Header horizontal alineado */}
-          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-8 gap-2 px-3 py-3 font-semibold text-gray-800 uppercase tracking-wide text-center text-[14px]">
+          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-[2.5fr_0.7fr_0.9fr_0.9fr_0.8fr_0.8fr_1.3fr_1fr] gap-2 px-3 py-3 font-semibold text-gray-800 uppercase tracking-wide text-center text-[14px] min-w-[1200px]">
             <div className="text-left">Producto</div>
             <div>Cant.</div>
             <div>Precio</div>
@@ -1513,7 +1513,7 @@ const CFDIForm = () => {
             <div>Clave Unidad</div>
           </div>
           {/* Fila de inputs para agregar/editar producto (siempre visible arriba) */}
-          <div className="grid grid-cols-8 gap-2 px-3 py-3 items-center bg-white border-b border-gray-100 text-[14px]">
+          <div className="grid grid-cols-[2.5fr_0.7fr_0.9fr_0.9fr_0.8fr_0.8fr_1.3fr_1fr] gap-2 px-3 py-3 items-center bg-white border-b border-gray-100 text-[14px] min-w-[1200px]">
             {/* Producto/Servicio */}
             <Controller
               name="nuevoProducto.ClaveProdServ"
@@ -1649,7 +1649,7 @@ const CFDIForm = () => {
               render={({ field }) => (
                 <input
                   type="text"
-                  className="border rounded px-2 py-1 text-[14px] w-full"
+                  className="border rounded px-2 py-1 text-[14px] w-full font-bold"
                   style={{ maxWidth: '100%', whiteSpace: 'normal' }}
                   placeholder="Pieza"
                   value={field.value || ''}
@@ -1679,14 +1679,14 @@ const CFDIForm = () => {
           </div>
           {/* Filas de la tabla existentes */}
           {fields.length > 0 && fields.map((item, idx) => (
-            <div key={item.id} className={`grid grid-cols-8 gap-2 px-3 py-3 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[14px]`}>
-              <div className="truncate font-bold text-left" style={{ maxWidth: '100%', whiteSpace: 'normal' }}>{item.Descripcion || 'Sin nombre'}</div>
+            <div key={item.id} className={`grid grid-cols-[2.5fr_0.7fr_0.9fr_0.9fr_0.8fr_0.8fr_1.3fr_1fr] gap-2 px-3 py-3 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[14px] min-w-[1200px]`}>
+              <div className="font-bold text-left" style={{ maxWidth: '100%', whiteSpace: 'normal', fontSize: '16px' }}>{item.Descripcion || 'Sin nombre'}</div>
               <div className="text-center">{item.Cantidad}</div>
               <div className="text-center">${item.ValorUnitario}</div>
               <div className="text-center text-green-600 font-bold">${item.Impuestos && item.Impuestos.Traslados && item.Impuestos.Traslados.length > 0 ? item.Impuestos.Traslados[0].Importe : '0.00'}</div>
               <div className="text-center">{item.TipoImpuesto || '16%'}</div>
               <div className="text-center">{item.Descuento || 0}</div>
-              <div className="text-center font-bold" style={{ maxWidth: '100%', whiteSpace: 'normal' }}>{item.Unidad || ''}</div>
+              <div className="text-center font-bold" style={{ maxWidth: '100%', whiteSpace: 'normal', fontSize: '16px' }}>{item.Unidad || ''}</div>
               <div className="text-center font-bold" style={{ maxWidth: '100%', whiteSpace: 'normal' }}>{item.ClaveUnidad || ''}</div>
             </div>
           ))}
