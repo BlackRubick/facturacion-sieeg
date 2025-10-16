@@ -1500,196 +1500,198 @@ const CFDIForm = () => {
       </div>
       <div className="mb-8 p-6 bg-gray-50 rounded-xl shadow">
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Productos / Conceptos</h3>
-        <div className="border border-gray-200 rounded-lg w-full" style={{ minWidth: '1200px' }}>
-          {/* Header horizontal alineado */}
-          <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 font-semibold text-gray-800 uppercase tracking-wide text-center text-[15px]">
-            <div className="text-left">Producto</div>
-            <div>Cant.</div>
-            <div>Precio</div>
-            <div>IVA</div>
-            <div>Tipo</div>
-            <div>Desc.</div>
-            <div>Unidad</div>
-            <div>Clave Unidad</div>
-          </div>
-          {/* Fila de inputs para agregar/editar producto (siempre visible arriba) */}
-          <div className="grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 items-center bg-white border-b border-gray-100 text-[15px]">
-            {/* Producto/Servicio */}
-            <Controller
-              name="nuevoProducto.ClaveProdServ"
-              control={control}
-              defaultValue=""
-              render={({ field }) => (
-                <select
-                  className="border rounded px-2 py-1 text-[15px] w-full"
-                  style={{ whiteSpace: 'normal' }}
-                  value={field.value || ''}
-                  onChange={e => {
-                    const clave = e.target.value;
-                    field.onChange(clave);
-                    // Buscar producto seleccionado
-                    const prod = products.find(p => p.claveprodserv === clave);
-                    if (prod) {
-                      setValue('nuevoProducto.Descripcion', prod.name || '');
-                      setValue('nuevoProducto.ValorUnitario', prod.price || '');
-                      setValue('nuevoProducto.Unidad', prod.unidad || 'Pieza');
-                      setValue('nuevoProducto.ClaveUnidad', prod.claveunidad || 'H87');
-                      setValue('nuevoProducto.NoIdentificacion', prod.sku || '');
-                      setValue('nuevoProducto.Cantidad', 1);
-                      setValue('nuevoProducto.Descuento', '0');
-                      setValue('nuevoProducto.TipoImpuesto', 'con_iva');
-                      // Recalcular impuestos y actualizar el campo
-                      const impuestos = calcularImpuestos(prod.price || 0, 1, 'con_iva');
+        <div className="w-full overflow-x-auto">
+          <div className="border border-gray-200 rounded-lg" style={{ minWidth: '1200px', maxWidth: '100%' }}>
+            {/* Header horizontal alineado */}
+            <div className="bg-gray-100 border-b border-gray-200 grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 font-semibold text-gray-800 uppercase tracking-wide text-center text-[15px]">
+              <div className="text-left">Producto</div>
+              <div>Cant.</div>
+              <div>Precio</div>
+              <div>IVA</div>
+              <div>Tipo</div>
+              <div>Desc.</div>
+              <div>Unidad</div>
+              <div>Clave Unidad</div>
+            </div>
+            {/* Fila de inputs para agregar/editar producto (siempre visible arriba) */}
+            <div className="grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 items-center bg-white border-b border-gray-100 text-[15px]">
+              {/* Producto/Servicio */}
+              <Controller
+                name="nuevoProducto.ClaveProdServ"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <select
+                    className="border rounded px-2 py-1 text-[15px] w-full"
+                    style={{ whiteSpace: 'normal' }}
+                    value={field.value || ''}
+                    onChange={e => {
+                      const clave = e.target.value;
+                      field.onChange(clave);
+                      // Buscar producto seleccionado
+                      const prod = products.find(p => p.claveprodserv === clave);
+                      if (prod) {
+                        setValue('nuevoProducto.Descripcion', prod.name || '');
+                        setValue('nuevoProducto.ValorUnitario', prod.price || '');
+                        setValue('nuevoProducto.Unidad', prod.unidad || 'Pieza');
+                        setValue('nuevoProducto.ClaveUnidad', prod.claveunidad || 'H87');
+                        setValue('nuevoProducto.NoIdentificacion', prod.sku || '');
+                        setValue('nuevoProducto.Cantidad', 1);
+                        setValue('nuevoProducto.Descuento', '0');
+                        setValue('nuevoProducto.TipoImpuesto', 'con_iva');
+                        // Recalcular impuestos y actualizar el campo
+                        const impuestos = calcularImpuestos(prod.price || 0, 1, 'con_iva');
+                        setValue('nuevoProducto.Impuestos', impuestos);
+                      }
+                    }}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {products.map((prod) => (
+                      <option key={prod.claveprodserv} value={prod.claveprodserv || ''} title={prod.name || 'Sin nombre'}>
+                        {prod.name || 'Sin nombre'}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
+              {/* Cantidad */}
+              <Controller
+                name="nuevoProducto.Cantidad"
+                control={control}
+                defaultValue={1}
+                render={({ field }) => (
+                  <input
+                    type="number"
+                    className="border rounded px-2 py-1 text-[15px] w-full text-center"
+                    placeholder="1"
+                    min="1"
+                    step="1"
+                    value={field.value || ''}
+                    onChange={e => {
+                      field.onChange(e.target.value);
+                      const impuestos = calcularImpuestos(watch('nuevoProducto.ValorUnitario'), e.target.value, watch('nuevoProducto.TipoImpuesto'));
                       setValue('nuevoProducto.Impuestos', impuestos);
-                    }
-                  }}
-                >
-                  <option value="">Seleccionar...</option>
-                  {products.map((prod) => (
-                    <option key={prod.claveprodserv} value={prod.claveprodserv || ''} title={prod.name || 'Sin nombre'}>
-                      {prod.name || 'Sin nombre'}
-                    </option>
-                  ))}
-                </select>
-              )}
-            />
-            {/* Cantidad */}
-            <Controller
-              name="nuevoProducto.Cantidad"
-              control={control}
-              defaultValue={1}
-              render={({ field }) => (
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1 text-[15px] w-full text-center"
-                  placeholder="1"
-                  min="1"
-                  step="1"
-                  value={field.value || ''}
-                  onChange={e => {
-                    field.onChange(e.target.value);
-                    const impuestos = calcularImpuestos(watch('nuevoProducto.ValorUnitario'), e.target.value, watch('nuevoProducto.TipoImpuesto'));
-                    setValue('nuevoProducto.Impuestos', impuestos);
-                  }}
-                />
-              )}
-            />
-            {/* Precio */}
-            <Controller
-              name="nuevoProducto.ValorUnitario"
-              control={control}
-              defaultValue={''}
-              render={({ field }) => (
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1 text-[15px] w-full text-center"
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  value={field.value || ''}
-                  onChange={e => {
-                    field.onChange(e.target.value);
-                    const impuestos = calcularImpuestos(e.target.value, watch('nuevoProducto.Cantidad'), watch('nuevoProducto.TipoImpuesto'));
-                    setValue('nuevoProducto.Impuestos', impuestos);
-                  }}
-                />
-              )}
-            />
-            {/* IVA en la fila de alta (nuevoProducto) */}
-            <div className="text-center text-green-600 font-medium">
-              ${
-                watch('nuevoProducto.Impuestos') && watch('nuevoProducto.Impuestos').Traslados && watch('nuevoProducto.Impuestos').Traslados.length > 0
-                  ? watch('nuevoProducto.Impuestos').Traslados[0].Importe
-                  : '0.00'
-              }
+                    }}
+                  />
+                )}
+              />
+              {/* Precio */}
+              <Controller
+                name="nuevoProducto.ValorUnitario"
+                control={control}
+                defaultValue={''}
+                render={({ field }) => (
+                  <input
+                    type="number"
+                    className="border rounded px-2 py-1 text-[15px] w-full text-center"
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    value={field.value || ''}
+                    onChange={e => {
+                      field.onChange(e.target.value);
+                      const impuestos = calcularImpuestos(e.target.value, watch('nuevoProducto.Cantidad'), watch('nuevoProducto.TipoImpuesto'));
+                      setValue('nuevoProducto.Impuestos', impuestos);
+                    }}
+                  />
+                )}
+              />
+              {/* IVA en la fila de alta (nuevoProducto) */}
+              <div className="text-center text-green-600 font-medium">
+                ${
+                  watch('nuevoProducto.Impuestos') && watch('nuevoProducto.Impuestos').Traslados && watch('nuevoProducto.Impuestos').Traslados.length > 0
+                    ? watch('nuevoProducto.Impuestos').Traslados[0].Importe
+                    : '0.00'
+                }
+              </div>
+              {/* Tipo */}
+              <Controller
+                name="nuevoProducto.TipoImpuesto"
+                control={control}
+                defaultValue="con_iva"
+                render={({ field }) => (
+                  <select
+                    className="border rounded px-2 py-1 text-[15px] w-full"
+                    value={field.value || 'con_iva'}
+                    onChange={e => {
+                      field.onChange(e.target.value);
+                      const impuestos = calcularImpuestos(watch('nuevoProducto.ValorUnitario'), watch('nuevoProducto.Cantidad'), e.target.value);
+                      setValue('nuevoProducto.Impuestos', impuestos);
+                    }}
+                  >
+                    <option value="con_iva">16%</option>
+                    <option value="exento">Exento</option>
+                    <option value="sin_iva">Sin IVA</option>
+                  </select>
+                )}
+              />
+              {/* Desc. */}
+              <Controller
+                name="nuevoProducto.Descuento"
+                control={control}
+                defaultValue={0}
+                render={({ field }) => (
+                  <input
+                    type="number"
+                    className="border rounded px-2 py-1 text-[15px] w-full text-center"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+              {/* Unidad */}
+              <Controller
+                name="nuevoProducto.Unidad"
+                control={control}
+                defaultValue={''}
+                render={({ field }) => (
+                  <input
+                    type="text"
+                    className="border rounded px-2 py-1 text-[15px] w-full"
+                    style={{ whiteSpace: 'normal' }}
+                    placeholder="Pieza"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+              {/* Clave Unidad */}
+              <Controller
+                name="nuevoProducto.ClaveUnidad"
+                control={control}
+                defaultValue={''}
+                render={({ field }) => (
+                  <select
+                    className="border rounded px-2 py-1 text-[15px] w-full"
+                    style={{ whiteSpace: 'normal' }}
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  >
+                    <option value="">Clave...</option>
+                    {catalogs.ClaveUnidad.map((opt, cidx) => (
+                      <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
+                    ))}
+                  </select>
+                )}
+              />
             </div>
-            {/* Tipo */}
-            <Controller
-              name="nuevoProducto.TipoImpuesto"
-              control={control}
-              defaultValue="con_iva"
-              render={({ field }) => (
-                <select
-                  className="border rounded px-2 py-1 text-[15px] w-full"
-                  value={field.value || 'con_iva'}
-                  onChange={e => {
-                    field.onChange(e.target.value);
-                    const impuestos = calcularImpuestos(watch('nuevoProducto.ValorUnitario'), watch('nuevoProducto.Cantidad'), e.target.value);
-                    setValue('nuevoProducto.Impuestos', impuestos);
-                  }}
-                >
-                  <option value="con_iva">16%</option>
-                  <option value="exento">Exento</option>
-                  <option value="sin_iva">Sin IVA</option>
-                </select>
-              )}
-            />
-            {/* Desc. */}
-            <Controller
-              name="nuevoProducto.Descuento"
-              control={control}
-              defaultValue={0}
-              render={({ field }) => (
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1 text-[15px] w-full text-center"
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-            {/* Unidad */}
-            <Controller
-              name="nuevoProducto.Unidad"
-              control={control}
-              defaultValue={''}
-              render={({ field }) => (
-                <input
-                  type="text"
-                  className="border rounded px-2 py-1 text-[15px] w-full"
-                  style={{ whiteSpace: 'normal' }}
-                  placeholder="Pieza"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-            {/* Clave Unidad */}
-            <Controller
-              name="nuevoProducto.ClaveUnidad"
-              control={control}
-              defaultValue={''}
-              render={({ field }) => (
-                <select
-                  className="border rounded px-2 py-1 text-[15px] w-full"
-                  style={{ whiteSpace: 'normal' }}
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                >
-                  <option value="">Clave...</option>
-                  {catalogs.ClaveUnidad.map((opt, cidx) => (
-                    <option key={opt.key + '-' + cidx} value={opt.key}>{opt.key}</option>
-                  ))}
-                </select>
-              )}
-            />
+            {/* Filas de la tabla existentes */}
+            {fields.length > 0 && fields.map((item, idx) => (
+              <div key={item.id} className={`grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[15px]`}>
+                <div className="font-bold text-left" style={{ whiteSpace: 'normal' }}>{item.Descripcion || 'Sin nombre'}</div>
+                <div className="text-center">{item.Cantidad}</div>
+                <div className="text-center">${item.ValorUnitario}</div>
+                <div className="text-center text-green-600 font-bold">${item.Impuestos && item.Impuestos.Traslados && item.Impuestos.Traslados.length > 0 ? item.Impuestos.Traslados[0].Importe : '0.00'}</div>
+                <div className="text-center">{item.TipoImpuesto || '16%'}</div>
+                <div className="text-center">{item.Descuento || 0}</div>
+                <div className="text-center font-bold" style={{ whiteSpace: 'normal' }}>{item.Unidad || ''}</div>
+                <div className="text-center font-bold" style={{ whiteSpace: 'normal' }}>{item.ClaveUnidad || ''}</div>
+              </div>
+            ))}
           </div>
-          {/* Filas de la tabla existentes */}
-          {fields.length > 0 && fields.map((item, idx) => (
-            <div key={item.id} className={`grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 text-[15px]`}>
-              <div className="font-bold text-left" style={{ whiteSpace: 'normal' }}>{item.Descripcion || 'Sin nombre'}</div>
-              <div className="text-center">{item.Cantidad}</div>
-              <div className="text-center">${item.ValorUnitario}</div>
-              <div className="text-center text-green-600 font-bold">${item.Impuestos && item.Impuestos.Traslados && item.Impuestos.Traslados.length > 0 ? item.Impuestos.Traslados[0].Importe : '0.00'}</div>
-              <div className="text-center">{item.TipoImpuesto || '16%'}</div>
-              <div className="text-center">{item.Descuento || 0}</div>
-              <div className="text-center font-bold" style={{ whiteSpace: 'normal' }}>{item.Unidad || ''}</div>
-              <div className="text-center font-bold" style={{ whiteSpace: 'normal' }}>{item.ClaveUnidad || ''}</div>
-            </div>
-          ))}
         </div>
       </div>
       <div className="flex gap-2 mt-8 flex-wrap">
