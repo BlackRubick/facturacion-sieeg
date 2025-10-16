@@ -312,10 +312,11 @@ const CFDIGlobalForm = () => {
       if (cfdiData.NumOrder && cfdiData.NumOrder.trim() !== '') {
         const orderId = cfdiData.NumOrder.trim();
         const updateUrl = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}?consumer_key=${WOOCOMMERCE_CONSUMER_KEY}&consumer_secret=${WOOCOMMERCE_CONSUMER_SECRET}`;
+        // 🔥 LOG antes de enviar la petición para cambiar el status
         console.log('🟡 Enviando petición para actualizar estado del pedido en WooCommerce:', {
           url: updateUrl,
           orderId,
-          body: { status: 'completed' }
+          body: { status: 'facturado' } // <-- Cambiado a facturado
         });
         try {
           const res = await fetch(updateUrl, {
@@ -323,12 +324,12 @@ const CFDIGlobalForm = () => {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ status: 'completed' }) // Cambia 'completed' por el estado que desees
+            body: JSON.stringify({ status: 'facturado' }) // <-- Cambiado a facturado
           });
           const responseText = await res.text();
           console.log('🟢 Respuesta de WooCommerce al actualizar pedido:', responseText);
           if (res.ok) {
-            console.log(`✅ Pedido #${orderId} actualizado a 'completed'`);
+            console.log(`✅ Pedido #${orderId} actualizado a 'facturado'`); // <-- Cambiado a facturado
           } else {
             console.error(`❌ Error actualizando pedido #${orderId}:`, responseText);
           }
