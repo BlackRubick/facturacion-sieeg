@@ -1616,7 +1616,7 @@ const CFDIForm = () => {
                   className="border rounded px-2 py-1 text-[10px] w-full text-center"
                   placeholder="1"
                   min="1"
-                  step="0.01"
+                  step="1"
                   value={field.value || ''}
                   onChange={e => {
                     field.onChange(e.target.value);
