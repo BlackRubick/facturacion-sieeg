@@ -1590,7 +1590,9 @@ const CFDIForm = () => {
                       setValue('nuevoProducto.Cantidad', 1);
                       setValue('nuevoProducto.Descuento', '0');
                       setValue('nuevoProducto.TipoImpuesto', 'con_iva');
-                      recalcularImpuestosItem(-1, prod.price || 0, 1, 'con_iva', true);
+                      // Recalcular y asignar impuestos al seleccionar producto
+                      const impuestos = recalcularImpuestosItem(-1, prod.price || 0, 1, 'con_iva', true);
+                      setValue('nuevoProducto.Impuestos', impuestos);
                     }
                   }}
                 >
