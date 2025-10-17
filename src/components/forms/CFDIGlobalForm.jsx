@@ -701,6 +701,9 @@ const CFDIGlobalForm = () => {
         })),
       };
 
+      // Mostrar el status que se enviará a WooCommerce
+      const statusToSend = 'invoiced';
+      console.log('🟢 [handleFacturarStep3] Status que se enviará a WooCommerce:', statusToSend);
       console.log('📤 Enviando CFDI con datos:', cfdiData);
       setCfdiMessage('Generando factura...');
 
