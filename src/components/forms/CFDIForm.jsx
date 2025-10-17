@@ -494,10 +494,10 @@ const CFDIForm = () => {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ status: 'completed' }) // Cambia 'completed' por el estado que desees
+            body: JSON.stringify({ status: 'invoiced' }) 
           });
           if (res.ok) {
-            console.log(`✅ Pedido #${orderId} actualizado a 'completed'`);
+            console.log(`✅ Pedido #${orderId} actualizado a 'invoiced'`);
           } else {
             const errText = await res.text();
             console.error(`❌ Error actualizando pedido #${orderId}:`, errText);
