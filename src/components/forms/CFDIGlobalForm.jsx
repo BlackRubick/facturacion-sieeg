@@ -316,7 +316,7 @@ const CFDIGlobalForm = () => {
         console.log('🟡 Enviando petición para actualizar estado del pedido en WooCommerce:', {
           url: updateUrl,
           orderId,
-          body: { status: 'invoiced' } // <-- Cambiado a facturado
+          body: { status: 'wc-en-camino' } // <-- Cambiado a wc-en-camino
         });
         try {
           const res = await fetch(updateUrl, {
@@ -324,12 +324,12 @@ const CFDIGlobalForm = () => {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ status: 'invoiced' }) // <-- Cambiado a facturado
+            body: JSON.stringify({ status: 'wc-en-camino' }) // <-- Cambiado a wc-en-camino
           });
           const responseText = await res.text();
           console.log('🟢 Respuesta de WooCommerce al actualizar pedido:', responseText);
           if (res.ok) {
-            console.log(`✅ Pedido #${orderId} actualizado a 'invoiced'`); // <-- Cambiado a facturado
+            console.log(`✅ Pedido #${orderId} actualizado a 'wc-en-camino'`); // <-- Cambiado a wc-en-camino
           } else {
             console.error(`❌ Error actualizando pedido #${orderId}:`, responseText);
           }
@@ -702,7 +702,7 @@ const CFDIGlobalForm = () => {
       };
 
       // Mostrar el status que se enviará a WooCommerce
-      const statusToSend = 'invoiced';
+      const statusToSend = 'wc-en-camino';
       console.log('🟢 [handleFacturarStep3] Status que se enviará a WooCommerce:', statusToSend);
       console.log('📤 Enviando CFDI con datos:', cfdiData);
       setCfdiMessage('Generando factura...');
