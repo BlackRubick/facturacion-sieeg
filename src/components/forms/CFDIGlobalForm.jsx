@@ -242,7 +242,7 @@ const CFDIGlobalForm = () => {
   });
 
   // Helper para actualizar el estado del pedido en WooCommerce
-  const updateOrderStatus = async (orderId, status = 'facturado') => {
+  const updateOrderStatus = async (orderId, status = 'invoiced') => {
     if (!orderId) return;
     try {
       const updateUrl = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}`;
@@ -375,10 +375,10 @@ const CFDIGlobalForm = () => {
       alert('CFDI emitido: ' + JSON.stringify(response.data));
       setShowDraft(false);
       setDraftData(null);
-      // Si el borrador tenía NumOrder, intentar actualizar el pedido a 'facturado'
+  // Si el borrador tenía NumOrder, intentar actualizar el pedido a 'invoiced'
       const possibleNumOrder = draftData?.data?.data?.NumOrder || draftData?.data?.NumOrder || '';
-      if (possibleNumOrder && String(possibleNumOrder).trim() !== '') {
-        await updateOrderStatus(String(possibleNumOrder).trim(), 'facturado');
+        if (possibleNumOrder && String(possibleNumOrder).trim() !== '') {
+          await updateOrderStatus(String(possibleNumOrder).trim(), 'invoiced');
       }
     } catch (err) {
       alert('Error al emitir CFDI: ' + (err.response?.data?.message || err.message));
@@ -706,7 +706,7 @@ const CFDIGlobalForm = () => {
       };
 
   // Mostrar el status que se enviará a WooCommerce
-  const statusToSend = 'facturado';
+  const statusToSend = 'invoiced';
   console.log('🟢 [handleFacturarStep3] Status que se enviará a WooCommerce:', statusToSend);
       console.log('📤 Enviando CFDI con datos:', cfdiData);
       setCfdiMessage('Generando factura...');
@@ -755,7 +755,7 @@ const CFDIGlobalForm = () => {
         // Actualizar estado del pedido si existe NumOrder en cfdiData
         const possibleOrderId = cfdiData?.NumOrder || String(watch('NumeroPedido') || '').trim();
         if (possibleOrderId && String(possibleOrderId).trim() !== '') {
-          await updateOrderStatus(String(possibleOrderId).trim(), 'facturado');
+          await updateOrderStatus(String(possibleOrderId).trim(), 'invoiced');
         }
       } else {
         console.error('❌ No se encontró UID en ninguna ubicación');
