@@ -55,6 +55,32 @@ const CFDIForm = () => {
   const [loadingPedido, setLoadingPedido] = useState(false);
   const [productosImportados, setProductosImportados] = useState([]);
   const [emittedUID, setEmittedUID] = useState(null);
+  // Helper para actualizar el estado del pedido en WooCommerce
+  const updateOrderStatus = async (orderId, status = 'invoiced') => {
+    if (!orderId) return;
+    try {
+      const updateUrl = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}`;
+      const basicAuth = 'Basic ' + btoa(`${WOOCOMMERCE_CONSUMER_KEY}:${WOOCOMMERCE_CONSUMER_SECRET}`);
+      console.log('🟡 Actualizando estado del pedido en WooCommerce:', { orderId, status, auth: '[Basic ***masked***]' });
+      const res = await fetch(updateUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': basicAuth
+        },
+        body: JSON.stringify({ status })
+      });
+      const responseText = await res.text();
+      console.log('🟢 Respuesta de WooCommerce al actualizar pedido:', responseText);
+      if (res.ok) {
+        console.log(`✅ Pedido #${orderId} actualizado a '${status}'`);
+      } else {
+        console.error(`❌ Error actualizando pedido #${orderId}:`, responseText);
+      }
+    } catch (err) {
+      console.error(`❌ Error en fetch al actualizar pedido #${orderId}:`, err);
+    }
+  };
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedClientData, setSelectedClientData] = useState(null);
@@ -487,24 +513,7 @@ const CFDIForm = () => {
       // 🔥 ACTUALIZAR ESTADO DEL PEDIDO EN WOOCOMMERCE SI SE FACTURÓ UN PEDIDO
       if (cfdiData.NumOrder && cfdiData.NumOrder.trim() !== '') {
         const orderId = cfdiData.NumOrder.trim();
-        const updateUrl = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}?consumer_key=${WOOCOMMERCE_CONSUMER_KEY}&consumer_secret=${WOOCOMMERCE_CONSUMER_SECRET}`;
-        try {
-          const res = await fetch(updateUrl, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status: 'invoiced' }) 
-          });
-          if (res.ok) {
-            console.log(`✅ Pedido #${orderId} actualizado a 'invoiced'`);
-          } else {
-            const errText = await res.text();
-            console.error(`❌ Error actualizando pedido #${orderId}:`, errText);
-          }
-        } catch (err) {
-          console.error(`❌ Error en fetch al actualizar pedido #${orderId}:`, err);
-        }
+        await updateOrderStatus(orderId, 'invoiced');
       }
     } catch (err) {
       alert('Error: ' + (err.response?.data?.message || err.message));
