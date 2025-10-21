@@ -241,6 +241,33 @@ const CFDIGlobalForm = () => {
     name: 'items',
   });
 
+  // Helper para actualizar el estado del pedido en WooCommerce
+  const updateOrderStatus = async (orderId, status = 'facturado') => {
+    if (!orderId) return;
+    try {
+      const updateUrl = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}`;
+      const basicAuth = 'Basic ' + btoa(`${WOOCOMMERCE_CONSUMER_KEY}:${WOOCOMMERCE_CONSUMER_SECRET}`);
+      console.log('🟡 Actualizando estado del pedido en WooCommerce:', { orderId, status, auth: '[Basic ***masked***]' });
+      const res = await fetch(updateUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': basicAuth
+        },
+        body: JSON.stringify({ status })
+      });
+      const responseText = await res.text();
+      console.log('🟢 Respuesta de WooCommerce al actualizar pedido:', responseText);
+      if (res.ok) {
+        console.log(`✅ Pedido #${orderId} actualizado a '${status}'`);
+      } else {
+        console.error(`❌ Error actualizando pedido #${orderId}:`, responseText);
+      }
+    } catch (err) {
+      console.error(`❌ Error en fetch al actualizar pedido #${orderId}:`, err);
+    }
+  };
+
   useEffect(() => {
     const fetchCatalogs = async () => {
       setLoadingCatalogs(true);
@@ -301,42 +328,14 @@ const CFDIGlobalForm = () => {
       UsoCFDI: data.UsoCFDI,
       Conceptos: data.items,
       InformacionGlobal: data.InformacionGlobal,
-      NumOrder: String(data.NumeroPedido || '').trim(), // 🔥 NUEVO: Número de pedido para el PDF
+      NumOrder: String(data.NumeroPedido || '').trim(), 
     };
     
     console.log('📤 NumOrder que se envía:', cfdiData.NumOrder);
     try {
       const response = await FacturaAPIService.createCFDI40(cfdiData);
       alert('CFDI Global creado: ' + JSON.stringify(response.data));
-      // 🔥 ACTUALIZAR ESTADO DEL PEDIDO EN WOOCOMMERCE SI SE FACTURÓ UN PEDIDO
-      if (cfdiData.NumOrder && cfdiData.NumOrder.trim() !== '') {
-        const orderId = cfdiData.NumOrder.trim();
-        const updateUrl = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}?consumer_key=${WOOCOMMERCE_CONSUMER_KEY}&consumer_secret=${WOOCOMMERCE_CONSUMER_SECRET}`;
-        // 🔥 LOG antes de enviar la petición para cambiar el status
-        console.log('🟡 Enviando petición para actualizar estado del pedido en WooCommerce:', {
-          url: updateUrl,
-          orderId,
-          body: { status: 'wc-en-camino' } // <-- Cambiado a wc-en-camino
-        });
-        try {
-          const res = await fetch(updateUrl, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status: 'wc-en-camino' }) // <-- Cambiado a wc-en-camino
-          });
-          const responseText = await res.text();
-          console.log('🟢 Respuesta de WooCommerce al actualizar pedido:', responseText);
-          if (res.ok) {
-            console.log(`✅ Pedido #${orderId} actualizado a 'wc-en-camino'`); // <-- Cambiado a wc-en-camino
-          } else {
-            console.error(`❌ Error actualizando pedido #${orderId}:`, responseText);
-          }
-        } catch (err) {
-          console.error(`❌ Error en fetch al actualizar pedido #${orderId}:`, err);
-        }
-      }
+      // Nota: El estado se actualizará posteriormente solo si el CFDI se emite correctamente
     } catch (err) {
       alert('Error: ' + (err.response?.data?.message || err.message));
     }
@@ -376,6 +375,11 @@ const CFDIGlobalForm = () => {
       alert('CFDI emitido: ' + JSON.stringify(response.data));
       setShowDraft(false);
       setDraftData(null);
+      // Si el borrador tenía NumOrder, intentar actualizar el pedido a 'facturado'
+      const possibleNumOrder = draftData?.data?.data?.NumOrder || draftData?.data?.NumOrder || '';
+      if (possibleNumOrder && String(possibleNumOrder).trim() !== '') {
+        await updateOrderStatus(String(possibleNumOrder).trim(), 'facturado');
+      }
     } catch (err) {
       alert('Error al emitir CFDI: ' + (err.response?.data?.message || err.message));
     }
@@ -701,9 +705,9 @@ const CFDIGlobalForm = () => {
         })),
       };
 
-      // Mostrar el status que se enviará a WooCommerce
-      const statusToSend = 'wc-en-camino';
-      console.log('🟢 [handleFacturarStep3] Status que se enviará a WooCommerce:', statusToSend);
+  // Mostrar el status que se enviará a WooCommerce
+  const statusToSend = 'facturado';
+  console.log('🟢 [handleFacturarStep3] Status que se enviará a WooCommerce:', statusToSend);
       console.log('📤 Enviando CFDI con datos:', cfdiData);
       setCfdiMessage('Generando factura...');
 
@@ -711,7 +715,7 @@ const CFDIGlobalForm = () => {
       console.log('✅ Respuesta completa de la API:', response);
       console.log('📋 Estructura de response.data:', JSON.stringify(response.data, null, 2));
 
-      // Intentar extraer el UID de diferentes ubicaciones posibles
+  // Intentar extraer el UID de diferentes ubicaciones posibles
       let uid = null;
       
       // Verificar todas las posibles ubicaciones del UID
@@ -748,11 +752,47 @@ const CFDIGlobalForm = () => {
         setCfdiMessage('CFDI creado correctamente.');
         console.log('✅ CFDI creado con UID:', uid);
         alert('¡Factura generada exitosamente! UID: ' + uid);
+        // Actualizar estado del pedido si existe NumOrder en cfdiData
+        const possibleOrderId = cfdiData?.NumOrder || String(watch('NumeroPedido') || '').trim();
+        if (possibleOrderId && String(possibleOrderId).trim() !== '') {
+          await updateOrderStatus(String(possibleOrderId).trim(), 'facturado');
+        }
       } else {
         console.error('❌ No se encontró UID en ninguna ubicación');
         console.error('📋 Respuesta completa:', JSON.stringify(response, null, 2));
         setCfdiMessage('Error: No se recibió el UID del CFDI');
         alert('Error: La factura se procesó pero no se recibió el UID. Revisa la consola para más detalles.');
+      }
+      // 🔥 ACTUALIZAR ESTADO DEL PEDIDO EN WOOCOMMERCE SI SE FACTURÓ UN PEDIDO
+      if (cfdiData.NumOrder && cfdiData.NumOrder.trim() !== '') {
+        const orderId = cfdiData.NumOrder.trim();
+        const updateUrl = `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}`;
+        const basicAuth = 'Basic ' + btoa(`${WOOCOMMERCE_CONSUMER_KEY}:${WOOCOMMERCE_CONSUMER_SECRET}`);
+        console.log('🟡 Enviando petición para actualizar estado del pedido en WooCommerce:', {
+          url: updateUrl,
+          orderId,
+          body: { status: statusToSend },
+          auth: '[Basic ***masked***]'
+        });
+        try {
+          const res = await fetch(updateUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': basicAuth
+            },
+            body: JSON.stringify({ status: statusToSend })
+          });
+          const responseText = await res.text();
+          console.log('🟢 Respuesta de WooCommerce al actualizar pedido:', responseText);
+          if (res.ok) {
+            console.log(`✅ Pedido #${orderId} actualizado a '${statusToSend}'`);
+          } else {
+            console.error(`❌ Error actualizando pedido #${orderId}:`, responseText);
+          }
+        } catch (err) {
+          console.error(`❌ Error en fetch al actualizar pedido #${orderId}:`, err);
+        }
       }
     } catch (err) {
       console.error('❌ Error al crear CFDI:', err);
