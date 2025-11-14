@@ -385,7 +385,7 @@ const CFDIForm = () => {
         console.log('⚠️ Usando valor del watch en su lugar:', watchValue);
         usoCFDIValue = watchValue.trim();
       } else {
-        //alert('Error: No se ha seleccionado un Uso CFDI. Por favor selecciona uno antes de enviar.');
+        alert('Error: No se ha seleccionado un Uso CFDI. Por favor selecciona uno antes de enviar.');
         return;
       }
     }
@@ -421,14 +421,14 @@ const CFDIForm = () => {
     if (!formaPagoFinal || formaPagoFinal.trim() === '') {
       console.error('❌ ERROR: FormaPago está vacío o no seleccionado!');
       console.log('🔍 Valores disponibles en FormaPago:', catalogs.FormaPago.slice(0, 3));
-      //alert('Error: Debes seleccionar una Forma de Pago antes de crear el CFDI.');
+      alert('Error: Debes seleccionar una Forma de Pago antes de crear el CFDI.');
       return;
     }
     
     if (!metodoPagoFinal || metodoPagoFinal.trim() === '') {
       console.error('❌ ERROR: MetodoPago está vacío o no seleccionado!');
       console.log('🔍 Valores disponibles en MetodoPago:', catalogs.MetodoPago.slice(0, 3));
-      //alert('Error: Debes seleccionar un Método de Pago antes de crear el CFDI.');
+      alert('Error: Debes seleccionar un Método de Pago antes de crear el CFDI.');
       return;
     }
     
@@ -494,7 +494,7 @@ const CFDIForm = () => {
     // Validación final antes del envío
     if (!cfdiData.UsoCFDI || cfdiData.UsoCFDI.trim() === '') {
       console.error('❌ ERROR FINAL: UsoCFDI en cfdiData está vacío!');
-      //alert('Error crítico: UsoCFDI se perdió en el procesamiento. Contacta al desarrollador.');
+      alert('Error crítico: UsoCFDI se perdió en el procesamiento. Contacta al desarrollador.');
       return;
     }
     
@@ -507,7 +507,7 @@ const CFDIForm = () => {
     }
     try {
       const response = await FacturaAPIService.createCFDI40(cfdiData);
-      //alert('CFDI creado: ' + JSON.stringify(response.data));
+      alert('CFDI creado: ' + JSON.stringify(response.data));
       // Guardar UID emitido para mostrar botones de descarga
       const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
       setEmittedUID(uid);
