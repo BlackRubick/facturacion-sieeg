@@ -200,6 +200,7 @@ const CFDIGlobalForm = () => {
   const [formaPagoFromOrder, setFormaPagoFromOrder] = useState(null);
   const [metodoPagoFromOrder, setMetodoPagoFromOrder] = useState(null);
   const [emailFromWooCommerce, setEmailFromWooCommerce] = useState(null);
+  const [shippingInfo, setShippingInfo] = useState(null);
   
   // Estado para controlar los pasos del wizard
   const [currentStep, setCurrentStep] = useState(1);
@@ -491,6 +492,45 @@ const CFDIGlobalForm = () => {
             Impuestos: impuestosCalculados, // 🔥 USAR IMPUESTOS CALCULADOS
           };
         }));
+        // --- DETECCIÓN Y AGREGADO DEL ENVÍO COMO CONCEPTO ---
+        try {
+          const shippingTotal = Number(order.shipping_total || 0);
+          const shippingTax = Number(order.shipping_tax || 0) || Number(order.shipping_lines?.[0]?.total_tax || 0);
+          if ((order.shipping_lines && order.shipping_lines.length > 0) || shippingTotal > 0) {
+            const shippingLine = order.shipping_lines?.[0] || null;
+            const shippingDescription = shippingLine?.method_title || 'Gasto de envío';
+            const tasa = shippingTotal > 0 ? (shippingTax / shippingTotal) : 0;
+            const shippingConcept = {
+              ClaveProdServ: '01010101', // fallback, ajustar si hay código SAT específico
+              NoIdentificacion: '',
+              Cantidad: 1,
+              ClaveUnidad: 'H87', // fallback; ajustar si se requiere otra unidad
+              Unidad: 'Servicio',
+              ValorUnitario: Number(shippingTotal),
+              Descripcion: shippingDescription,
+              Descuento: '0',
+              ObjetoImp: shippingTax > 0 ? '02' : '01',
+              Impuestos: {
+                Traslados: shippingTax > 0 && shippingTotal > 0 ? [{
+                  Base: Number(shippingTotal).toFixed(6),
+                  Impuesto: "002", // IVA (ajustar si aplica otro impuesto)
+                  TipoFactor: "Tasa",
+                  TasaOCuota: tasa.toFixed(6),
+                  Importe: Number(shippingTax).toFixed(6)
+                }] : [],
+                Retenidos: [],
+                Locales: []
+              }
+            };
+            console.log('🚚 Envío detectado en pedido. Agregando concepto de envío:', { shippingTotal, shippingTax, shippingLine });
+            conceptos.push(shippingConcept);
+            setShippingInfo({ total: shippingTotal, tax: shippingTax, method: shippingDescription, line: shippingLine });
+          } else {
+            setShippingInfo(null);
+          }
+        } catch (err) {
+          console.error('Error al procesar shipping del pedido:', err);
+        }
         setProductosImportados(order.line_items);
         setValue('items', conceptos);
         
