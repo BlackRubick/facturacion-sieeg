@@ -201,6 +201,7 @@ const CFDIGlobalForm = () => {
   const [metodoPagoFromOrder, setMetodoPagoFromOrder] = useState(null);
   const [emailFromWooCommerce, setEmailFromWooCommerce] = useState(null);
   const [shippingInfo, setShippingInfo] = useState(null);
+  const [orderTotals, setOrderTotals] = useState(null);
   
   // Estado para controlar los pasos del wizard
   const [currentStep, setCurrentStep] = useState(1);
@@ -533,6 +534,19 @@ const CFDIGlobalForm = () => {
         }
         setProductosImportados(order.line_items);
         setValue('items', conceptos);
+
+        // Calcular totales del pedido para mostrar en la UI
+        try {
+          const subtotalItems = order.line_items.reduce((s, it) => s + (Number(it.total) || (Number(it.price) * Number(it.quantity)) || 0), 0);
+          const itemsTaxSum = order.line_items.reduce((s, it) => s + (Number(it.total_tax) || 0), 0);
+          const shippingTotal = Number(order.shipping_total || 0);
+          const shippingTax = Number(order.shipping_tax || 0) || Number(order.shipping_lines?.[0]?.total_tax || 0);
+          const total = Number(order.total || subtotalItems + shippingTotal + itemsTaxSum + shippingTax);
+          setOrderTotals({ subtotalItems, itemsTaxSum, shippingTotal, shippingTax, total });
+        } catch (err) {
+          console.error('Error calculando totales del pedido:', err);
+          setOrderTotals(null);
+        }
         
         // 🔥 NUEVO: Guardar el número de pedido automáticamente
         setValue('NumeroPedido', String(pedidoInput), { 
@@ -1091,17 +1105,50 @@ const CFDIGlobalForm = () => {
                           <span className="font-mono bg-gray-100 px-2 py-1 rounded">{prod.quantity}</span>
                         </div>
                         <div className="text-center text-gray-700">
-                          <span className="font-mono bg-gray-100 px-2 py-1 rounded">${prod.price || prod.total}</span>
+                          <span className="font-mono bg-gray-100 px-2 py-1 rounded">${(Number(prod.price) || Number(prod.total) || 0).toFixed(2)}</span>
                         </div>
                         <div className="text-center text-gray-700 font-medium">
-                          <span className="font-mono bg-green-100 px-2 py-1 rounded">${((prod.price || prod.total) * prod.quantity).toFixed(2)}</span>
+                          <span className="font-mono bg-green-100 px-2 py-1 rounded">${(Number(prod.total) || (Number(prod.price) * Number(prod.quantity)) || 0).toFixed(2)}</span>
                         </div>
                       </div>
                     ))}
+                    {/* Fila de envío si aplica */}
+                    {shippingInfo && (
+                      <div className={`px-4 py-3 border-b border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm bg-white transition-colors`}>
+                        <div className="text-gray-700 font-medium">🚚 {shippingInfo.method || 'Envío'}</div>
+                        <div className="text-center text-gray-700">
+                          <span className="font-mono bg-gray-100 px-2 py-1 rounded">1</span>
+                        </div>
+                        <div className="text-center text-gray-700">
+                          <span className="font-mono bg-gray-100 px-2 py-1 rounded">${(Number(shippingInfo.total) || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="text-center text-gray-700 font-medium">
+                          <span className="font-mono bg-green-100 px-2 py-1 rounded">${(Number(shippingInfo.total) || 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    )}
                     
-                    {/* Footer */}
-                    <div className="bg-gray-100 px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
-                      Total de {productosImportados.length} productos • Pedido #{pedidoInput}
+                    {/* Totales */}
+                    <div className="bg-gray-100 px-4 py-3 text-sm text-gray-700 border-t border-gray-200">
+                      <div className="flex flex-col md:flex-row md:justify-end md:items-center gap-2">
+                        <div className="flex justify-between w-full md:w-96">
+                          <div className="text-gray-600">Subtotal:</div>
+                          <div className="font-mono">${orderTotals ? orderTotals.subtotalItems.toFixed(2) : '0.00'}</div>
+                        </div>
+                        <div className="flex justify-between w-full md:w-96">
+                          <div className="text-gray-600">Envío:</div>
+                          <div className="font-mono">${orderTotals ? orderTotals.shippingTotal.toFixed(2) : '0.00'}</div>
+                        </div>
+                        <div className="flex justify-between w-full md:w-96">
+                          <div className="text-gray-600">IVA:</div>
+                          <div className="font-mono">${orderTotals ? ((orderTotals.itemsTaxSum || 0) + (orderTotals.shippingTax || 0)).toFixed(2) : '0.00'}</div>
+                        </div>
+                        <div className="flex justify-between w-full md:w-96 font-bold">
+                          <div className="text-gray-800">Total:</div>
+                          <div className="font-mono">${orderTotals ? Number(orderTotals.total).toFixed(2) : '0.00'}</div>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-500">Pedido #{pedidoInput} • {productosImportados.length} productos</div>
                     </div>
                   </div>
                 </div>
