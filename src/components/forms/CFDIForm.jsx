@@ -55,6 +55,8 @@ const CFDIForm = () => {
   const [loadingPedido, setLoadingPedido] = useState(false);
   const [productosImportados, setProductosImportados] = useState([]);
   const [emittedUID, setEmittedUID] = useState(null);
+  const [shippingInfo, setShippingInfo] = useState(null);
+  const [orderTotals, setOrderTotals] = useState(null);
   // Helper para actualizar el estado del pedido en WooCommerce
   const updateOrderStatus = async (orderId, status = 'invoiced') => {
     if (!orderId) return;
@@ -868,11 +870,64 @@ const CFDIForm = () => {
             Impuestos: impuestosCalculados, // 🔥 USAR IMPUESTOS CALCULADOS
           };
         }));
+        // --- DETECCIÓN Y AGREGADO DEL ENVÍO COMO CONCEPTO ---
+        try {
+          const shippingTotal = Number(order.shipping_total || 0);
+          const shippingTax = Number(order.shipping_tax || 0) || Number(order.shipping_lines?.[0]?.total_tax || 0);
+          if ((order.shipping_lines && order.shipping_lines.length > 0) || shippingTotal > 0) {
+            const shippingLine = order.shipping_lines?.[0] || null;
+            const shippingDescription = shippingLine?.method_title || 'Gasto de envío';
+            const tasa = shippingTotal > 0 ? (shippingTax / shippingTotal) : 0;
+            const shippingConcept = {
+              ClaveProdServ: '01010101',
+              NoIdentificacion: '',
+              Cantidad: 1,
+              ClaveUnidad: 'H87',
+              Unidad: 'Servicio',
+              ValorUnitario: Number(shippingTotal),
+              Descripcion: shippingDescription,
+              Descuento: '0',
+              ObjetoImp: shippingTax > 0 ? '02' : '01',
+              Impuestos: {
+                Traslados: shippingTax > 0 && shippingTotal > 0 ? [{
+                  Base: Number(shippingTotal).toFixed(6),
+                  Impuesto: "002",
+                  TipoFactor: "Tasa",
+                  TasaOCuota: tasa.toFixed(6),
+                  Importe: Number(shippingTax).toFixed(6)
+                }] : [],
+                Retenidos: [],
+                Locales: []
+              }
+            };
+            console.log('🚚 Envío detectado en pedido (CFDIForm). Agregando concepto de envío:', { shippingTotal, shippingTax, shippingLine });
+            conceptos.push(shippingConcept);
+            setShippingInfo({ total: shippingTotal, tax: shippingTax, method: shippingDescription, line: shippingLine });
+          } else {
+            setShippingInfo(null);
+          }
+        } catch (err) {
+          console.error('Error al procesar shipping del pedido (CFDIForm):', err);
+        }
+
         setProductosImportados(order.line_items.map(prod => ({
           ...prod,
           Cantidad: prod.quantity || 1 
         })));
         setValue('items', conceptos);
+
+        // Calcular totales del pedido
+        try {
+          const subtotalItems = order.line_items.reduce((s, it) => s + (Number(it.total) || (Number(it.price) * Number(it.quantity)) || 0), 0);
+          const itemsTaxSum = order.line_items.reduce((s, it) => s + (Number(it.total_tax) || 0), 0);
+          const shippingTotal = Number(order.shipping_total || 0);
+          const shippingTax = Number(order.shipping_tax || 0) || Number(order.shipping_lines?.[0]?.total_tax || 0);
+          const total = Number(order.total || subtotalItems + shippingTotal + itemsTaxSum + shippingTax);
+          setOrderTotals({ subtotalItems, itemsTaxSum, shippingTotal, shippingTax, total });
+        } catch (err) {
+          console.error('Error calculando totales del pedido (CFDIForm):', err);
+          setOrderTotals(null);
+        }
         
         // 🔥 NUEVO: Guardar el número de pedido automáticamente
         setValue('NumeroPedido', String(pedidoInput), { 
@@ -1700,6 +1755,40 @@ const CFDIForm = () => {
                 <div className="text-center font-bold" style={{ whiteSpace: 'normal' }}>{item.ClaveUnidad || ''}</div>
               </div>
             ))}
+            {/* Fila de envío si aplica */}
+            {shippingInfo && (
+              <div className={`grid grid-cols-[2.5fr_1fr_1fr_1fr_1fr_1fr_1.5fr_1.5fr] gap-2 px-3 py-3 items-center bg-white border-b border-gray-100 text-[15px]`}>
+                <div className="font-bold text-left">🚚 {shippingInfo.method || 'Envío'}</div>
+                <div className="text-center">1</div>
+                <div className="text-center">${(Number(shippingInfo.total) || 0).toFixed(2)}</div>
+                <div className="text-center text-green-600 font-bold">${(Number(shippingInfo.tax) || 0).toFixed(2)}</div>
+                <div className="text-center">—</div>
+                <div className="text-center">0</div>
+                <div className="text-center font-bold">Servicio</div>
+                <div className="text-center font-bold">H87</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Totales resumen */}
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-700">
+        <div className="flex flex-col md:flex-row md:justify-end gap-2">
+          <div className="flex justify-between w-full md:w-96">
+            <div className="text-gray-600">Subtotal:</div>
+            <div className="font-mono">${orderTotals ? orderTotals.subtotalItems.toFixed(2) : '0.00'}</div>
+          </div>
+          <div className="flex justify-between w-full md:w-96">
+            <div className="text-gray-600">Envío:</div>
+            <div className="font-mono">${orderTotals ? orderTotals.shippingTotal.toFixed(2) : (shippingInfo ? (Number(shippingInfo.total)||0).toFixed(2) : '0.00')}</div>
+          </div>
+          <div className="flex justify-between w-full md:w-96">
+            <div className="text-gray-600">IVA:</div>
+            <div className="font-mono">${orderTotals ? ((orderTotals.itemsTaxSum || 0) + (orderTotals.shippingTax || 0)).toFixed(2) : (shippingInfo ? (Number(shippingInfo.tax)||0).toFixed(2) : '0.00')}</div>
+          </div>
+          <div className="flex justify-between w-full md:w-96 font-bold">
+            <div className="text-gray-800">Total:</div>
+            <div className="font-mono">${orderTotals ? Number(orderTotals.total).toFixed(2) : '0.00'}</div>
           </div>
         </div>
       </div>
