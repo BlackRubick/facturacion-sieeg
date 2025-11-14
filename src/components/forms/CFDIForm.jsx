@@ -518,7 +518,7 @@ const CFDIForm = () => {
         await updateOrderStatus(orderId, 'invoiced');
       }
     } catch (err) {
-      //alert('Error: ' + (err.response?.data?.message || err.message));
+      alert('Error: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -965,11 +965,11 @@ const CFDIForm = () => {
         // Guardar el pedido en una variable global para debugging
         window.lastWooCommerceOrder = order;
       } else {
-        //alert('No se encontraron productos para ese pedido');
+        alert('No se encontraron productos para ese pedido');
         setProductosImportados([]);
       }
     } catch (err) {
-      //alert('Error al importar pedido: ' + (err.message));
+      alert('Error al importar pedido: ' + (err.message));
       setProductosImportados([]);
     }
     setLoadingPedido(false);
