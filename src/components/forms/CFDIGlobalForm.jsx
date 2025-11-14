@@ -1086,6 +1086,22 @@ const CFDIGlobalForm = () => {
                   <div className="p-4 bg-blue-50 rounded-lg mb-4">
                     <h3 className="text-lg font-semibold text-blue-700 mb-3">Tu pedido #{pedidoInput}</h3>
                   </div>
+                  {/* Bloque de resumen (útil para depuración y ver valores) */}
+                  <div className="mb-4 p-3 bg-white border rounded text-sm text-gray-700">
+                    <div className="font-medium mb-2">Resumen del pedido (debug):</div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>Subtotal items:</div>
+                      <div className="font-mono">${orderTotals ? orderTotals.subtotalItems.toFixed(2) : '—'}</div>
+                      <div>Impuestos items:</div>
+                      <div className="font-mono">${orderTotals ? (orderTotals.itemsTaxSum || 0).toFixed(2) : '—'}</div>
+                      <div>Envío:</div>
+                      <div className="font-mono">${orderTotals ? (orderTotals.shippingTotal || 0).toFixed(2) : (shippingInfo ? (Number(shippingInfo.total)||0).toFixed(2) : '—')}</div>
+                      <div>IVA envío:</div>
+                      <div className="font-mono">${orderTotals ? (orderTotals.shippingTax || 0).toFixed(2) : (shippingInfo ? (Number(shippingInfo.tax)||0).toFixed(2) : '—')}</div>
+                      <div>Total:</div>
+                      <div className="font-mono">${orderTotals ? Number(orderTotals.total).toFixed(2) : '—'}</div>
+                    </div>
+                  </div>
                   <div className="border border-gray-200 rounded-lg overflow-hidden">
                     {/* Header de la tabla */}
                     <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 font-medium text-sm text-gray-700">
