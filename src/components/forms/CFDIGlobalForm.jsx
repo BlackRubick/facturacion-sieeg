@@ -502,7 +502,7 @@ const CFDIGlobalForm = () => {
             const shippingDescription = shippingLine?.method_title || 'Gasto de envío';
             const tasa = shippingTotal > 0 ? (shippingTax / shippingTotal) : 0;
             const shippingConcept = {
-              ClaveProdServ: '01010101', // fallback, ajustar si hay código SAT específico
+              ClaveProdServ: '78121600', // fallback, ajustar si hay código SAT específico
               NoIdentificacion: '',
               Cantidad: 1,
               ClaveUnidad: 'H87', // fallback; ajustar si se requiere otra unidad

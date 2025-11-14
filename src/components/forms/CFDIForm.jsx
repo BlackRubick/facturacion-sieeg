@@ -879,7 +879,7 @@ const CFDIForm = () => {
             const shippingDescription = shippingLine?.method_title || 'Gasto de envío';
             const tasa = shippingTotal > 0 ? (shippingTax / shippingTotal) : 0;
             const shippingConcept = {
-              ClaveProdServ: '01010101',
+              ClaveProdServ: '78121600',
               NoIdentificacion: '',
               Cantidad: 1,
               ClaveUnidad: 'H87',
