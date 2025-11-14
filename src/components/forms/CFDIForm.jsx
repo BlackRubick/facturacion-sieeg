@@ -815,8 +815,18 @@ const CFDIForm = () => {
 
       if (order.line_items && Array.isArray(order.line_items)) {
         let notFound = [];
+        // Filtrar line_items que corresponden a "Recoger en Tienda" para no agregarlos como producto
+        const filteredLineItems = order.line_items.filter(prod => {
+          const name = String(prod.name || '').toLowerCase().trim();
+          // Ignorar entradas cuyo nombre sea exactamente "recoger en tienda" o que contengan esa frase
+          if (name === 'recoger en tienda' || name.includes('recoger en tienda') || name.includes('store pickup')) {
+            console.log('ℹ️ Omitiendo línea de pedido (Recoger en Tienda):', prod);
+            return false;
+          }
+          return true;
+        });
         // Consultar cada producto directamente en WooCommerce
-        const conceptos = await Promise.all(order.line_items.map(async prod => {
+        const conceptos = await Promise.all(filteredLineItems.map(async prod => {
           // Mostrar todos los atributos del producto importado
           console.log('Atributos completos del producto importado:', JSON.stringify(prod, null, 2));
           console.log('product_id del pedido:', prod.product_id);
@@ -874,9 +884,11 @@ const CFDIForm = () => {
         try {
           const shippingTotal = Number(order.shipping_total || 0);
           const shippingTax = Number(order.shipping_tax || 0) || Number(order.shipping_lines?.[0]?.total_tax || 0);
-          if ((order.shipping_lines && order.shipping_lines.length > 0) || shippingTotal > 0) {
-            const shippingLine = order.shipping_lines?.[0] || null;
-            const shippingDescription = shippingLine?.method_title || 'Gasto de envío';
+          const shippingLine = order.shipping_lines?.[0] || null;
+          const shippingDescription = shippingLine?.method_title || 'Gasto de envío';
+          // No agregar concepto de envío si es recogida en tienda (store_pickup) o si el total es 0
+          const isStorePickup = shippingLine?.method_id === 'store_pickup' || String(shippingDescription || '').toLowerCase().includes('recoger');
+          if (((order.shipping_lines && order.shipping_lines.length > 0) || shippingTotal > 0) && !isStorePickup && shippingTotal > 0) {
             const tasa = shippingTotal > 0 ? (shippingTax / shippingTotal) : 0;
             const shippingConcept = {
               ClaveProdServ: '78121600',
@@ -910,12 +922,13 @@ const CFDIForm = () => {
             setShippingInfo({ total: shippingTotal, tax: shippingTax, method: shippingDescription, line: shippingLine });
           } else {
             setShippingInfo(null);
+            if (isStorePickup) console.log('ℹ️ Método de envío es store_pickup o descripción indica recogida; no se añade concepto de envío.');
           }
         } catch (err) {
           console.error('Error al procesar shipping del pedido (CFDIForm):', err);
         }
 
-        setProductosImportados(order.line_items.map(prod => ({
+        setProductosImportados(filteredLineItems.map(prod => ({
           ...prod,
           Cantidad: prod.quantity || 1 
         })));

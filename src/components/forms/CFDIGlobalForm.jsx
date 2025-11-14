@@ -454,7 +454,16 @@ const CFDIGlobalForm = () => {
       
       if (order.line_items && Array.isArray(order.line_items)) {
         let notFound = [];
-        const conceptos = await Promise.all(order.line_items.map(async prod => {
+        // Filtrar líneas que correspondan a "Recoger en Tienda" para no agregarlas como producto
+        const filteredLineItems = order.line_items.filter(prod => {
+          const name = String(prod.name || '').toLowerCase().trim();
+          if (name === 'recoger en tienda' || name.includes('recoger en tienda') || name.includes('store pickup')) {
+            console.log('ℹ️ Omitiendo línea de pedido (Recoger en Tienda) en CFDIGlobalForm:', prod);
+            return false;
+          }
+          return true;
+        });
+        const conceptos = await Promise.all(filteredLineItems.map(async prod => {
           let wcProduct = null;
           if (prod.product_id) {
             try {
@@ -497,9 +506,10 @@ const CFDIGlobalForm = () => {
         try {
           const shippingTotal = Number(order.shipping_total || 0);
           const shippingTax = Number(order.shipping_tax || 0) || Number(order.shipping_lines?.[0]?.total_tax || 0);
-          if ((order.shipping_lines && order.shipping_lines.length > 0) || shippingTotal > 0) {
-            const shippingLine = order.shipping_lines?.[0] || null;
-            const shippingDescription = shippingLine?.method_title || 'Gasto de envío';
+          const shippingLine = order.shipping_lines?.[0] || null;
+          const shippingDescription = shippingLine?.method_title || 'Gasto de envío';
+          const isStorePickup = shippingLine?.method_id === 'store_pickup' || String(shippingDescription || '').toLowerCase().includes('recoger');
+          if (((order.shipping_lines && order.shipping_lines.length > 0) || shippingTotal > 0) && !isStorePickup && shippingTotal > 0) {
             const tasa = shippingTotal > 0 ? (shippingTax / shippingTotal) : 0;
             const shippingConcept = {
               ClaveProdServ: '78121600', // fallback, ajustar si hay código SAT específico
@@ -534,12 +544,13 @@ const CFDIGlobalForm = () => {
             setShippingInfo({ total: shippingTotal, tax: shippingTax, method: shippingDescription, line: shippingLine });
           } else {
             setShippingInfo(null);
+            if (isStorePickup) console.log('ℹ️ Método de envío es store_pickup o descripción indica recogida; no se añade concepto de envío.');
           }
         } catch (err) {
           console.error('Error al procesar shipping del pedido:', err);
         }
-        setProductosImportados(order.line_items);
-        setValue('items', conceptos);
+  setProductosImportados(filteredLineItems);
+  setValue('items', conceptos);
 
         // Calcular totales del pedido para mostrar en la UI
         try {
