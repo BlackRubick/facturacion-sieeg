@@ -893,7 +893,8 @@ const CFDIForm = () => {
                   Base: Number(shippingTotal).toFixed(6),
                   Impuesto: "002",
                   TipoFactor: "Tasa",
-                  TasaOCuota: tasa.toFixed(6),
+                  // Forzar la tasa exacta del catálogo (IVA 16%)
+                  TasaOCuota: "0.160000",
                   Importe: Number(shippingTax).toFixed(6)
                 }] : [],
                 Retenidos: [],

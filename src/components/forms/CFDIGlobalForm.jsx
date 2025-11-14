@@ -516,7 +516,8 @@ const CFDIGlobalForm = () => {
                   Base: Number(shippingTotal).toFixed(6),
                   Impuesto: "002", // IVA (ajustar si aplica otro impuesto)
                   TipoFactor: "Tasa",
-                  TasaOCuota: tasa.toFixed(6),
+                  // Usar valor del catálogo para TasaOCuota (formato requerido por PAC)
+                  TasaOCuota: "0.160000",
                   Importe: Number(shippingTax).toFixed(6)
                 }] : [],
                 Retenidos: [],
