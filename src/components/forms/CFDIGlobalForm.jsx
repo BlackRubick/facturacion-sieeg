@@ -336,10 +336,10 @@ const CFDIGlobalForm = () => {
     console.log('📤 NumOrder que se envía:', cfdiData.NumOrder);
     try {
       const response = await FacturaAPIService.createCFDI40(cfdiData);
-      alert('CFDI Global creado: ' + JSON.stringify(response.data));
+      //alert('CFDI Global creado: ' + JSON.stringify(response.data));
       // Nota: El estado se actualizará posteriormente solo si el CFDI se emite correctamente
     } catch (err) {
-      alert('Error: ' + (err.response?.data?.message || err.message));
+      //alert('Error: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -366,7 +366,7 @@ const CFDIGlobalForm = () => {
       setDraftData(response.data);
       setShowDraft(true);
     } catch (err) {
-      alert('Error al crear borrador: ' + (err.response?.data?.message || err.message));
+      //alert('Error al crear borrador: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -374,7 +374,7 @@ const CFDIGlobalForm = () => {
     if (!draftData?.data?.UID) return;
     try {
       const response = await FacturaAPIService.stampDraft(draftData.data.UID);
-      alert('CFDI emitido: ' + JSON.stringify(response.data));
+      //alert('CFDI emitido: ' + JSON.stringify(response.data));
       setShowDraft(false);
       setDraftData(null);
   // Si el borrador tenía NumOrder, intentar actualizar el pedido a 'invoiced'
@@ -383,7 +383,7 @@ const CFDIGlobalForm = () => {
           await updateOrderStatus(String(possibleNumOrder).trim(), 'invoiced');
       }
     } catch (err) {
-      alert('Error al emitir CFDI: ' + (err.response?.data?.message || err.message));
+      //alert('Error al emitir CFDI: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -586,11 +586,11 @@ const CFDIGlobalForm = () => {
         }, 1000); // Pequeña pausa para que vea el mensaje de éxito
         
       } else {
-        alert('No se encontraron productos para ese pedido');
+       //alert('No se encontraron productos para ese pedido');
         setProductosImportados([]);
       }
     } catch (err) {
-      alert('Error al importar pedido: ' + (err.message));
+      //alert('Error al importar pedido: ' + (err.message));
       setProductosImportados([]);
     }
     setLoadingPedido(false);
@@ -637,7 +637,7 @@ const CFDIGlobalForm = () => {
         
       } else {
         setClienteError('No se encontró el cliente para ese RFC');
-        alert('El RFC no está dado de alta. Por favor registre el cliente.');
+        //alert('El RFC no está dado de alta. Por favor registre el cliente.');
         setShowCustomerModal(true);
       }
     } catch (err) {
@@ -722,14 +722,14 @@ const CFDIGlobalForm = () => {
       if (!clienteData?.UID) {
         console.error('❌ No hay UID del cliente');
         setCfdiMessage('Error: No se encontró el UID del cliente');
-        alert('Error: No se encontró el UID del cliente');
+        //alert('Error: No se encontró el UID del cliente');
         return;
       }
 
       if (!fields || fields.length === 0) {
         console.error('❌ No hay productos/conceptos para facturar');
         setCfdiMessage('Error: No hay productos para facturar');
-        alert('Error: No hay productos para facturar');
+        //alert('Error: No hay productos para facturar');
         return;
       }
 
@@ -822,7 +822,7 @@ const CFDIGlobalForm = () => {
         setEmittedUID(uid);
         setCfdiMessage('CFDI creado correctamente.');
         console.log('✅ CFDI creado con UID:', uid);
-        alert('¡Factura generada exitosamente! UID: ' + uid);
+        //alert('¡Factura generada exitosamente! UID: ' + uid);
         // Actualizar estado del pedido si existe NumOrder en cfdiData
         const possibleOrderId = cfdiData?.NumOrder || String(watch('NumeroPedido') || '').trim();
         if (possibleOrderId && String(possibleOrderId).trim() !== '') {
@@ -832,7 +832,7 @@ const CFDIGlobalForm = () => {
         console.error('❌ No se encontró UID en ninguna ubicación');
         console.error('📋 Respuesta completa:', JSON.stringify(response, null, 2));
         setCfdiMessage('Error: No se recibió el UID del CFDI');
-        alert('Error: La factura se procesó pero no se recibió el UID. Revisa la consola para más detalles.');
+        //alert('Error: La factura se procesó pero no se recibió el UID. Revisa la consola para más detalles.');
       }
       // 🔥 ACTUALIZAR ESTADO DEL PEDIDO EN WOOCOMMERCE SI SE FACTURÓ UN PEDIDO
       if (cfdiData.NumOrder && cfdiData.NumOrder.trim() !== '') {
@@ -869,7 +869,7 @@ const CFDIGlobalForm = () => {
       console.error('❌ Error al crear CFDI:', err);
       const errorMessage = err.response?.data?.message || err.message || 'Error desconocido';
       setCfdiMessage('Error al crear CFDI: ' + errorMessage);
-      alert('Error al generar la factura: ' + errorMessage);
+      //alert('Error al generar la factura: ' + errorMessage);
     }
   };
 
@@ -1517,7 +1517,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
       };
       const response = await FacturaAPIService.updateClient(clienteData.UID, dataToUpdate);
       if (response.data?.status === 'success') {
-        alert('Datos del cliente actualizados correctamente');
+        //alert('Datos del cliente actualizados correctamente');
         setEditMode(false);
         setEditingData(null);
         
@@ -1529,7 +1529,7 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
         throw new Error(response.data?.message || 'Error al actualizar');
       }
     } catch (err) {
-      alert('Error al actualizar cliente: ' + (err.response?.data?.message || err.message));
+      //alert('Error al actualizar cliente: ' + (err.response?.data?.message || err.message));
     }
     setLoadingUpdate(false);
   };
@@ -1542,14 +1542,14 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
       if (!clienteData?.UID) {
         console.error('❌ No hay UID del cliente');
         setCfdiMessage('Error: No se encontró el UID del cliente');
-        alert('Error: No se encontró el UID del cliente');
+        //alert('Error: No se encontró el UID del cliente');
         return;
       }
 
       if (!fields || fields.length === 0) {
         console.error('❌ No hay productos/conceptos para facturar');
         setCfdiMessage('Error: No hay productos para facturar');
-        alert('Error: No hay productos para facturar');
+        //alert('Error: No hay productos para facturar');
         return;
       }
 
@@ -1634,18 +1634,18 @@ function PreviewCliente({ clienteData, watch, fields, setEmittedUID, setCfdiMess
         setEmittedUID(uid);
         setCfdiMessage('CFDI creado correctamente.');
         console.log('✅ CFDI creado con UID:', uid);
-        alert('¡Factura generada exitosamente! UID: ' + uid);
+        //alert('¡Factura generada exitosamente! UID: ' + uid);
       } else {
         console.error('❌ No se encontró UID en ninguna ubicación');
         console.error('📋 Respuesta completa:', JSON.stringify(response, null, 2));
         setCfdiMessage('Error: No se recibió el UID del CFDI');
-        alert('Error: La factura se procesó pero no se recibió el UID. Revisa la consola para más detalles.');
+        //alert('Error: La factura se procesó pero no se recibió el UID. Revisa la consola para más detalles.');
       }
     } catch (err) {
       console.error('❌ Error al crear CFDI:', err);
       const errorMessage = err.response?.data?.message || err.message || 'Error desconocido';
       setCfdiMessage('Error al crear CFDI: ' + errorMessage);
-      alert('Error al generar la factura: ' + errorMessage);
+     // alert('Error al generar la factura: ' + errorMessage);
     }
   };
 
