@@ -889,14 +889,18 @@ const CFDIForm = () => {
               Descuento: '0',
               ObjetoImp: shippingTax > 0 ? '02' : '01',
               Impuestos: {
-                Traslados: shippingTax > 0 && shippingTotal > 0 ? [{
-                  Base: Number(shippingTotal).toFixed(6),
-                  Impuesto: "002",
-                  TipoFactor: "Tasa",
-                  // Forzar la tasa exacta del catálogo (IVA 16%)
-                  TasaOCuota: "0.160000",
-                  Importe: Number(shippingTax).toFixed(6)
-                }] : [],
+                Traslados: shippingTax > 0 && shippingTotal > 0 ? (() => {
+                  const baseStr = Number(shippingTotal).toFixed(6);
+                  const tasaStr = "0.160000"; // Asumimos IVA 16% para envíos
+                  const importeCalc = (Number(shippingTotal) * Number(tasaStr)).toFixed(6);
+                  return [{
+                    Base: baseStr,
+                    Impuesto: "002",
+                    TipoFactor: "Tasa",
+                    TasaOCuota: tasaStr,
+                    Importe: importeCalc
+                  }];
+                })() : [],
                 Retenidos: [],
                 Locales: []
               }
