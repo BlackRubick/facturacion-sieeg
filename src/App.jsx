@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/common/Layout/Layout';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -62,7 +62,7 @@ function App() {
                 <UsersManager />
               </ProtectedRoute>
             } />
-            <Route path="*" element={<Login />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Layout>
       </Router>
