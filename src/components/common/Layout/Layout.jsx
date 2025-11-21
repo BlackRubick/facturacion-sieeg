@@ -66,7 +66,7 @@ const Layout = ({ children }) => {
           <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-7xl mx-auto gap-2">
             {/* Logo y título */}
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-              <img src="/SIEEG NEW.png" alt="SIEEG" className="h-8 w-auto" />
+              <img src="/SIEEGNEW.png" alt="SIEEG" className="h-8 w-auto" />
               <nav className="w-full sm:w-auto">
                 <ul className="flex flex-col sm:flex-row gap-2 items-center w-full sm:w-auto">
                   {/* Opciones para admin */}
