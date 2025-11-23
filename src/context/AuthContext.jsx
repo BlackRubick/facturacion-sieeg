@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('expiresAt');
     // Puedes mostrar un mensaje si quieres
-    window.location.href = '/login';
+    window.location.href = '/login_magic';
   };
 
   // Login usando API
