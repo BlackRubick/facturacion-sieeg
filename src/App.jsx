@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/common/Layout/Layout';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -16,11 +16,18 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import UsersManager from './pages/UsersManager';
 
 function App() {
+  const Fallback = () => {
+    const location = useLocation();
+    // Show Login only for the exact literal pathname '/login*%'
+    if (location.pathname === '/login*%') return <Login />;
+    return <NotFound />;
+  };
+
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/login*" element={<Login />} />
+          {/* Login only available when URL is exactly '/login*%' (handled in fallback) */}
           <Route path="/404" element={<NotFound />} />
           <Route path="/" element={<Layout />}>
             <Route path="register" element={
@@ -65,7 +72,7 @@ function App() {
               </ProtectedRoute>
             } />
           </Route>
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<Fallback />} />
         </Routes>
       </Router>
     </AuthProvider>
