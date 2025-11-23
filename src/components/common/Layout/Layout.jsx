@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, Outlet } from 'react-router-dom';
 import { AppContext } from '../../../context/AppContext';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -45,14 +45,9 @@ const Layout = ({ children }) => {
   };
 
   const isVendedor = user && user.type === 'vendedor';
-  const hideLayout = location.pathname === '/login' || location.pathname === '/register';
   const isFacturaClientesPublic = location.pathname === '/factura-clientes' && !user;
   const isFacturaClientesVendedor = location.pathname === '/factura-clientes' && user && user.type === 'vendedor';
   const isFacturaNormalVendedor = location.pathname === '/factura-normal' && user && user.type === 'vendedor';
-
-  if (hideLayout) {
-    return <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">{children}</div>;
-  }
 
   if (isVendedor && location.pathname !== '/factura-normal' && location.pathname !== '/factura-clientes') {
     window.location.replace('/factura-normal');
@@ -116,7 +111,7 @@ const Layout = ({ children }) => {
           </div>
         </header>
       )}
-      <main className="flex-1 p-2 sm:p-4 md:p-6 max-w-7xl mx-auto w-full">{children}</main>
+      <main className="flex-1 p-2 sm:p-4 md:p-6 max-w-7xl mx-auto w-full">{children || <Outlet />}</main>
       <footer className="bg-gray-100 text-center p-2 text-xs text-gray-500 border-t w-full">© 2025 Facturación SIEEG</footer>
       {showUserModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

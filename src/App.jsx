@@ -19,9 +19,9 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Layout>
-          <Routes>
-            <Route path="/login/*" element={<Login />} />
+        <Routes>
+          <Route path="/login/*" element={<Login />} />
+          <Route element={<Layout />}>
             <Route path="/register" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <UserRegister />
@@ -63,9 +63,9 @@ function App() {
                 <UsersManager />
               </ProtectedRoute>
             } />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </Router>
     </AuthProvider>
   );
