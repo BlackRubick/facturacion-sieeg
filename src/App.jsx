@@ -10,6 +10,7 @@ import CFDIListPage from './pages/CFDIListPage';
 import FacturaNormal from './pages/FacturaNormal';
 import FacturaClientes from './pages/FacturaClientes';
 import Login from './pages/Login';
+import NotFound from './pages/NotFound';
 import UserRegister from './pages/UserRegister';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import UsersManager from './pages/UsersManager';
@@ -20,7 +21,7 @@ function App() {
       <Router>
         <Layout>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/login/*" element={<Login />} />
             <Route path="/register" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <UserRegister />
@@ -62,7 +63,7 @@ function App() {
                 <UsersManager />
               </ProtectedRoute>
             } />
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
       </Router>
