@@ -20,7 +20,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/login/*" element={<Login />} />
+          <Route path="/login*%" element={<Login />} />
           <Route path="/404" element={<NotFound />} />
           <Route path="/" element={<Layout />}>
             <Route path="register" element={
