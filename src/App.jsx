@@ -21,44 +21,45 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login/*" element={<Login />} />
-          <Route element={<Layout />}>
-            <Route path="/register" element={
+          <Route path="/404" element={<NotFound />} />
+          <Route path="/" element={<Layout />}>
+            <Route path="register" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <UserRegister />
               </ProtectedRoute>
             } />
-            <Route path="/factura-clientes" element={<FacturaClientes />} />
-            <Route path="/" element={
+            <Route path="factura-clientes" element={<FacturaClientes />} />
+            <Route index element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <FacturaNormal />
               </ProtectedRoute>
             } />
-            <Route path="/invoices" element={
+            <Route path="invoices" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <Invoices />
               </ProtectedRoute>
             } />
-            <Route path="/factura-normal" element={
+            <Route path="factura-normal" element={
               <ProtectedRoute allowedTypes={["admin", "vendedor"]}>
                 <FacturaNormal />
               </ProtectedRoute>
             } />
-            <Route path="/customers" element={
+            <Route path="customers" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <Customers />
               </ProtectedRoute>
             } />
-            <Route path="/orders" element={
+            <Route path="orders" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <Orders />
               </ProtectedRoute>
             } />
-            <Route path="/cfdi-list" element={
+            <Route path="cfdi-list" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <CFDIListPage />
               </ProtectedRoute>
             } />
-            <Route path="/users-manager" element={
+            <Route path="users-manager" element={
               <ProtectedRoute allowedTypes={["admin"]}>
                 <UsersManager />
               </ProtectedRoute>
