@@ -142,11 +142,6 @@ const CFDIForm = () => {
     shouldUnregister: false, // <-- Mantener valores de los selects aunque se desmonten
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'items',
-  });
-
   // 🔥 NUEVA FUNCIONALIDAD: Recalcular impuestos automáticamente cuando cambien cantidad o precio
   const recalcularImpuestosItem = (index, valorUnitario, cantidad, tipoImpuesto = 'con_iva') => {
     const impuestosRecalculados = calcularImpuestos(valorUnitario, cantidad, tipoImpuesto);
@@ -942,33 +937,67 @@ const CFDIForm = () => {
         try {
           // Preferir el total de descuento provisto por WooCommerce cuando exista
           let discountTotal = Number(order.discount_total || 0) || 0;
+          let discountTax = Number(order.discount_tax || 0) || 0;
+
           // Si no viene discount_total, intentar derivarlo desde coupon_lines
           if ((!discountTotal || discountTotal === 0) && Array.isArray(order.coupon_lines) && order.coupon_lines.length > 0) {
             discountTotal = 0;
+            discountTax = 0;
             order.coupon_lines.forEach(c => {
+              // c.discount_type puede ser 'percent' o 'fixed'
+              // Si WooCommerce ya proporciona order.discount_total y order.discount_tax, preferirlos.
               const disc = Number(c.discount || 0);
               if (!disc || disc === 0) return;
-              // Tratar el campo 'discount' como monto absoluto (según los datos recibidos)
-              discountTotal += disc;
+              // Si el coupon indica percent, y existe c.nominal_amount, intentar usar nominal_amount como monto fijo
+              if (c.discount_type === 'percent') {
+                // Si la respuesta incluye nominal_amount lo usamos como monto aproximado
+                const nominal = Number(c.nominal_amount || 0);
+                if (nominal && nominal > 0) {
+                  discountTotal += nominal;
+                } else {
+                  // No hay nominal_amount: difícil calcular sin subtotal; ignorar y confiar en order.discount_total si existe
+                  // Como fallback, sumar 'disc' si parece ser monto (ej. 0.6 -> 0.6)
+                  discountTotal += disc;
+                }
+              } else {
+                // discount viene como monto fijo
+                discountTotal += disc;
+              }
+              // intentar sumar impuesto de descuento por línea si está disponible
+              const dt = Number(c.discount_tax || 0) || 0;
+              if (dt && dt > 0) discountTax += dt;
             });
           }
 
           // Si hay descuento, agregar concepto que lo represente (valor negativo para que reste)
           if (discountTotal && Number(discountTotal) !== 0) {
             const discAmount = Number(discountTotal);
+            // Construir impuestos si hay discountTax
+            const traslados = [];
+            if (discountTax && Number(discountTax) !== 0 && discAmount !== 0) {
+              const tasa = Number(discountTax) / Number(Math.abs(discAmount));
+              traslados.push({
+                Base: Number(Math.abs(discAmount)).toFixed(6),
+                Impuesto: "002",
+                TipoFactor: "Tasa",
+                TasaOCuota: String(Number(tasa).toFixed(6)),
+                Importe: Number(discountTax).toFixed(6)
+              });
+            }
+
             const discountConcept = {
               ClaveProdServ: '84121700', // clave genérica de servicio
               NoIdentificacion: '',
               Cantidad: 1,
-              ClaveUnidad: 'E48',
+              ClaveUnidad: 'G02',
               Unidad: 'Descuento',
               ValorUnitario: Number((-Math.abs(discAmount)).toFixed(2)), // negativo para restar
               Descripcion: 'Descuento',
               Descuento: String(Math.abs(discAmount).toFixed(2)),
-              ObjetoImp: '01',
-              Impuestos: { Traslados: [], Retenidos: [], Locales: [] },
+              ObjetoImp: discountTax && Number(discountTax) !== 0 ? '02' : '01',
+              Impuestos: { Traslados: traslados, Retenidos: [], Locales: [] },
             };
-            console.log('🔻 Descuento detectado en pedido (CFDIForm). Agregando concepto de descuento:', { discountTotal, discountConcept });
+            console.log('🔻 Descuento detectado en pedido (CFDIForm). Agregando concepto de descuento:', { discountTotal, discountTax, discountConcept });
             conceptos.push(discountConcept);
           }
         } catch (err) {
