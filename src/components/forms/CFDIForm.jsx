@@ -142,6 +142,11 @@ const CFDIForm = () => {
     shouldUnregister: false, // <-- Mantener valores de los selects aunque se desmonten
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'items',
+  });
+
   // 🔥 NUEVA FUNCIONALIDAD: Recalcular impuestos automáticamente cuando cambien cantidad o precio
   const recalcularImpuestosItem = (index, valorUnitario, cantidad, tipoImpuesto = 'con_iva') => {
     const impuestosRecalculados = calcularImpuestos(valorUnitario, cantidad, tipoImpuesto);
