@@ -475,6 +475,16 @@ const CFDIForm = () => {
       dueDate: fechaCFDI,
       NumOrder: String(data.NumeroPedido || '').trim(), // 🔥 NUEVO: Número de pedido/orden para el PDF
     };
+    // Añadir campo Descuento a nivel raíz con el total de descuentos si procede
+    try {
+      const totalDescuento = items.reduce((s, it) => s + (Number(it.Descuento || 0) || 0), 0);
+      if (totalDescuento && Number(totalDescuento) !== 0) {
+        cfdiData.Descuento = String(Number(totalDescuento).toFixed(2));
+        console.log('📌 Agregado campo cfdiData.Descuento:', cfdiData.Descuento);
+      }
+    } catch (err) {
+      console.error('Error calculando cfdiData.Descuento:', err);
+    }
     
     console.log('📤 Objeto final enviado a la API:', cfdiData);
     console.log('📤 UsoCFDI que se envía:', cfdiData.UsoCFDI);
@@ -926,6 +936,43 @@ const CFDIForm = () => {
           }
         } catch (err) {
           console.error('Error al procesar shipping del pedido (CFDIForm):', err);
+        }
+
+        // --- DETECCIÓN Y AGREGADO DEL DESCUENTO COMO CONCEPTO ---
+        try {
+          // Preferir el total de descuento provisto por WooCommerce cuando exista
+          let discountTotal = Number(order.discount_total || 0) || 0;
+          // Si no viene discount_total, intentar derivarlo desde coupon_lines
+          if ((!discountTotal || discountTotal === 0) && Array.isArray(order.coupon_lines) && order.coupon_lines.length > 0) {
+            discountTotal = 0;
+            order.coupon_lines.forEach(c => {
+              const disc = Number(c.discount || 0);
+              if (!disc || disc === 0) return;
+              // Tratar el campo 'discount' como monto absoluto (según los datos recibidos)
+              discountTotal += disc;
+            });
+          }
+
+          // Si hay descuento, agregar concepto que lo represente (valor negativo para que reste)
+          if (discountTotal && Number(discountTotal) !== 0) {
+            const discAmount = Number(discountTotal);
+            const discountConcept = {
+              ClaveProdServ: '84121700', // clave genérica de servicio
+              NoIdentificacion: '',
+              Cantidad: 1,
+              ClaveUnidad: 'E48',
+              Unidad: 'Descuento',
+              ValorUnitario: Number((-Math.abs(discAmount)).toFixed(2)), // negativo para restar
+              Descripcion: 'Descuento',
+              Descuento: String(Math.abs(discAmount).toFixed(2)),
+              ObjetoImp: '01',
+              Impuestos: { Traslados: [], Retenidos: [], Locales: [] },
+            };
+            console.log('🔻 Descuento detectado en pedido (CFDIForm). Agregando concepto de descuento:', { discountTotal, discountConcept });
+            conceptos.push(discountConcept);
+          }
+        } catch (err) {
+          console.error('Error al procesar descuentos del pedido (CFDIForm):', err);
         }
 
         setProductosImportados(filteredLineItems.map(prod => ({
