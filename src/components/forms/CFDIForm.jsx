@@ -122,6 +122,8 @@ const CFDIForm = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    reset,
+    getValues,
     watch,
   } = useForm({
     defaultValues: {
@@ -1013,7 +1015,28 @@ const CFDIForm = () => {
           ...prod,
           Cantidad: prod.quantity || 1 
         })));
-        setValue('items', conceptos);
+            // Normalizar conceptos: filtrar nulos y asegurar tipos correctos
+            const safeConceptos = (conceptos || []).filter(c => c && typeof c === 'object').map(c => ({
+              ClaveProdServ: String(c.ClaveProdServ || ''),
+              NoIdentificacion: String(c.NoIdentificacion || ''),
+              Cantidad: Number(c.Cantidad || 1),
+              ClaveUnidad: String(c.ClaveUnidad || ''),
+              Unidad: String(c.Unidad || ''),
+              ValorUnitario: Number(c.ValorUnitario || 0),
+              Descripcion: String(c.Descripcion || ''),
+              Descuento: c.Descuento !== undefined ? String(c.Descuento) : '0',
+              ObjetoImp: String(c.ObjetoImp || '02'),
+              Impuestos: c.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
+            }));
+
+            // Reemplazar el array de items en el formulario con reset para sincronizar useFieldArray internals
+            try {
+              const currentValues = getValues();
+              reset({ ...currentValues, items: safeConceptos });
+            } catch (err) {
+              // Fallback a setValue si getValues/reset no funcionan
+              setValue('items', safeConceptos, { shouldValidate: true, shouldDirty: true });
+            }
 
         // Calcular totales del pedido
         try {
