@@ -1131,7 +1131,7 @@ const CFDIGlobalForm = () => {
               )}
 
               {/* Validador de correo */}
-              {showCorreoSection && emailFromWooCommerce && productosImportados.length > 0 && (
+              {showCorreoSection && productosImportados.length > 0 && (
                 <div className="p-6 bg-yellow-50 border-2 border-yellow-300 rounded-lg shadow-md">
                   <h3 className="text-lg font-semibold text-yellow-700 mb-3">3. Validar correo electrónico</h3>
 
@@ -1465,18 +1465,43 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
   useEffect(() => {
     setValidado(false);
     setError('');
-    setCorreoInput(''); // Campo vacío para que el usuario ingrese su correo
+    // Si el pedido trae correo, prellenarlo; si no, dejar vacío para que el usuario lo ponga
+    setCorreoInput(clienteCorreo || '');
     setValidadoCorreo(false);
   }, [clienteCorreo, emailFromWooCommerce, setValidadoCorreo]);
 
   const handleValidar = () => {
-    if (correoInput.trim().toLowerCase() === (clienteCorreo || '').trim().toLowerCase()) {
+    const entered = correoInput.trim();
+    if (!entered) {
+      setValidado(false);
+      setError('Ingresa un correo electrónico.');
+      setValidadoCorreo(false);
+      return;
+    }
+
+    // Si WooCommerce trajo un correo, exigir que coincida
+    if (clienteCorreo) {
+      if (entered.toLowerCase() === (clienteCorreo || '').trim().toLowerCase()) {
+        setValidado(true);
+        setError('');
+        setValidadoCorreo(true);
+      } else {
+        setValidado(false);
+        setError('El correo no coincide con el usado en la compra. Verifica e intenta nuevamente.');
+        setValidadoCorreo(false);
+      }
+      return;
+    }
+
+    // Si no hay correo desde WooCommerce, validar formato básico y aceptar el correo ingresado
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailRegex.test(entered)) {
       setValidado(true);
       setError('');
       setValidadoCorreo(true);
     } else {
       setValidado(false);
-      setError('El correo no coincide con el usado en la compra. Verifica e intenta nuevamente.');
+      setError('Ingresa un correo válido.');
       setValidadoCorreo(false);
     }
   };
