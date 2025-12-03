@@ -999,7 +999,7 @@ const CFDIForm = () => {
               Cantidad: 1,
               ClaveUnidad: 'G02',
               Unidad: 'Descuento',
-              ValorUnitario: Number((-Math.abs(discAmount)).toFixed(2)), // negativo para restar
+              ValorUnitario: 0, // usar 0 y aplicar el monto en el campo Descuento
               Descripcion: 'Descuento',
               Descuento: String(Math.abs(discAmount).toFixed(2)),
               ObjetoImp: discountTax && Number(discountTax) !== 0 ? '02' : '01',
@@ -1032,6 +1032,13 @@ const CFDIForm = () => {
 
             // Reemplazar el array de items en el formulario con reset para sincronizar useFieldArray internals
             try {
+              // DEBUG: mostrar lo que vamos a escribir en el formulario
+              try {
+                console.log('CFDIForm: safeConceptos BEFORE replace (len=%d):', (safeConceptos || []).length, safeConceptos);
+                const nullIndices = (safeConceptos || []).map((c, i) => c == null ? i : -1).filter(i => i >= 0);
+                if (nullIndices.length > 0) console.warn('CFDIForm: safeConceptos contiene nulls en índices:', nullIndices);
+              } catch (lErr) { console.warn('CFDIForm: error al loggear safeConceptos', lErr); }
+
               // Preferir replace() de useFieldArray para sincronizar internals correctamente
               if (typeof replace === 'function') {
                 replace(safeConceptos);
@@ -1042,8 +1049,18 @@ const CFDIForm = () => {
                 const currentValues = getValues();
                 reset({ ...currentValues, items: safeConceptos });
               }
+
+              // DEBUG: verificar el estado tras la operación
+              try {
+                const after = getValues().items;
+                console.log('CFDIForm: getValues().items AFTER replace/reset (len=%d):', (after || []).length, after);
+                const nullAfter = (after || []).map((c, i) => c == null ? i : -1).filter(i => i >= 0);
+                if (nullAfter.length > 0) console.warn('CFDIForm: getValues().items contiene nulls en índices:', nullAfter);
+                console.log('CFDIForm: useFieldArray fields length AFTER:', fields ? fields.length : 'undefined');
+              } catch (lErr) { console.warn('CFDIForm: error al loggear after replace/reset', lErr); }
             } catch (err) {
               // Fallback a setValue si getValues/reset/replace no funcionan
+              console.error('CFDIForm: replace/reset fallo, fallback a setValue', err);
               setValue('items', safeConceptos, { shouldValidate: true, shouldDirty: true });
             }
 
