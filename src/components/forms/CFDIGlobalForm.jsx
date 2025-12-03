@@ -1056,7 +1056,6 @@ const CFDIGlobalForm = () => {
                 <div className="p-6 bg-blue-50 rounded-lg border-2 border-blue-300 shadow-md">
                   <h3 className="text-lg font-semibold text-blue-700 mb-3">1. RFC del cliente</h3>
                   <Input 
-                    label="RFC del cliente*" 
                     {...register('RFC', { required: true })}
                     onBlur={e => handleBuscarCliente(e.target.value)}
                     className="text-lg"
@@ -1093,9 +1092,6 @@ const CFDIGlobalForm = () => {
                   <h3 className="text-lg font-semibold text-green-700 mb-3">2. Número de pedido</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Número de pedido
-                      </label>
                       <input
                         type="text"
                         placeholder="Ejemplo: 12345"
