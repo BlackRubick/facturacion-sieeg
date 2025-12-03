@@ -1507,12 +1507,12 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
   };
 
   return (
-    <div className={isStepOne ? "" : "mb-6"}>
-      {/* Validación de correo */}
-      <div className={`${isStepOne ? '' : 'p-6'} ${isStepOne ? '' : 'border border-yellow-300'} rounded-lg shadow-sm ${isStepOne ? '' : 'mb-4'}`}>
-        {!isStepOne && <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo</h3>}
+    <div className={isStepOne ? "mb-2" : "mb-6"}>
+      {/* Validación de correo - forzamos estilos visibles en Paso 1 */}
+      <div className={`p-6 bg-yellow-50 border-2 border-yellow-300 rounded-lg shadow-md mb-4`}>
+        <h3 className="text-lg font-semibold text-yellow-700 mb-3">Valida tu correo</h3>
         <p className="text-sm text-gray-600 mb-4">
-          {isStepOne ? 'Para confirmar que eres el propietario de este pedido, ingresa el correo que usaste al realizar la compra:' : 'Para confirmar que eres el propietario de este pedido, ingresa el correo que usaste al realizar la compra:'}
+          Para confirmar que eres el propietario de este pedido, ingresa el correo que usaste al realizar la compra:
         </p>
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1522,7 +1522,7 @@ function CorreoValidador({ clienteCorreo, clienteData, fields, setEmittedUID, se
             type="email"
             value={correoInput}
             onChange={e => setCorreoInput(e.target.value)}
-            className={`border ${isStepOne ? 'border-yellow-400' : 'border-yellow-400'} rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-300 focus:outline-none transition text-lg`}
+            className={`border border-yellow-400 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-300 focus:outline-none transition text-lg`}
             placeholder="ejemplo@correo.com"
           />
         </div>
