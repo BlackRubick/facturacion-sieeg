@@ -218,6 +218,8 @@ const CFDIGlobalForm = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    reset,
+    getValues,
     watch,
   } = useForm({
     defaultValues: {
@@ -238,7 +240,7 @@ const CFDIGlobalForm = () => {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: 'items',
   });
@@ -550,7 +552,49 @@ const CFDIGlobalForm = () => {
           console.error('Error al procesar shipping del pedido:', err);
         }
   setProductosImportados(filteredLineItems);
-  setValue('items', conceptos);
+
+            // Normalizar conceptos: filtrar nulos y asegurar tipos correctos
+            const safeConceptos = (conceptos || []).filter(c => c && typeof c === 'object').map(c => ({
+              ClaveProdServ: String(c.ClaveProdServ || ''),
+              NoIdentificacion: String(c.NoIdentificacion || ''),
+              Cantidad: Number(c.Cantidad || 1),
+              ClaveUnidad: String(c.ClaveUnidad || ''),
+              Unidad: String(c.Unidad || ''),
+              ValorUnitario: Number(c.ValorUnitario || 0),
+              Descripcion: String(c.Descripcion || ''),
+              Descuento: c.Descuento !== undefined ? String(c.Descuento) : '0',
+              ObjetoImp: String(c.ObjetoImp || '02'),
+              Impuestos: c.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
+            }));
+
+            // Reemplazar el array de items en el formulario con replace/reset para sincronizar useFieldArray internals
+            try {
+              try {
+                console.log('CFDIGlobalForm: safeConceptos BEFORE replace (len=%d):', (safeConceptos || []).length, safeConceptos);
+                const nullIndices = (safeConceptos || []).map((c, i) => c == null ? i : -1).filter(i => i >= 0);
+                if (nullIndices.length > 0) console.warn('CFDIGlobalForm: safeConceptos contiene nulls en índices:', nullIndices);
+              } catch (lErr) { console.warn('CFDIGlobalForm: error al loggear safeConceptos', lErr); }
+
+              if (typeof replace === 'function') {
+                replace(safeConceptos);
+                const currentValues = getValues();
+                reset({ ...currentValues, items: safeConceptos });
+              } else {
+                const currentValues = getValues();
+                reset({ ...currentValues, items: safeConceptos });
+              }
+
+              try {
+                const after = getValues().items;
+                console.log('CFDIGlobalForm: getValues().items AFTER replace/reset (len=%d):', (after || []).length, after);
+                const nullAfter = (after || []).map((c, i) => c == null ? i : -1).filter(i => i >= 0);
+                if (nullAfter.length > 0) console.warn('CFDIGlobalForm: getValues().items contiene nulls en índices:', nullAfter);
+                console.log('CFDIGlobalForm: useFieldArray fields length AFTER:', fields ? fields.length : 'undefined');
+              } catch (lErr) { console.warn('CFDIGlobalForm: error al loggear after replace/reset', lErr); }
+            } catch (err) {
+              console.error('CFDIGlobalForm: replace/reset fallo, fallback a setValue', err);
+              setValue('items', safeConceptos, { shouldValidate: true, shouldDirty: true });
+            }
 
         // Calcular totales del pedido para mostrar en la UI
         try {
@@ -749,6 +793,36 @@ const CFDIGlobalForm = () => {
       console.log('   - String(watch("NumeroPedido") || "").trim():', String(watch('NumeroPedido') || '').trim());
 
       // Construir el objeto CFDI con los datos del cliente y productos importados
+      // Obtener todos los items actuales desde react-hook-form (incluye items de UI como 'Descuento')
+      const allFormItems = Array.isArray(getValues().items) ? getValues().items : (fields || []).map(f => f);
+
+      // Calcular total de descuento a partir de los items (sumar campo Descuento de todos los items)
+      const totalDescuentoFromItems = allFormItems.reduce((s, it) => {
+        const d = Number(it?.Descuento || 0) || 0;
+        return s + d;
+      }, 0);
+
+      // Filtrar y mapear items que SÍ deben enviarse a la API: excluir conceptos visuales de descuento
+      const itemsParaApi = (allFormItems || []).filter(it => {
+        try {
+          const isDiscountConcept = (String(it?.Unidad || '').toLowerCase() === 'descuento') || (String(it?.ClaveProdServ || '') === '84121700');
+          return !isDiscountConcept;
+        } catch (e) {
+          return true;
+        }
+      }).map((item) => ({
+        ClaveProdServ: String(item.ClaveProdServ || '').trim(),
+        NoIdentificacion: String(item.NoIdentificacion || '').trim(),
+        Cantidad: item.Cantidad ? Number(item.Cantidad) : 1,
+        ClaveUnidad: String(item.ClaveUnidad || '').trim(),
+        Unidad: String(item.Unidad || 'Pieza').trim(),
+        ValorUnitario: item.ValorUnitario ? Number(item.ValorUnitario) : 0,
+        Descripcion: String(item.Descripcion || '').trim(),
+        Descuento: item.Descuento !== undefined ? String(item.Descuento) : '0',
+        ObjetoImp: String(item.ObjetoImp || '02').trim(),
+        Impuestos: item.Impuestos || { Traslados: [], Retenidos: [], Locales: [] },
+      }));
+
       const cfdiData = {
         Receptor: {
           UID: clienteData.UID,
@@ -762,21 +836,19 @@ const CFDIGlobalForm = () => {
         Moneda: 'MXN',
         UsoCFDI: usoCFDI,
         NumOrder: String(watch('NumeroPedido') || '').trim(), // 🔥 NUEVO: Número de pedido para el PDF
-        Conceptos: fields.map(item => ({
-          ClaveProdServ: item.ClaveProdServ,
-          NoIdentificacion: item.NoIdentificacion,
-          Cantidad: item.Cantidad,
-          ClaveUnidad: item.ClaveUnidad,
-          Unidad: item.Unidad,
-          ValorUnitario: item.ValorUnitario,
-          Descripcion: item.Descripcion,
-          Descuento: item.Descuento,
-          ObjetoImp: item.ObjetoImp,
-          Impuestos: item.Impuestos,
-        })),
+        Conceptos: itemsParaApi,
       };
+      // Añadir Descuento en raíz si procede (la API espera el monto en el root)
+      try {
+        if (totalDescuentoFromItems && Number(totalDescuentoFromItems) !== 0) {
+          cfdiData.Descuento = String(Number(totalDescuentoFromItems).toFixed(2));
+          console.log('📌 Agregado campo cfdiData.Descuento (desde items):', cfdiData.Descuento);
+        }
+      } catch (err) {
+        console.error('Error calculando cfdiData.Descuento (CFDIGlobalForm):', err);
+      }
 
-  // Mostrar el status que se enviará a WooCommerce
+      // Mostrar el status que se enviará a WooCommerce
   const statusToSend = 'invoiced';
   console.log('🟢 [handleFacturarStep3] Status que se enviará a WooCommerce:', statusToSend);
       console.log('📤 Enviando CFDI con datos:', cfdiData);
@@ -876,33 +948,40 @@ const CFDIGlobalForm = () => {
   return (
     <>
       <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-        {/* Indicador de pasos */}
+        {/* Indicador de pasos (responsive) */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
-                  emittedUID && step === 3
-                    ? 'bg-green-500 text-white' // Paso 3 verde cuando hay CFDI emitido
-                    : step === currentStep 
-                    ? 'bg-blue-600 text-white' 
-                    : step < currentStep || canGoToStep(step)
-                    ? 'bg-green-500 text-white cursor-pointer hover:bg-green-600' 
-                    : 'bg-gray-300 text-gray-500'
-                }`}
-                onClick={() => canGoToStep(step) ? setCurrentStep(step) : null}
-                >
-                  {emittedUID && step === 3 ? '✓' : step < currentStep ? '✓' : step}
+          <div className="flex flex-col md:flex-row items-center md:justify-between">
+            <div className="w-full md:w-auto flex items-center">
+              {[1, 2, 3].map((step, idx) => (
+                <div key={step} className="flex items-center w-full md:w-auto">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
+                      emittedUID && step === 3
+                        ? 'bg-green-500 text-white'
+                        : step === currentStep
+                        ? 'bg-blue-600 text-white'
+                        : step < currentStep || canGoToStep(step)
+                        ? 'bg-green-500 text-white cursor-pointer hover:bg-green-600'
+                        : 'bg-gray-300 text-gray-500'
+                    }`}
+                    onClick={() => canGoToStep(step) ? setCurrentStep(step) : null}
+                  >
+                    {emittedUID && step === 3 ? '✓' : step < currentStep ? '✓' : step}
+                  </div>
+
+                  {/* Conector flexible: ocupa espacio restante en small screens */}
+                  {idx < totalSteps - 1 && (
+                    <div className={`hidden md:block w-24 h-1 mx-3 ${emittedUID && idx === 1 ? 'bg-green-500' : idx < currentStep - 1 ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  )}
+                  {idx < totalSteps - 1 && (
+                    <div className="md:hidden flex-1 h-1 mx-2 bg-gray-300" aria-hidden />
+                  )}
                 </div>
-                {step < totalSteps && (
-                  <div className={`w-24 h-1 mx-3 ${
-                    emittedUID && step === 2 ? 'bg-green-500' : step < currentStep ? 'bg-green-500' : 'bg-gray-300'
-                  }`} />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          <div className="flex justify-between mt-3 text-sm text-gray-600">
+
+          <div className="mt-3 text-sm text-gray-600 grid grid-cols-1 md:grid-cols-3 gap-2 text-center">
             <span className="text-center">RFC + Pedido + Validar</span>
             <span className="text-center">Revisar Datos</span>
             <span className="text-center">Uso CFDI + Facturar</span>
