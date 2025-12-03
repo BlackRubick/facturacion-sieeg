@@ -32,7 +32,7 @@ const FACTURA_SECRET_KEY = import.meta.env.VITE_FACTURA_SECRET_KEY;
 const FACTURA_PLUGIN = import.meta.env.VITE_FACTURA_PLUGIN;
 
 // Mapeo de métodos de pago de WooCommerce a códigos SAT (igual que en CFDIForm)
-const mapearMetodoPago = (wooPaymentMethod) => {
+  const mapearMetodoPago = (wooPaymentMethod) => {
   // Mapeos más completos basados en los catálogos del SAT
   const mapeos = {
     // WooCommerce -> {FormaPago, MetodoPago}
@@ -86,7 +86,7 @@ const mapearMetodoPago = (wooPaymentMethod) => {
   }
   
   // Si no encuentra mapeo exacto, intentar mapeo por patrones
-  const metodoBajo = wooPaymentMethod.toLowerCase();
+  const metodoBajo = String(wooPaymentMethod || '').toLowerCase();
   console.log('🔍 Intentando mapeo por patrones para:', metodoBajo);
   
   // ⚠️ ORDEN IMPORTANTE: Verificar específicos antes que genéricos
