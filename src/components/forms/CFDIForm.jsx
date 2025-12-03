@@ -339,7 +339,24 @@ const CFDIForm = () => {
     console.log('🚀 MetodoPago específico:', data.MetodoPago);
     console.log('🚀 RegimenFiscal específico:', data.RegimenFiscal);
     // Mapear los campos del formulario a los nombres esperados por la API
-    const items = data.items.map((item, index) => {
+    // Primero obtener todos los items del formulario (incluyendo el item de descuento para UI)
+    const allFormItems = Array.isArray(data.items) ? data.items : [];
+
+    // Calcular total de descuento a partir de los items (sumar campo Descuento de todos los items)
+    const totalDescuentoFromItems = allFormItems.reduce((s, it) => {
+      const d = Number(it?.Descuento || 0) || 0;
+      return s + d;
+    }, 0);
+
+    // Filtrar los items que SÍ deben enviarse a la API: excluir aquellos que representen el 'Descuento' visual
+    const itemsParaApi = allFormItems.filter(it => {
+      try {
+        const isDiscountConcept = (String(it?.Unidad || '').toLowerCase() === 'descuento') || (String(it?.ClaveProdServ || '') === '84121700');
+        return !isDiscountConcept;
+      } catch (e) {
+        return true;
+      }
+    }).map((item, index) => {
       const itemMapeado = {
         ClaveProdServ: String(item.ClaveProdServ || '').trim(),
         NoIdentificacion: String(item.NoIdentificacion || '').trim(),
@@ -472,7 +489,8 @@ const CFDIForm = () => {
       MetodoPago: String(metodoPagoFinal).trim(), // <-- Usar el valor final corregido
       Moneda: data.Moneda || 'MXN',
       UsoCFDI: String(usoCFDIValue).trim(), // <-- Asegurar que sea string y sin espacios
-      Conceptos: items,
+      // Enviar SOLO los items filtrados a la API (sin el concepto visual de descuento)
+      Conceptos: itemsParaApi,
       BorradorSiFalla: String(data.BorradorSiFalla || '0'),
       Draft: String(data.Draft || '0'),
       dueDate: fechaCFDI,
@@ -480,10 +498,10 @@ const CFDIForm = () => {
     };
     // Añadir campo Descuento a nivel raíz con el total de descuentos si procede
     try {
-      const totalDescuento = items.reduce((s, it) => s + (Number(it.Descuento || 0) || 0), 0);
-      if (totalDescuento && Number(totalDescuento) !== 0) {
-        cfdiData.Descuento = String(Number(totalDescuento).toFixed(2));
-        console.log('📌 Agregado campo cfdiData.Descuento:', cfdiData.Descuento);
+      if (totalDescuentoFromItems && Number(totalDescuentoFromItems) !== 0) {
+        // Enviar el total de descuento a nivel raíz; la API esperará un monto positivo
+        cfdiData.Descuento = String(Number(totalDescuentoFromItems).toFixed(2));
+        console.log('📌 Agregado campo cfdiData.Descuento (desde items):', cfdiData.Descuento);
       }
     } catch (err) {
       console.error('Error calculando cfdiData.Descuento:', err);
