@@ -950,8 +950,8 @@ const CFDIGlobalForm = () => {
       <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
         {/* Indicador de pasos (responsive) */}
         <div className="mb-8">
-          <div className="flex flex-col md:flex-row items-center md:justify-between">
-            <div className="w-full md:w-auto flex items-center">
+          <div className="flex flex-col md:flex-row items-center md:justify-center">
+            <div className="w-full md:w-auto flex items-center md:space-x-6">
               {[1, 2, 3].map((step, idx) => (
                 <div key={step} className="flex items-center w-full md:w-auto">
                   <div
@@ -971,7 +971,7 @@ const CFDIGlobalForm = () => {
 
                   {/* Conector flexible: ocupa espacio restante en small screens */}
                   {idx < totalSteps - 1 && (
-                    <div className={`hidden md:block w-24 h-1 mx-3 ${emittedUID && idx === 1 ? 'bg-green-500' : idx < currentStep - 1 ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    <div className={`hidden md:block flex-1 h-1 mx-3 ${emittedUID && idx === 1 ? 'bg-green-500' : idx < currentStep - 1 ? 'bg-green-500' : 'bg-gray-300'}`} aria-hidden />
                   )}
                   {idx < totalSteps - 1 && (
                     <div className="md:hidden flex-1 h-1 mx-2 bg-gray-300" aria-hidden />
@@ -1156,14 +1156,17 @@ const CFDIGlobalForm = () => {
 
               {/* Botones de navegación */}
               <div className="flex justify-end mt-6">
-                <Button 
-                  type="button" 
-                  onClick={nextStep}
-                  disabled={!clienteData || productosImportados.length === 0 || !validadoCorreo}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold"
-                >
-                  Siguiente →
-                </Button>
+                <div className="flex flex-col items-end w-full md:w-auto">
+                  <Button 
+                    type="button" 
+                    onClick={nextStep}
+                    disabled={!clienteData || productosImportados.length === 0 || !validadoCorreo}
+                    title={!clienteData ? 'Debes buscar/confirmar RFC' : (productosImportados.length === 0 ? 'Debes importar un pedido primero' : (!validadoCorreo ? 'Debes validar el correo antes de continuar' : 'Siguiente'))}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Siguiente →
+                  </Button>
+                </div>
               </div>
             </div>
           )}
