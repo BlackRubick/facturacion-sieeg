@@ -538,7 +538,7 @@ const CFDIForm = () => {
     }
     try {
       const response = await FacturaAPIService.createCFDI40(cfdiData);
-      alert('CFDI creado: ' + JSON.stringify(response.data));
+      //alert('CFDI creado: ' + JSON.stringify(response.data));
       // Guardar UID emitido para mostrar botones de descarga
       const uid = response.data?.UID || response.data?.UUID || response.data?.uid || response.data?.invoice_uid;
       setEmittedUID(uid);
@@ -549,7 +549,7 @@ const CFDIForm = () => {
         await updateOrderStatus(orderId, 'invoiced');
       }
     } catch (err) {
-      alert('Error: ' + (err.response?.data?.message || err.message));
+      //alert('Error: ' + (err.response?.data?.message || err.message));
     }
   };
 
