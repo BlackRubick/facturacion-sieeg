@@ -630,11 +630,11 @@ const CFDIGlobalForm = () => {
         }, 1000); // Pequeña pausa para que vea el mensaje de éxito
         
       } else {
-       //alert('No se encontraron productos para ese pedido');
+       alert('No se encontraron productos para ese pedido');
         setProductosImportados([]);
       }
     } catch (err) {
-      //alert('Error al importar pedido: ' + (err.message));
+      alert('Error al importar pedido: ' + (err.message));
       setProductosImportados([]);
     }
     setLoadingPedido(false);
