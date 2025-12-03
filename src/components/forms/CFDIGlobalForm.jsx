@@ -949,44 +949,46 @@ const CFDIGlobalForm = () => {
     <>
       <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
         {/* Indicador de pasos (responsive) */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row items-center md:justify-center">
-            <div className="w-full md:w-auto flex items-center md:space-x-6">
-              {[1, 2, 3].map((step, idx) => (
-                <div key={step} className="flex items-center w-full md:w-auto">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
-                      emittedUID && step === 3
-                        ? 'bg-green-500 text-white'
-                        : step === currentStep
-                        ? 'bg-blue-600 text-white'
-                        : step < currentStep || canGoToStep(step)
-                        ? 'bg-green-500 text-white cursor-pointer hover:bg-green-600'
-                        : 'bg-gray-300 text-gray-500'
-                    }`}
-                    onClick={() => canGoToStep(step) ? setCurrentStep(step) : null}
-                  >
-                    {emittedUID && step === 3 ? '✓' : step < currentStep ? '✓' : step}
-                  </div>
+          <div className="mb-8">
+            <div className="w-full">
+              <div className="flex items-center w-full">
+                {[1, 2, 3].map((step, idx) => (
+                  <div key={step} className="flex-1 flex items-center">
+                    <div className="flex-1 flex justify-center">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
+                          emittedUID && step === 3
+                            ? 'bg-green-500 text-white'
+                            : step === currentStep
+                            ? 'bg-blue-600 text-white'
+                            : step < currentStep || canGoToStep(step)
+                            ? 'bg-green-500 text-white cursor-pointer hover:bg-green-600'
+                            : 'bg-gray-300 text-gray-500'
+                        }`}
+                        onClick={() => canGoToStep(step) ? setCurrentStep(step) : null}
+                      >
+                        {emittedUID && step === 3 ? '✓' : step < currentStep ? '✓' : step}
+                      </div>
+                    </div>
 
-                  {/* Conector flexible: ocupa espacio restante en small screens */}
-                  {idx < totalSteps - 1 && (
-                    <div className={`hidden md:block flex-1 h-1 mx-3 ${emittedUID && idx === 1 ? 'bg-green-500' : idx < currentStep - 1 ? 'bg-green-500' : 'bg-gray-300'}`} aria-hidden />
-                  )}
-                  {idx < totalSteps - 1 && (
-                    <div className="md:hidden flex-1 h-1 mx-2 bg-gray-300" aria-hidden />
-                  )}
-                </div>
-              ))}
+                    {/* Conector visible en md entre pasos */}
+                    {idx < totalSteps - 1 && (
+                      <div className={`hidden md:block flex-1 h-1 mx-3 ${emittedUID && idx === 1 ? 'bg-green-500' : idx < currentStep - 1 ? 'bg-green-500' : 'bg-gray-300'}`} aria-hidden />
+                    )}
+                    {idx < totalSteps - 1 && (
+                      <div className="md:hidden flex-1 h-1 mx-2 bg-gray-300" aria-hidden />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-3 text-sm text-gray-600 grid grid-cols-1 md:grid-cols-3 gap-2 text-center">
+                <span className="text-center">RFC + Pedido + Validar</span>
+                <span className="text-center">Revisar Datos</span>
+                <span className="text-center">Uso CFDI + Facturar</span>
+              </div>
             </div>
           </div>
-
-          <div className="mt-3 text-sm text-gray-600 grid grid-cols-1 md:grid-cols-3 gap-2 text-center">
-            <span className="text-center">RFC + Pedido + Validar</span>
-            <span className="text-center">Revisar Datos</span>
-            <span className="text-center">Uso CFDI + Facturar</span>
-          </div>
-        </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* PASO 1: RFC + Pedido + Validar Correo */}
