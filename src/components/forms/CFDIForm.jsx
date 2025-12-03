@@ -144,10 +144,11 @@ const CFDIForm = () => {
     shouldUnregister: false, // <-- Mantener valores de los selects aunque se desmonten
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: 'items',
   });
+  
 
   // 🔥 NUEVA FUNCIONALIDAD: Recalcular impuestos automáticamente cuando cambien cantidad o precio
   const recalcularImpuestosItem = (index, valorUnitario, cantidad, tipoImpuesto = 'con_iva') => {
@@ -762,7 +763,7 @@ const CFDIForm = () => {
         return { FormaPago: '99', MetodoPago: 'PUE' }; // Por defecto: Otros
       };
       
-      const pagoMapeado = mapearMetodoPago(order.payment_method);
+      const pagoMapeado = mapearMetodoPago(order.payment_method || order.payment_method_title || '');
       console.log('🎯 Método de pago mapeado:', pagoMapeado);
       
       // Mostrar información del mapeo al usuario
@@ -1031,10 +1032,18 @@ const CFDIForm = () => {
 
             // Reemplazar el array de items en el formulario con reset para sincronizar useFieldArray internals
             try {
-              const currentValues = getValues();
-              reset({ ...currentValues, items: safeConceptos });
+              // Preferir replace() de useFieldArray para sincronizar internals correctamente
+              if (typeof replace === 'function') {
+                replace(safeConceptos);
+                // Aun así, resetear el formulario completo para asegurar consistencia
+                const currentValues = getValues();
+                reset({ ...currentValues, items: safeConceptos });
+              } else {
+                const currentValues = getValues();
+                reset({ ...currentValues, items: safeConceptos });
+              }
             } catch (err) {
-              // Fallback a setValue si getValues/reset no funcionan
+              // Fallback a setValue si getValues/reset/replace no funcionan
               setValue('items', safeConceptos, { shouldValidate: true, shouldDirty: true });
             }
 
